@@ -1,0 +1,5 @@
+# microservice specific routes
+
+GET         /entities                       @gov.uk.hmrc.homeofficesettledstatusproxy.controllers.HomeOfficeSettledStatusProxyController.entities
+GET         /entities/:utr                  @gov.uk.hmrc.homeofficesettledstatusproxy.controllers.HomeOfficeSettledStatusProxyController.entitiesByUtr(utr:uk.gov.hmrc.agentmtdidentifiers.model.Utr)
+
