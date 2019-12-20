@@ -48,14 +48,18 @@ class AuditService @Inject()(val auditConnector: AuditConnector) {
     ec: ExecutionContext): Future[Unit] =
     send(createEvent(event, transactionName, details: _*))
 
-  private[services] def createEvent(event: HomeOfficeSettledStatusProxyEvent, transactionName: String, details: (String, Any)*)(
-    implicit hc: HeaderCarrier,
-    request: Request[Any],
-    ec: ExecutionContext): DataEvent = {
+  private[services] def createEvent(
+    event: HomeOfficeSettledStatusProxyEvent,
+    transactionName: String,
+    details: (String, Any)*)(implicit hc: HeaderCarrier, request: Request[Any], ec: ExecutionContext): DataEvent = {
 
     val detail = hc.toAuditDetails(details.map(pair => pair._1 -> pair._2.toString): _*)
     val tags = hc.toAuditTags(transactionName, request.path)
-    DataEvent(auditSource = "home-office-settled-status-proxy", auditType = event.toString, tags = tags, detail = detail)
+    DataEvent(
+      auditSource = "home-office-settled-status-proxy",
+      auditType = event.toString,
+      tags = tags,
+      detail = detail)
   }
 
   private[services] def send(events: DataEvent*)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
