@@ -1,18 +1,18 @@
 package gov.uk.hmrc.homeofficesettledstatusproxy.support
 
+import gov.uk.hmrc.homeofficesettledstatusproxy.stubs.DataStreamStubs
 import play.api.Application
-import play.api.i18n.{ Lang, Messages, MessagesApi }
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.twirl.api.HtmlFormat
 import uk.gov.hmrc.http.HeaderCarrier
-import gov.uk.hmrc.homeofficesettledstatusproxy.stubs.{ AuthStubs, DataStreamStubs }
 import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.test.UnitSpec
 
-abstract class BaseISpec extends UnitSpec with WireMockSupport with AuthStubs with DataStreamStubs with MetricsTestSupport {
+abstract class BaseISpec extends UnitSpec with WireMockSupport with DataStreamStubs  with MetricsTestSupport {
 
   def app: Application
   protected def appBuilder: GuiceApplicationBuilder

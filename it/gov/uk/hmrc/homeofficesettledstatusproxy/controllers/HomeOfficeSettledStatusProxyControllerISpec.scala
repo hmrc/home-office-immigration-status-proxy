@@ -10,23 +10,23 @@ class HomeOfficeSettledStatusProxyControllerISpec extends ServerBaseISpec {
 
   this: Suite with ServerProvider =>
 
-  val url = s"http://localhost:$port/home-office-settled-status-proxy"
+  val url = s"http://localhost:$port/status"
 
-  val wsClient = app.injector.instanceOf[WSClient]
+  val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
-  def entity(): WSResponse = {
-    wsClient.url(s"$url/entities")
-      .get()
+  def publicFundsByNino(payload: String): WSResponse = {
+    wsClient.url(s"$url/public-funds/nino")
+      .post(payload)
       .futureValue
   }
 
   "HomeOfficeSettledStatusProxyController" when {
 
-    "GET /entities" should {
+    "POST /status/public-funds/nino" should {
       "respond with some data" in {
-        val result = entity()
+        val result = publicFundsByNino("")
         result.status shouldBe 200
-        result.json shouldBe Json.obj("parameter1" -> "hello world")
+        result.json shouldBe Json.obj()
       }
     }
   }
