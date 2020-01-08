@@ -11,8 +11,8 @@ trait DataStreamStubs extends Eventually {
   override implicit val patienceConfig = PatienceConfig(scaled(Span(5, Seconds)), scaled(Span(500, Millis)))
 
   def givenAuditConnector(): Unit = {
-    stubFor(post(urlPathEqualTo(auditUrl)).willReturn(aResponse().withStatus(200)))
-    stubFor(post(urlPathEqualTo(auditUrl + "/merged")).willReturn(aResponse().withStatus(200)))
+    stubFor(post(urlPathEqualTo(auditUrl)).willReturn(aResponse().withStatus(204)))
+    stubFor(post(urlPathEqualTo(auditUrl + "/merged")).willReturn(aResponse().withStatus(204)))
   }
 
   private def auditUrl = "/write/audit"
