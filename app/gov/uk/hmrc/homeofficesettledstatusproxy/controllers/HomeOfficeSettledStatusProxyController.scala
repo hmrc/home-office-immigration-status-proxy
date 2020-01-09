@@ -60,7 +60,7 @@ class HomeOfficeSettledStatusProxyController @Inject()(
             case MissingInputFields(fields) =>
               val result =
                 StatusCheckResponse
-                  .error(correlationId, "ERR_REQUEST_INVALID", Some(fields.map((_, ""))))
+                  .error(correlationId, "ERR_REQUEST_INVALID", Some(fields.map((_, "missing"))))
               Future.successful(BadRequest(Json.toJson(result)))
 
             case InvalidInputFields(validationErrors) =>
