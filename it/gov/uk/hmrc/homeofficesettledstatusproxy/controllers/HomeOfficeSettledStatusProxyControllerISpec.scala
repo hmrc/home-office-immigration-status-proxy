@@ -9,12 +9,9 @@ import play.api.libs.ws.{WSClient, WSResponse}
 
 class HomeOfficeSettledStatusProxyControllerISpec
     extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
-
   this: Suite with ServerProvider =>
 
   val url = s"http://localhost:$port"
-
-  println(port)
 
   lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
@@ -40,15 +37,15 @@ class HomeOfficeSettledStatusProxyControllerISpec
         result.json.as[JsObject] should (haveProperty[String]("correlationId")
           and haveProperty[JsObject](
             "result",
-            haveProperty[String]("dateOfBirth")
-              and haveProperty[String]("facialImage")
-              and haveProperty[String]("fullName")
+            haveProperty[String]("dateOfBirth", be("2001-01-31"))
+              and haveProperty[String]("facialImage", be("string"))
+              and haveProperty[String]("fullName", be("Jane Doe"))
               and havePropertyArrayOf[JsObject](
                 "statuses",
-                haveProperty[String]("immigrationStatus")
-                  and haveProperty[Boolean]("rightToPublicFunds")
-                  and haveProperty[String]("statusEndDate")
-                  and haveProperty[String]("statusStartDate")
+                haveProperty[String]("immigrationStatus", be("ILR"))
+                  and haveProperty[Boolean]("rightToPublicFunds", be(true))
+                  and haveProperty[String]("statusEndDate", be("2018-01-31"))
+                  and haveProperty[String]("statusStartDate", be("2018-12-12"))
               )
           ))
       }

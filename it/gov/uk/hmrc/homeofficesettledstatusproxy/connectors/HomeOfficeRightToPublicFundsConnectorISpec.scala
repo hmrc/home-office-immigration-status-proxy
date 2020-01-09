@@ -2,14 +2,13 @@ package gov.uk.hmrc.homeofficesettledstatusproxy.connectors
 
 import gov.uk.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
 import gov.uk.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
-import gov.uk.hmrc.homeofficesettledstatusproxy.support.{BaseISpec, TestApplication}
+import gov.uk.hmrc.homeofficesettledstatusproxy.support.AppBaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
 
-class HomeOfficeRightToPublicFundsConnectorISpec
-    extends BaseISpec with TestApplication with HomeOfficeRightToPublicFundsStubs {
+class HomeOfficeRightToPublicFundsConnectorISpec extends AppBaseISpec with HomeOfficeRightToPublicFundsStubs {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
@@ -21,7 +20,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     "return status when range provided" in {
       givenStatusCheckResultWithRangeExample()
       val request = StatusCheckByNinoRequest(
-        "2001-01-01",
+        "2001-01-31",
         "Jane",
         "Doe",
         Nino("RJ301829A"),
@@ -33,7 +32,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
     "return status when no range provided" in {
       givenStatusCheckResultNoRangeExample()
-      val request = StatusCheckByNinoRequest("2001-01-01", "Jane", "Doe", Nino("RJ301829A"))
+      val request = StatusCheckByNinoRequest("2001-01-31", "Jane", "Doe", Nino("RJ301829A"))
       val result: StatusCheckResponse = await(controller.statusPublicFundsByNino(request))
       result.result shouldBe defined
       result.error shouldBe None
@@ -41,7 +40,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
     "return check error" in {
       givenStatusCheckErrorExample()
-      val request = StatusCheckByNinoRequest("2001-01-01", "Jane", "Doe", Nino("RJ301829A"))
+      val request = StatusCheckByNinoRequest("2001-01-31", "Jane", "Doe", Nino("RJ301829A"))
       val result: StatusCheckResponse = await(controller.statusPublicFundsByNino(request))
       result.result shouldBe None
       result.error shouldBe defined

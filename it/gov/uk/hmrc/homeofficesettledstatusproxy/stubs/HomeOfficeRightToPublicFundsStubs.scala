@@ -9,7 +9,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
   val requestBodyWithRange: String =
     """{
-      |  "dateOfBirth": "2001-01-01",
+      |  "dateOfBirth": "2001-01-31",
       |  "familyName": "Jane",
       |  "givenName": "Doe",
       |  "nino": "RJ301829A",
@@ -21,7 +21,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
   val requestBodyNoRange: String =
     """{
-      |  "dateOfBirth": "2001-01-01",
+      |  "dateOfBirth": "2001-01-31",
       |  "familyName": "Jane",
       |  "givenName": "Doe",
       |  "nino": "RJ301829A"
@@ -39,7 +39,7 @@ trait HomeOfficeRightToPublicFundsStubs {
       |        "immigrationStatus": "ILR",
       |        "rightToPublicFunds": true,
       |        "statusEndDate": "2018-01-31",
-      |        "statusStartDate": "2018-01-31"
+      |        "statusStartDate": "2018-12-12"
       |      }
       |    ]
       |  }
