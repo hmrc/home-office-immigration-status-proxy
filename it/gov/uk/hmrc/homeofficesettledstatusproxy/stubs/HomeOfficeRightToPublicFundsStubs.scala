@@ -12,7 +12,7 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  "dateOfBirth": "2001-01-01",
       |  "familyName": "Jane",
       |  "givenName": "Doe",
-      |  "nino": "sc087676868",
+      |  "nino": "RJ301829A",
       |  "statusCheckRange": {
       |    "endDate": "2019-07-15",
       |    "startDate": "2019-04-15"
@@ -24,7 +24,7 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  "dateOfBirth": "2001-01-01",
       |  "familyName": "Jane",
       |  "givenName": "Doe",
-      |  "nino": "sc087676868"
+      |  "nino": "RJ301829A"
       |}""".stripMargin
 
   val responseBodyWithStatus: String =

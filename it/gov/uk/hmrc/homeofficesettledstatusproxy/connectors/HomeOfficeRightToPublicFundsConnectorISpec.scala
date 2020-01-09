@@ -3,6 +3,7 @@ package gov.uk.hmrc.homeofficesettledstatusproxy.connectors
 import gov.uk.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
 import gov.uk.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
 import gov.uk.hmrc.homeofficesettledstatusproxy.support.{BaseISpec, TestApplication}
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext
@@ -23,7 +24,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
         "2001-01-01",
         "Jane",
         "Doe",
-        "sc087676868",
+        Nino("RJ301829A"),
         Some(StatusCheckRange(Some("2019-07-15"), Some("2019-04-15"))))
       val result: StatusCheckResponse = await(controller.statusPublicFundsByNino(request))
       result.result shouldBe defined
@@ -32,7 +33,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
     "return status when no range provided" in {
       givenStatusCheckResultNoRangeExample()
-      val request = StatusCheckByNinoRequest("2001-01-01", "Jane", "Doe", "sc087676868")
+      val request = StatusCheckByNinoRequest("2001-01-01", "Jane", "Doe", Nino("RJ301829A"))
       val result: StatusCheckResponse = await(controller.statusPublicFundsByNino(request))
       result.result shouldBe defined
       result.error shouldBe None
@@ -40,7 +41,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
     "return check error" in {
       givenStatusCheckErrorExample()
-      val request = StatusCheckByNinoRequest("2001-01-01", "Jane", "Doe", "sc087676868")
+      val request = StatusCheckByNinoRequest("2001-01-01", "Jane", "Doe", Nino("RJ301829A"))
       val result: StatusCheckResponse = await(controller.statusPublicFundsByNino(request))
       result.result shouldBe None
       result.error shouldBe defined

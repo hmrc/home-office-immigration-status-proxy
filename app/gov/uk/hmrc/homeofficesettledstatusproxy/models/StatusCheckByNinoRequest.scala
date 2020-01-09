@@ -1,6 +1,7 @@
 package gov.uk.hmrc.homeofficesettledstatusproxy.models
 
 import play.api.libs.json.Json
+import uk.gov.hmrc.domain.Nino
 
 case class StatusCheckByNinoRequest(
   // Date of birth of the person being checked in ISO 8601 format (can contain wildcards for day or month)
@@ -10,7 +11,7 @@ case class StatusCheckByNinoRequest(
   // Given name required for search
   givenName: String,
   // National insurance number
-  nino: String,
+  nino: Nino,
   statusCheckRange: Option[StatusCheckRange] = None
 )
 
