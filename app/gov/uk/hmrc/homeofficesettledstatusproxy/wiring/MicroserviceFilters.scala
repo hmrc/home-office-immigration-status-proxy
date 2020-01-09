@@ -29,4 +29,9 @@ class MicroserviceFilters @Inject()(
   loggingFilter: LoggingFilter,
   cacheFilter: CacheControlFilter,
   monitoringFilter: MicroserviceMonitoringFilter)
-    extends DefaultHttpFilters(metricsFilter, monitoringFilter, auditFilter, loggingFilter, cacheFilter)
+    extends DefaultHttpFilters(
+      metricsFilter,
+      monitoringFilter,
+      auditFilter,
+      loggingFilter,
+      cacheFilter)

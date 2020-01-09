@@ -19,12 +19,20 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  }
       |}""".stripMargin
 
-  val requestBodyNoRange: String =
+  val validRequestBody: String =
     """{
       |  "dateOfBirth": "2001-01-31",
       |  "familyName": "Jane",
       |  "givenName": "Doe",
       |  "nino": "RJ301829A"
+      |}""".stripMargin
+
+  val invalidNinoRequestBody: String =
+    """{
+      |  "dateOfBirth": "2001-01-31",
+      |  "familyName": "Jane",
+      |  "givenName": "Doe",
+      |  "nino": "invailid"
       |}""".stripMargin
 
   val responseBodyWithStatus: String =
@@ -46,18 +54,44 @@ trait HomeOfficeRightToPublicFundsStubs {
       |}""".stripMargin
 
   def givenStatusCheckResultNoRangeExample(): StubMapping =
-    givenStatusPublicFundsByNino(requestBodyNoRange, responseBodyWithStatus)
+    givenStatusPublicFundsByNinoResponds(200, validRequestBody, responseBodyWithStatus)
 
   def givenStatusCheckResultWithRangeExample(): StubMapping =
-    givenStatusPublicFundsByNino(requestBodyWithRange, responseBodyWithStatus)
+    givenStatusPublicFundsByNinoResponds(200, requestBodyWithRange, responseBodyWithStatus)
 
-  def givenStatusCheckErrorExample(): StubMapping = {
+  def givenStatusCheckErrorWhenMissingInputField(): StubMapping = {
 
-    val responseBody: String =
+    val errorResponseBody: String =
       """{
         |  "correlationId": "sjdfhks123",
         |  "error": {
-        |    "errCode": "ERR_INVALID_REQUEST",
+        |    "errCode": "ERR_REQUEST_INVALID"
+        |  }
+        |}""".stripMargin
+
+    givenStatusPublicFundsByNinoResponds(400, validRequestBody, errorResponseBody)
+  }
+
+  def givenStatusCheckErrorWhenStatusNotFound(): StubMapping = {
+
+    val errorResponseBody: String =
+      """{
+        |  "correlationId": "sjdfhks123",
+        |  "error": {
+        |    "errCode": "ERR_NOT_FOUND"
+        |  }
+        |}""".stripMargin
+
+    givenStatusPublicFundsByNinoResponds(404, validRequestBody, errorResponseBody)
+  }
+
+  def givenStatusCheckErrorWhenDOBInvalid(): StubMapping = {
+
+    val errorResponseBody: String =
+      """{
+        |  "correlationId": "sjdfhks123",
+        |  "error": {
+        |    "errCode": "ERR_VALIDATION",
         |    "fields": [
         |      {
         |        "code": "ERR_INVALID_DOB",
@@ -67,18 +101,21 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNino(requestBodyNoRange, responseBody)
+    givenStatusPublicFundsByNinoResponds(422, validRequestBody, errorResponseBody)
 
   }
 
-  def givenStatusPublicFundsByNino(requestBody: String, responseBody: String): StubMapping =
+  def givenStatusPublicFundsByNinoResponds(
+    httpResponseCode: Int,
+    requestBody: String,
+    responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/status/public-funds/nino"))
         .withHeader("Content-Type", containing("application/json"))
         .withRequestBody(equalToJson(requestBody, true, true))
         .willReturn(
           aResponse()
-            .withStatus(200)
+            .withStatus(httpResponseCode)
             .withHeader("Content-Type", "application/json")
             .withBody(responseBody)
         ))

@@ -17,4 +17,7 @@ case class StatusCheckByNinoRequest(
 
 object StatusCheckByNinoRequest {
   implicit val formats = Json.format[StatusCheckByNinoRequest]
+
+  val mandatoryFields: Set[String] =
+    Set("dateOfBirth", "familyName", "givenName", "nino")
 }

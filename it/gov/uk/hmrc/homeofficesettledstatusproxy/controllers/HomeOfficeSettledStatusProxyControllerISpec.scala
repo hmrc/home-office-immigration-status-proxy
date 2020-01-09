@@ -27,12 +27,13 @@ class HomeOfficeSettledStatusProxyControllerISpec
   "HomeOfficeSettledStatusProxyController" when {
 
     "POST /status/public-funds/nino" should {
-      "respond with status if request is valid" in {
+
+      "respond with 200 if request is valid" in {
         ping.status.shouldBe(200)
 
         givenStatusCheckResultNoRangeExample()
 
-        val result = publicFundsByNino(requestBodyNoRange)
+        val result = publicFundsByNino(validRequestBody)
         result.status shouldBe 200
         result.json.as[JsObject] should (haveProperty[String]("correlationId")
           and haveProperty[JsObject](
@@ -50,20 +51,69 @@ class HomeOfficeSettledStatusProxyControllerISpec
           ))
       }
 
-      "respond with error if request is not valid" in {
+      "respond with 404 if the service failed to find an identity based on the values provided" in {
+        ping.status.shouldBe(200)
+
+        givenStatusCheckErrorWhenStatusNotFound()
+
+        val result = publicFundsByNino(validRequestBody)
+
+        result.status shouldBe 404
+        result.json.as[JsObject] should (haveProperty[String]("correlationId")
+          and haveProperty[JsObject](
+            "error",
+            haveProperty[String]("errCode", be("ERR_NOT_FOUND"))
+          ))
+      }
+
+      "respond with 400 if one of the required input parameters is missing from the request" in {
         ping.status.shouldBe(200)
 
         val result = publicFundsByNino("{}")
 
-        result.status shouldBe 200
+        result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId")
           and haveProperty[JsObject](
             "error",
-            havePropertyArrayOf[JsObject](
-              "fields",
-              haveProperty[String]("code")
-                and haveProperty[String]("name")
-            )
+            haveProperty[String]("errCode", be("ERR_REQUEST_INVALID"))
+          ))
+      }
+
+      "respond with 422 if one of the input parameters passed in has failed internal validation" in {
+        ping.status.shouldBe(200)
+
+        val result = publicFundsByNino(invalidNinoRequestBody)
+
+        result.status shouldBe 422
+        result.json.as[JsObject] should (haveProperty[String]("correlationId")
+          and haveProperty[JsObject](
+            "error",
+            haveProperty[String]("errCode", be("ERR_VALIDATION"))
+              and havePropertyArrayOf[JsObject](
+                "fields",
+                haveProperty[String]("code")
+                  and haveProperty[String]("name")
+              )
+          ))
+      }
+
+      "respond with 422 if one of the input parameters passed in has failed external validation" in {
+        ping.status.shouldBe(200)
+
+        givenStatusCheckErrorWhenDOBInvalid()
+
+        val result = publicFundsByNino(validRequestBody)
+
+        result.status shouldBe 422
+        result.json.as[JsObject] should (haveProperty[String]("correlationId")
+          and haveProperty[JsObject](
+            "error",
+            haveProperty[String]("errCode", be("ERR_VALIDATION"))
+              and havePropertyArrayOf[JsObject](
+                "fields",
+                haveProperty[String]("code")
+                  and haveProperty[String]("name")
+              )
           ))
       }
     }

@@ -8,7 +8,8 @@ import org.scalatest.time.{Millis, Seconds, Span}
 trait DataStreamStubs extends Eventually {
   me: WireMockSupport =>
 
-  override implicit val patienceConfig = PatienceConfig(scaled(Span(5, Seconds)), scaled(Span(500, Millis)))
+  override implicit val patienceConfig =
+    PatienceConfig(scaled(Span(5, Seconds)), scaled(Span(500, Millis)))
 
   def givenAuditConnector(): Unit = {
     stubFor(post(urlPathEqualTo(auditUrl)).willReturn(aResponse().withStatus(204)))
