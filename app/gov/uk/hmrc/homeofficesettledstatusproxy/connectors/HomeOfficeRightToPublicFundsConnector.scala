@@ -25,12 +25,13 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
   def statusPublicFundsByNino(request: StatusCheckByNinoRequest, correlationId: String)(
     implicit c: HeaderCarrier,
-    ec: ExecutionContext): Future[StatusCheckResponse] =
+    ec: ExecutionContext): Future[StatusCheckResponse] = {
+    val url = new URL(
+      appConfig.rightToPublicFundsBaseUrl,
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
       http
-        .POST[StatusCheckByNinoRequest, StatusCheckResponse](
-          new URL(appConfig.rightToPublicFundsBaseUrl, "/status/public-funds/nino").toString,
-          request)
+        .POST[StatusCheckByNinoRequest, StatusCheckResponse](url, request)
         .recover {
           case e: BadRequestException =>
             Json.parse(extractResponseBody(e.message, "Response body '")).as[StatusCheckResponse]
@@ -40,6 +41,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
             Json.parse(extractResponseBody(e.message, "Response body: '")).as[StatusCheckResponse]
         }
     }
+  }
 
   def extractResponseBody(message: String, prefix: String): String = {
     val pos = message.indexOf(prefix)
