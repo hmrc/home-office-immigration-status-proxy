@@ -24,7 +24,9 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def token()(implicit c: HeaderCarrier, ec: ExecutionContext): Future[OAuthToken] = {
+  def token()(implicit ec: ExecutionContext): Future[OAuthToken] = {
+
+    implicit val hc: HeaderCarrier = HeaderCarrier()
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
@@ -44,9 +46,9 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
   def statusPublicFundsByNino(
     request: StatusCheckByNinoRequest,
     correlationId: String,
-    token: OAuthToken)(
-    implicit c: HeaderCarrier,
-    ec: ExecutionContext): Future[StatusCheckResponse] = {
+    token: OAuthToken)(implicit ec: ExecutionContext): Future[StatusCheckResponse] = {
+
+    implicit val hc: HeaderCarrier = HeaderCarrier()
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
