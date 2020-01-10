@@ -3,6 +3,7 @@ package gov.uk.hmrc.homeofficesettledstatusproxy.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import gov.uk.hmrc.homeofficesettledstatusproxy.support.WireMockSupport
+import play.mvc.Http.HeaderNames
 
 trait HomeOfficeRightToPublicFundsStubs {
   me: WireMockSupport =>
@@ -56,10 +57,10 @@ trait HomeOfficeRightToPublicFundsStubs {
       |}""".stripMargin
 
   def givenStatusCheckResultNoRangeExample(): StubMapping =
-    givenStatusPublicFundsByNinoResponds(200, validRequestBody, responseBodyWithStatus)
+    givenStatusPublicFundsByNinoStub(200, validRequestBody, responseBodyWithStatus)
 
   def givenStatusCheckResultWithRangeExample(): StubMapping =
-    givenStatusPublicFundsByNinoResponds(200, requestBodyWithRange, responseBodyWithStatus)
+    givenStatusPublicFundsByNinoStub(200, requestBodyWithRange, responseBodyWithStatus)
 
   def givenStatusCheckErrorWhenMissingInputField(): StubMapping = {
 
@@ -71,7 +72,7 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoResponds(400, validRequestBody, errorResponseBody)
+    givenStatusPublicFundsByNinoStub(400, validRequestBody, errorResponseBody)
   }
 
   def givenStatusCheckErrorWhenStatusNotFound(): StubMapping = {
@@ -84,7 +85,7 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoResponds(404, validRequestBody, errorResponseBody)
+    givenStatusPublicFundsByNinoStub(404, validRequestBody, errorResponseBody)
   }
 
   def givenStatusCheckErrorWhenDOBInvalid(): StubMapping = {
@@ -103,7 +104,7 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoResponds(422, validRequestBody, errorResponseBody)
+    givenStatusPublicFundsByNinoStub(422, validRequestBody, errorResponseBody)
 
   }
 
@@ -111,27 +112,27 @@ trait HomeOfficeRightToPublicFundsStubs {
 
     val oAuthTokenResponse: String =
       """{
-        |   "access_token": "0123456789",
-        |   "refresh_token": "refresh_token",
-        |   "id_token": "id_token",
-        |   "token_type": "Bearer"
+        |   "access_token": "FOO0123456789",
+        |   "refresh_token": "not-used",
+        |   "id_token": "not-used",
+        |   "token_type": "SomeTokenType"
         |}""".stripMargin
 
-    givenStatusPublicFundsTokenResponds(200, validTokenForm, oAuthTokenResponse)
+    givenStatusPublicFundsTokenStub(200, validTokenForm, oAuthTokenResponse)
 
   }
 
   def givenOAuthTokenDenied(): StubMapping =
-    givenStatusPublicFundsTokenResponds(401, validTokenForm, "")
+    givenStatusPublicFundsTokenStub(401, validTokenForm, "")
 
-  def givenStatusPublicFundsByNinoResponds(
+  def givenStatusPublicFundsTokenStub(
     httpResponseCode: Int,
     requestBody: String,
     responseBody: String): StubMapping =
     stubFor(
-      post(urlEqualTo(s"/v1/status/public-funds/nino"))
-        .withHeader("Content-Type", containing("application/json"))
-        .withRequestBody(equalToJson(requestBody, true, true))
+      post(urlEqualTo(s"/v1/status/public-funds/token"))
+        .withHeader(HeaderNames.CONTENT_TYPE, containing("application/x-www-form-urlencoded"))
+        .withRequestBody(equalTo(requestBody))
         .willReturn(
           aResponse()
             .withStatus(httpResponseCode)
@@ -139,14 +140,15 @@ trait HomeOfficeRightToPublicFundsStubs {
             .withBody(responseBody)
         ))
 
-  def givenStatusPublicFundsTokenResponds(
+  def givenStatusPublicFundsByNinoStub(
     httpResponseCode: Int,
     requestBody: String,
     responseBody: String): StubMapping =
     stubFor(
-      post(urlEqualTo(s"/v1/status/public-funds/token"))
-        .withHeader("Content-Type", containing("application/x-www-form-urlencoded"))
-        .withRequestBody(equalTo(requestBody))
+      post(urlEqualTo(s"/v1/status/public-funds/nino"))
+        .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
+        .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
+        .withRequestBody(equalToJson(requestBody, true, true))
         .willReturn(
           aResponse()
             .withStatus(httpResponseCode)

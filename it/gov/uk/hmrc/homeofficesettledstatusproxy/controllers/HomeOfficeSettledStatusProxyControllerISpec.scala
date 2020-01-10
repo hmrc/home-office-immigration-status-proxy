@@ -31,6 +31,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
       "respond with 200 if request is valid" in {
         ping.status.shouldBe(200)
 
+        givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample()
 
         val result = publicFundsByNino(validRequestBody)
@@ -54,6 +55,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
       "respond with 404 if the service failed to find an identity based on the values provided" in {
         ping.status.shouldBe(200)
 
+        givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound()
 
         val result = publicFundsByNino(validRequestBody)
@@ -100,6 +102,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
       "respond with 422 if one of the input parameters passed in has failed external validation" in {
         ping.status.shouldBe(200)
 
+        givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid()
 
         val result = publicFundsByNino(validRequestBody)

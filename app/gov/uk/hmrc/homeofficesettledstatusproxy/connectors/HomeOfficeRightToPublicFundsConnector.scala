@@ -9,6 +9,7 @@ import gov.uk.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckB
 import gov.uk.hmrc.homeofficesettledstatusproxy.wiring.AppConfig
 import javax.inject.Inject
 import play.api.libs.json.Json
+import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpPost, NotFoundException, Upstream4xxResponse}
 
@@ -32,18 +33,25 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
       "client_id"     -> Seq(appConfig.homeOfficeClientId),
       "client_secret" -> Seq(appConfig.homeOfficeClientSecret)
     )
-    http.POSTForm[OAuthToken](url, form)
+    monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-Token") {
+      http.POSTForm[OAuthToken](url, form)
+    }
   }
 
-  def statusPublicFundsByNino(request: StatusCheckByNinoRequest, correlationId: String)(
+  def statusPublicFundsByNino(
+    request: StatusCheckByNinoRequest,
+    correlationId: String,
+    token: OAuthToken)(
     implicit c: HeaderCarrier,
     ec: ExecutionContext): Future[StatusCheckResponse] = {
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
+    val headers = Seq(HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
+
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
       http
-        .POST[StatusCheckByNinoRequest, StatusCheckResponse](url, request)
+        .POST[StatusCheckByNinoRequest, StatusCheckResponse](url, request, headers)
         .recover {
           case e: BadRequestException =>
             Json.parse(extractResponseBody(e.message, "Response body '")).as[StatusCheckResponse]

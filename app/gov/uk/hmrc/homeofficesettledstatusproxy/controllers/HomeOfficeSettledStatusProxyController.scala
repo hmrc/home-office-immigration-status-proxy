@@ -3,10 +3,10 @@ package gov.uk.hmrc.homeofficesettledstatusproxy.controllers
 import java.util.UUID
 
 import gov.uk.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector
-import gov.uk.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckError, StatusCheckResponse, StatusCheckResult, ValidationError}
+import gov.uk.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckError, StatusCheckResponse}
 import javax.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
-import play.api.libs.json.{JsError, JsObject, JsSuccess, JsValue, Json}
+import play.api.libs.json._
 import play.api.mvc._
 import play.api.{Configuration, Environment}
 import play.mvc.Http.HeaderNames
@@ -39,20 +39,25 @@ class HomeOfficeSettledStatusProxyController @Inject()(
 
             case ValidRequest(statusCheckByNinoRequest) =>
               rightToPublicFundsConnector
-                .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId)
-                .map {
-                  case result @ StatusCheckResponse(_, None, Some(_)) => Ok(Json.toJson(result))
+                .token()
+                .flatMap(token =>
+                  rightToPublicFundsConnector
+                    .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
+                    .map {
+                      case result @ StatusCheckResponse(_, None, Some(_)) => Ok(Json.toJson(result))
 
-                  case result @ StatusCheckResponse(
-                        _,
-                        Some(StatusCheckError(Some(errCode), _)),
-                        None) =>
-                    errCode match {
-                      case "ERR_NOT_FOUND"  => NotFound(Json.toJson(result))
-                      case "ERR_VALIDATION" => UnprocessableEntity(Json.toJson(result))
-                      case _                => BadRequest(Json.toJson(result)) // e.g. ERR_REQUEST_INVALID
-                    }
-                }
+                      case result @ StatusCheckResponse(
+                            _,
+                            Some(StatusCheckError(Some(errCode), _)),
+                            None) =>
+                        errCode match {
+                          case "ERR_NOT_FOUND"  => NotFound(Json.toJson(result))
+                          case "ERR_VALIDATION" => UnprocessableEntity(Json.toJson(result))
+                          case _                => BadRequest(Json.toJson(result)) // e.g. ERR_REQUEST_INVALID
+                        }
+
+                      case result => BadRequest(Json.toJson(result))
+                  })
                 .map(_.withHeaders(
                   HEADER_X_CORRELATION_ID  -> correlationId,
                   HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
@@ -87,9 +92,3 @@ class HomeOfficeSettledStatusProxyController @Inject()(
   }
 
 }
-
-sealed trait ValidationResult
-
-case class ValidRequest(request: StatusCheckByNinoRequest) extends ValidationResult
-case class MissingInputFields(fields: List[String]) extends ValidationResult
-case class InvalidInputFields(fields: List[(String, String)]) extends ValidationResult
