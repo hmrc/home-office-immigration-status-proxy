@@ -16,7 +16,7 @@ trait AppConfig {
 class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
 
   val rightToPublicFundsPathPrefix: String =
-    config.getConfString("home-office-right-to-public-funds.path", "")
+    config.getConfString("home-office-right-to-public-funds.pathPrefix", "")
 
   val rightToPublicFundsBaseUrl: URL =
     new URL(config.baseUrl("home-office-right-to-public-funds"))

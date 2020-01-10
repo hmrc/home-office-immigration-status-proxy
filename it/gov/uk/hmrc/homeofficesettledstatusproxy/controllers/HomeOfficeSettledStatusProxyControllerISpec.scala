@@ -19,7 +19,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
   def publicFundsByNino(payload: String): WSResponse =
     wsClient
-      .url(s"$url/status/public-funds/nino")
+      .url(s"$url/v1/status/public-funds/nino")
       .addHttpHeaders("Content-Type" -> "application/json")
       .post(payload)
       .futureValue

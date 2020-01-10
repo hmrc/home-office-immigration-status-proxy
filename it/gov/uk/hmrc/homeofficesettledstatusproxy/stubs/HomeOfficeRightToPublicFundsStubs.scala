@@ -110,7 +110,7 @@ trait HomeOfficeRightToPublicFundsStubs {
     requestBody: String,
     responseBody: String): StubMapping =
     stubFor(
-      post(urlEqualTo(s"/status/public-funds/nino"))
+      post(urlEqualTo(s"/v1/status/public-funds/nino"))
         .withHeader("Content-Type", containing("application/json"))
         .withRequestBody(equalToJson(requestBody, true, true))
         .willReturn(

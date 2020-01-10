@@ -11,13 +11,13 @@ trait TestApplication {
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.home-office-right-to-public-funds.port" -> wireMockPort,
-        "microservice.services.home-office-right-to-public-funds.host" -> wireMockHost,
-        "microservice.services.home-office-right-to-public-funds.path" -> "",
-        "metrics.enabled"                                              -> true,
-        "auditing.enabled"                                             -> true,
-        "auditing.consumer.baseUri.host"                               -> wireMockHost,
-        "auditing.consumer.baseUri.port"                               -> wireMockPort
+        "microservice.services.home-office-right-to-public-funds.port"       -> wireMockPort,
+        "microservice.services.home-office-right-to-public-funds.host"       -> wireMockHost,
+        "microservice.services.home-office-right-to-public-funds.pathPrefix" -> "/v1",
+        "metrics.enabled"                                                    -> true,
+        "auditing.enabled"                                                   -> true,
+        "auditing.consumer.baseUri.host"                                     -> wireMockHost,
+        "auditing.consumer.baseUri.port"                                     -> wireMockPort
       )
 
 }

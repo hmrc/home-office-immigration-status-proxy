@@ -1,4 +1,4 @@
-->         /status               app.Routes
+->         /v1                   app.Routes
 ->         /                     health.Routes
 
 GET        /admin/metrics        @com.kenshoo.play.metrics.MetricsController.metrics
