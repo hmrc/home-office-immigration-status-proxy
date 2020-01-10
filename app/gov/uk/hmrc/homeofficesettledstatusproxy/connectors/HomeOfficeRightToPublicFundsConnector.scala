@@ -25,14 +25,17 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
   def token()(implicit c: HeaderCarrier, ec: ExecutionContext): Future[OAuthToken] = {
+
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/token").toString
+
     val form: Map[String, Seq[String]] = Map(
       "grant_type"    -> Seq("client_credentials"),
       "client_id"     -> Seq(appConfig.homeOfficeClientId),
       "client_secret" -> Seq(appConfig.homeOfficeClientSecret)
     )
+
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-Token") {
       http.POSTForm[OAuthToken](url, form)
     }
@@ -44,6 +47,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     token: OAuthToken)(
     implicit c: HeaderCarrier,
     ec: ExecutionContext): Future[StatusCheckResponse] = {
+
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
