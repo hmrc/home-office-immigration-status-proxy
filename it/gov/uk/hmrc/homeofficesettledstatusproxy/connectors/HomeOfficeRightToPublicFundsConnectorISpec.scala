@@ -1,6 +1,6 @@
 package gov.uk.hmrc.homeofficesettledstatusproxy.connectors
 
-import gov.uk.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
+import gov.uk.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
 import gov.uk.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
 import gov.uk.hmrc.homeofficesettledstatusproxy.support.AppBaseISpec
 import uk.gov.hmrc.domain.Nino
@@ -14,14 +14,29 @@ class HomeOfficeRightToPublicFundsConnectorISpec
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
-  lazy val controller: HomeOfficeRightToPublicFundsConnector =
+  lazy val connector: HomeOfficeRightToPublicFundsConnector =
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
   val dummyCorrelationId = "dummyCorrelationId"
 
   val request = StatusCheckByNinoRequest("2001-01-31", "Jane", "Doe", Nino("RJ301829A"))
 
-  "GET /status/public-funds/nino " should {
+  "POST /v1/status/public-funds/token" should {
+    "return valid oauth token" in {
+      givenOAuthTokenGranted()
+      val result: OAuthToken = await(connector.token())
+      result.access_token shouldBe "0123456789"
+    }
+
+    "raise exception if token denied" in {
+      givenOAuthTokenDenied()
+      an[Upstream4xxResponse] shouldBe thrownBy {
+        await(connector.token())
+      }
+    }
+  }
+
+  "POST /v1/status/public-funds/nino" should {
 
     "return status when range provided" in {
       givenStatusCheckResultWithRangeExample()
@@ -33,7 +48,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
         Some(StatusCheckRange(Some("2019-07-15"), Some("2019-04-15"))))
 
       val result: StatusCheckResponse =
-        await(controller.statusPublicFundsByNino(request, dummyCorrelationId))
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId))
 
       result.result shouldBe defined
       result.error shouldBe None
@@ -43,7 +58,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckResultNoRangeExample()
 
       val result: StatusCheckResponse =
-        await(controller.statusPublicFundsByNino(request, dummyCorrelationId))
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId))
 
       result.result shouldBe defined
       result.error shouldBe None
@@ -53,7 +68,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenMissingInputField()
 
       val result: StatusCheckResponse =
-        await(controller.statusPublicFundsByNino(request, dummyCorrelationId))
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId))
 
       result.result shouldBe None
       result.error shouldBe defined
@@ -64,7 +79,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenStatusNotFound()
 
       val result: StatusCheckResponse =
-        await(controller.statusPublicFundsByNino(request, dummyCorrelationId))
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId))
 
       result.result shouldBe None
       result.error shouldBe defined
@@ -75,7 +90,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenDOBInvalid()
 
       val result: StatusCheckResponse =
-        await(controller.statusPublicFundsByNino(request, dummyCorrelationId))
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId))
 
       result.result shouldBe None
       result.error shouldBe defined
@@ -86,7 +101,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusPublicFundsByNinoResponds(401, validRequestBody, "")
 
       an[Upstream4xxResponse] shouldBe thrownBy {
-        await(controller.statusPublicFundsByNino(request, dummyCorrelationId))
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId))
       }
     }
 
@@ -94,7 +109,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusPublicFundsByNinoResponds(500, validRequestBody, "")
 
       an[Upstream5xxResponse] shouldBe thrownBy {
-        await(controller.statusPublicFundsByNino(request, dummyCorrelationId))
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId))
       }
     }
   }

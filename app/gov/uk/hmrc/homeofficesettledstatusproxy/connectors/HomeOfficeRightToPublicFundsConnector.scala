@@ -5,7 +5,7 @@ import java.net.URL
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.Singleton
 import com.kenshoo.play.metrics.Metrics
-import gov.uk.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckResponse}
+import gov.uk.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckResponse}
 import gov.uk.hmrc.homeofficesettledstatusproxy.wiring.AppConfig
 import javax.inject.Inject
 import play.api.libs.json.Json
@@ -22,6 +22,18 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+
+  def token()(implicit c: HeaderCarrier, ec: ExecutionContext): Future[OAuthToken] = {
+    val url = new URL(
+      appConfig.rightToPublicFundsBaseUrl,
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/token").toString
+    val form: Map[String, Seq[String]] = Map(
+      "grant_type"    -> Seq("client_credentials"),
+      "client_id"     -> Seq(appConfig.homeOfficeClientId),
+      "client_secret" -> Seq(appConfig.homeOfficeClientSecret)
+    )
+    http.POSTForm[OAuthToken](url, form)
+  }
 
   def statusPublicFundsByNino(request: StatusCheckByNinoRequest, correlationId: String)(
     implicit c: HeaderCarrier,

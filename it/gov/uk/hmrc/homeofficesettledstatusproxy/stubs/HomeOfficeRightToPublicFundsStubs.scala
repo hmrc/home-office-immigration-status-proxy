@@ -7,6 +7,8 @@ import gov.uk.hmrc.homeofficesettledstatusproxy.support.WireMockSupport
 trait HomeOfficeRightToPublicFundsStubs {
   me: WireMockSupport =>
 
+  val validTokenForm = """grant_type=client_credentials&client_id=hmrc&client_secret=TBC"""
+
   val requestBodyWithRange: String =
     """{
       |  "dateOfBirth": "2001-01-31",
@@ -105,6 +107,23 @@ trait HomeOfficeRightToPublicFundsStubs {
 
   }
 
+  def givenOAuthTokenGranted(): StubMapping = {
+
+    val oAuthTokenResponse: String =
+      """{
+        |   "access_token": "0123456789",
+        |   "refresh_token": "refresh_token",
+        |   "id_token": "id_token",
+        |   "token_type": "Bearer"
+        |}""".stripMargin
+
+    givenStatusPublicFundsTokenResponds(200, validTokenForm, oAuthTokenResponse)
+
+  }
+
+  def givenOAuthTokenDenied(): StubMapping =
+    givenStatusPublicFundsTokenResponds(401, validTokenForm, "")
+
   def givenStatusPublicFundsByNinoResponds(
     httpResponseCode: Int,
     requestBody: String,
@@ -113,6 +132,21 @@ trait HomeOfficeRightToPublicFundsStubs {
       post(urlEqualTo(s"/v1/status/public-funds/nino"))
         .withHeader("Content-Type", containing("application/json"))
         .withRequestBody(equalToJson(requestBody, true, true))
+        .willReturn(
+          aResponse()
+            .withStatus(httpResponseCode)
+            .withHeader("Content-Type", "application/json")
+            .withBody(responseBody)
+        ))
+
+  def givenStatusPublicFundsTokenResponds(
+    httpResponseCode: Int,
+    requestBody: String,
+    responseBody: String): StubMapping =
+    stubFor(
+      post(urlEqualTo(s"/v1/status/public-funds/token"))
+        .withHeader("Content-Type", containing("application/x-www-form-urlencoded"))
+        .withRequestBody(equalTo(requestBody))
         .willReturn(
           aResponse()
             .withStatus(httpResponseCode)

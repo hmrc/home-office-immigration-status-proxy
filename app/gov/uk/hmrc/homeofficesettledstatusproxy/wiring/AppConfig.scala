@@ -11,6 +11,10 @@ trait AppConfig {
 
   val rightToPublicFundsPathPrefix: String
   val rightToPublicFundsBaseUrl: URL
+
+  val homeOfficeClientId: String
+  val homeOfficeClientSecret: String
+
 }
 
 class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
@@ -20,4 +24,10 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
 
   val rightToPublicFundsBaseUrl: URL =
     new URL(config.baseUrl("home-office-right-to-public-funds"))
+
+  val homeOfficeClientId: String =
+    config.getConfString("home-office-right-to-public-funds.client_id", "")
+  val homeOfficeClientSecret: String =
+    config.getConfString("home-office-right-to-public-funds.client_secret", "")
+
 }

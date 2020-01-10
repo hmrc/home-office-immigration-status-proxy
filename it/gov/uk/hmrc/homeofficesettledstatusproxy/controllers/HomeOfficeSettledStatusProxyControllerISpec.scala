@@ -26,7 +26,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
   "HomeOfficeSettledStatusProxyController" when {
 
-    "POST /status/public-funds/nino" should {
+    "POST /v1/status/public-funds/nino" should {
 
       "respond with 200 if request is valid" in {
         ping.status.shouldBe(200)
