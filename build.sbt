@@ -17,7 +17,7 @@ lazy val scoverageSettings = {
 lazy val compileDeps = Seq(
   ws,
   "uk.gov.hmrc" %% "bootstrap-play-26" % "1.3.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.32.0-play-26",
+  "uk.gov.hmrc" %% "auth-client" % "2.32.1-play-26",
   "uk.gov.hmrc" %% "agent-mtd-identifiers" % "0.17.0-play-26",
   "com.kenshoo" %% "metrics-play" % "2.6.19_0.7.0",
   "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
@@ -36,7 +36,7 @@ def testDeps(scope: String) = Seq(
 
 val jettyVersion = "9.2.24.v20180105"
 
-val jettyOverrides = Set(
+val jettyOverrides = Seq(
   "org.eclipse.jetty" % "jetty-server" % jettyVersion % IntegrationTest,
   "org.eclipse.jetty" % "jetty-servlet" % jettyVersion % IntegrationTest,
   "org.eclipse.jetty" % "jetty-security" % jettyVersion % IntegrationTest,
@@ -85,12 +85,13 @@ lazy val root = (project in file("."))
     majorVersion := 0
   )
   .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
+  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
 
 
 inConfig(IntegrationTest)(scalafmtCoreSettings)
 
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
+def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] = {
   tests.map { test =>
-    new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq(s"-Dtest.name=${test.name}"))))
+    Group(test.name, Seq(test), SubProcess(ForkOptions().withRunJVMOptions(Vector(s"-Dtest.name=${test.name}"))))
   }
 }
