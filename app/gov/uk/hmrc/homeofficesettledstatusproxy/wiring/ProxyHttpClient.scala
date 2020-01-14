@@ -16,6 +16,10 @@ class ProxyHttpClient @Inject()(
   actorSystem: ActorSystem)
     extends DefaultHttpClient(conf, httpAuditing, wsClient, actorSystem) with WSProxy {
 
-  override def wsProxyServer: Option[WSProxyServer] =
-    WSProxyConfiguration(configPrefix = "proxy", configuration = conf)
+  override val wsProxyServer: Option[WSProxyServer] = {
+    val server = WSProxyConfiguration(configPrefix = "proxy", configuration = conf)
+    server.foreach(s =>
+      println(s"Proxy connection: ${s.host}:${s.port} ${s.principal}:${s.password}"))
+    server
+  }
 }
