@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.ProxyHttpClient
-import uk.gov.hmrc.http._
+package uk.gov.hmrc.homeofficesettledstatusproxy.models
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule {
+import play.api.libs.json.Json
 
-  def configure(): Unit = {
-    val appName = "home-office-settled-status-proxy"
-    Logger(getClass).info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+case class StatusCheckRange(
+  // Requested status end date in ISO 8601 format
+  endDate: Option[String] = None,
+  // Requested status start date in ISO 8601 format
+  startDate: Option[String] = None
+)
 
-    bind(classOf[HttpGet]).to(classOf[ProxyHttpClient])
-    bind(classOf[HttpPost]).to(classOf[ProxyHttpClient])
-  }
+object StatusCheckRange {
+  implicit val formats = Json.format[StatusCheckRange]
 }

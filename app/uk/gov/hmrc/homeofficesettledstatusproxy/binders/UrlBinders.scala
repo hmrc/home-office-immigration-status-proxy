@@ -14,19 +14,6 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.ProxyHttpClient
-import uk.gov.hmrc.http._
+package uk.gov.hmrc.homeofficesettledstatusproxy.binders
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule {
-
-  def configure(): Unit = {
-    val appName = "home-office-settled-status-proxy"
-    Logger(getClass).info(s"Starting microservice : $appName : in mode : ${environment.mode}")
-
-    bind(classOf[HttpGet]).to(classOf[ProxyHttpClient])
-    bind(classOf[HttpPost]).to(classOf[ProxyHttpClient])
-  }
-}
+object UrlBinders {}

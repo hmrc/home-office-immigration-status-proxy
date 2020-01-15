@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.ProxyHttpClient
-import uk.gov.hmrc.http._
+package uk.gov.hmrc.homeofficesettledstatusproxy.binders
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule {
+import play.api.mvc.PathBindable
 
-  def configure(): Unit = {
-    val appName = "home-office-settled-status-proxy"
-    Logger(getClass).info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+class SimpleObjectBinder[T](bind: String => T, unbind: T => String)(implicit m: Manifest[T])
+    extends PathBindable[T] {
+  override def bind(key: String, value: String): Either[String, T] =
+    try {
+      Right(bind(value))
+    } catch {
+      case e: Throwable =>
+        Left(
+          s"Cannot parse parameter '$key' with value '$value' as '${m.runtimeClass.getSimpleName}'")
+    }
 
-    bind(classOf[HttpGet]).to(classOf[ProxyHttpClient])
-    bind(classOf[HttpPost]).to(classOf[ProxyHttpClient])
-  }
+  def unbind(key: String, value: T): String = unbind(value)
 }

@@ -14,19 +14,28 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.ProxyHttpClient
-import uk.gov.hmrc.http._
+package uk.gov.hmrc.homeofficesettledstatusproxy.models
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule {
+import play.api.libs.json.Json
 
-  def configure(): Unit = {
-    val appName = "home-office-settled-status-proxy"
-    Logger(getClass).info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+case class ValidationError(
+  // Code of the validation failure
+  code: String,
+  // Name of the field
+  name: String
+)
 
-    bind(classOf[HttpGet]).to(classOf[ProxyHttpClient])
-    bind(classOf[HttpPost]).to(classOf[ProxyHttpClient])
-  }
+object ValidationError {
+  implicit val formats = Json.format[ValidationError]
+}
+
+case class StatusCheckError(
+  // Top level error code
+  errCode: Option[String] = None,
+  // Field level validation errors
+  fields: Option[List[ValidationError]] = None
+)
+
+object StatusCheckError {
+  implicit val formats = Json.format[StatusCheckError]
 }
