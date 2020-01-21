@@ -5,4 +5,3 @@ leakDetectionExemptions:
     filePaths:
       - '/conf/client-dev.jks'
       - '/conf/client-qa.jks'
-      - '/conf/exampletrust.jks'
