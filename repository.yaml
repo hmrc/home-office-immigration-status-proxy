@@ -4,6 +4,4 @@ leakDetectionExemptions:
   - ruleId: 'filename_private_key_11'
     filePaths:
       - '/conf/client-dev.jks'
-      - '/conf/clientca-dev.jks'
       - '/conf/client-qa.jks'
-      - '/conf/clientca-qa.jks'
