@@ -58,7 +58,8 @@ class HomeOfficeSettledStatusProxyController @Inject()(
             case ValidRequest(statusCheckByNinoRequest) =>
               rightToPublicFundsConnector
                 .token()
-                .flatMap(token =>
+                .flatMap { token =>
+                  println(s"Received OAuth token: $token")
                   rightToPublicFundsConnector
                     .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
                     .map {
@@ -75,7 +76,8 @@ class HomeOfficeSettledStatusProxyController @Inject()(
                         }
 
                       case result => BadRequest(Json.toJson(result))
-                  })
+                    }
+                }
                 .map(_.withHeaders(
                   HEADER_X_CORRELATION_ID  -> correlationId,
                   HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
