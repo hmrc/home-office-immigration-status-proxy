@@ -81,6 +81,8 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
             Json.parse(extractResponseBody(e.message, "Response body '")).as[StatusCheckResponse]
           case e: NotFoundException =>
             Json.parse(extractResponseBody(e.message, "Response body: '")).as[StatusCheckResponse]
+          case e: Upstream4xxResponse if e.upstreamResponseCode == 409 =>
+            Json.parse(extractResponseBody(e.message, "Response body: '")).as[StatusCheckResponse]
           case e: Upstream4xxResponse if e.upstreamResponseCode == 422 =>
             Json.parse(extractResponseBody(e.message, "Response body: '")).as[StatusCheckResponse]
         }

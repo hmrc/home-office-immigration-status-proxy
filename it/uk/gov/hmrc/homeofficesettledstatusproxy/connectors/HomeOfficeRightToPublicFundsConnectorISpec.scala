@@ -1,8 +1,5 @@
 package uk.gov.hmrc.homeofficesettledstatusproxy.connectors
 
-import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
-import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
-import uk.gov.hmrc.homeofficesettledstatusproxy.support.AppBaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
@@ -88,6 +85,17 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       result.result shouldBe None
       result.error shouldBe defined
       result.error.get.errCode.get shouldBe "ERR_NOT_FOUND"
+    }
+
+    "return check error when 409 response" in {
+      givenStatusCheckErrorWhenConflict()
+
+      val result: StatusCheckResponse =
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+
+      result.result shouldBe None
+      result.error shouldBe defined
+      result.error.get.errCode.get shouldBe "ERR_CONFLICT"
     }
 
     "return check error when 422 response" in {

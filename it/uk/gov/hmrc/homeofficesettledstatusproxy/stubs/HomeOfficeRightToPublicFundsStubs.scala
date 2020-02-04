@@ -88,6 +88,20 @@ trait HomeOfficeRightToPublicFundsStubs {
     givenStatusPublicFundsByNinoStub(404, validRequestBody, errorResponseBody)
   }
 
+  def givenStatusCheckErrorWhenConflict(): StubMapping = {
+
+    val errorResponseBody: String =
+      """{
+        |  "correlationId": "sjdfhks123",
+        |  "error": {
+        |    "errCode": "ERR_CONFLICT"
+        |  }
+        |}""".stripMargin
+
+    givenStatusPublicFundsByNinoStub(409, validRequestBody, errorResponseBody)
+
+  }
+
   def givenStatusCheckErrorWhenDOBInvalid(): StubMapping = {
 
     val errorResponseBody: String =
