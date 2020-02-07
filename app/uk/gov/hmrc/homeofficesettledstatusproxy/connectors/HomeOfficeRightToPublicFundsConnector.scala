@@ -21,15 +21,14 @@ import java.net.URL
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.Singleton
 import com.kenshoo.play.metrics.Metrics
-import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckResponse}
-import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.AppConfig
 import javax.inject.Inject
 import play.api.libs.json.Json
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector.extractResponseBody
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.AppConfig
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpPost, NotFoundException, Upstream4xxResponse}
+import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -88,6 +87,10 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
         }
     }
   }
+
+}
+
+object HomeOfficeRightToPublicFundsConnector {
 
   def extractResponseBody(message: String, prefix: String): String = {
     val pos = message.indexOf(prefix)

@@ -4,7 +4,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
 import uk.gov.hmrc.homeofficesettledstatusproxy.support.AppBaseISpec
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, Upstream4xxResponse, Upstream5xxResponse}
 
 import scala.concurrent.ExecutionContext
 
@@ -123,6 +123,31 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       an[Upstream5xxResponse] shouldBe thrownBy {
         await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
       }
+    }
+  }
+
+  val errorGenerator: HttpErrorFunctions = new HttpErrorFunctions {}
+
+  "extractResponseBody" should {
+    "return the json notFoundMessage if the prefix present" in {
+      val responseBody = """{"bar":"foo"}"""
+      val errorMessage = errorGenerator.notFoundMessage("GET", "/test/foo/bar", responseBody)
+      HomeOfficeRightToPublicFundsConnector
+        .extractResponseBody(errorMessage, "Response body: '") shouldBe responseBody
+    }
+
+    "return the json badRequestMessage if the prefix present" in {
+      val responseBody = """{"bar":"foo"}"""
+      val errorMessage = errorGenerator.badRequestMessage("GET", "/test/foo/bar", responseBody)
+      HomeOfficeRightToPublicFundsConnector
+        .extractResponseBody(errorMessage, "Response body '") shouldBe responseBody
+    }
+
+    "return the whole message if prefix missing" in {
+      val responseBody = """{"bar":"foo"}"""
+      val errorMessage = errorGenerator.notFoundMessage("GET", "/test/foo/bar", responseBody)
+      HomeOfficeRightToPublicFundsConnector
+        .extractResponseBody(errorMessage, "::: '") shouldBe s"""{"error":{"errCode":"$errorMessage"}}"""
     }
   }
 

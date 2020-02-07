@@ -18,8 +18,6 @@ package uk.gov.hmrc.homeofficesettledstatusproxy.controllers
 
 import java.util.UUID
 
-import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector
-import uk.gov.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckError, StatusCheckResponse}
 import javax.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
 import play.api.libs.json._
@@ -27,7 +25,8 @@ import play.api.mvc._
 import play.api.{Configuration, Environment}
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector
-import uk.gov.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckError, StatusCheckResponse}
+import uk.gov.hmrc.homeofficesettledstatusproxy.models.StatusCheckResponse.{HasError, HasResult}
+import uk.gov.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckResponse}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -63,19 +62,14 @@ class HomeOfficeSettledStatusProxyController @Inject()(
                   rightToPublicFundsConnector
                     .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
                     .map {
-                      case result @ StatusCheckResponse(_, None, Some(_)) => Ok(Json.toJson(result))
+                      case HasError("ERR_NOT_FOUND", response) => NotFound(Json.toJson(response))
 
-                      case result @ StatusCheckResponse(
-                            _,
-                            Some(StatusCheckError(Some(errCode), _)),
-                            None) =>
-                        errCode match {
-                          case "ERR_NOT_FOUND"  => NotFound(Json.toJson(result))
-                          case "ERR_VALIDATION" => UnprocessableEntity(Json.toJson(result))
-                          case _                => BadRequest(Json.toJson(result)) // e.g. ERR_REQUEST_INVALID
-                        }
+                      case HasError("ERR_VALIDATION", response) =>
+                        UnprocessableEntity(Json.toJson(response))
 
-                      case result => BadRequest(Json.toJson(result))
+                      case HasResult(response) => Ok(Json.toJson(response))
+
+                      case response => BadRequest(Json.toJson(response))
                     }
                 }
                 .map(_.withHeaders(

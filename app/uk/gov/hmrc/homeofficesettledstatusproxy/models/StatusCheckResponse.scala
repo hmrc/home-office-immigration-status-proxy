@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.homeofficesettledstatusproxy.models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 
 case class StatusCheckResponse(
   // Identifier associated with a checks,
@@ -29,7 +29,7 @@ case class StatusCheckResponse(
 )
 
 object StatusCheckResponse {
-  implicit val formats = Json.format[StatusCheckResponse]
+  implicit val formats: Format[StatusCheckResponse] = Json.format[StatusCheckResponse]
 
   def error(correlationId: String, errCode: String, fields: Option[List[(String, String)]] = None) =
     StatusCheckResponse(
@@ -39,4 +39,14 @@ object StatusCheckResponse {
           errCode = Some(errCode),
           fields = fields.map(f => f.map { case (code, name) => ValidationError(code, name) })))
     )
+
+  object HasResult {
+    def unapply(response: StatusCheckResponse): Option[StatusCheckResponse] =
+      response.result.map(_ => response)
+  }
+
+  object HasError {
+    def unapply(response: StatusCheckResponse): Option[(String, StatusCheckResponse)] =
+      response.error.flatMap(_.errCode).map(errCode => (errCode, response))
+  }
 }
