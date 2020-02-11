@@ -128,7 +128,7 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(422, validRequestBody, errorResponseBody)
+    givenStatusPublicFundsByNinoStub(400, validRequestBody, errorResponseBody)
 
   }
 

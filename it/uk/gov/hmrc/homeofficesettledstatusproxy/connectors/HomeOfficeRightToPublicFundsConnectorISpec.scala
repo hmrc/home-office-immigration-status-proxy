@@ -65,7 +65,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       result.error shouldBe None
     }
 
-    "return check error when 400 response" in {
+    "return check error when 400 response ERR_REQUEST_INVALID" in {
       givenStatusCheckErrorWhenMissingInputField()
 
       val result: StatusCheckResponse =
@@ -76,7 +76,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       result.error.get.errCode.get shouldBe "ERR_REQUEST_INVALID"
     }
 
-    "return check error when 404 response" in {
+    "return check error when 404 response ERR_NOT_FOUND" in {
       givenStatusCheckErrorWhenStatusNotFound()
 
       val result: StatusCheckResponse =
@@ -87,7 +87,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       result.error.get.errCode.get shouldBe "ERR_NOT_FOUND"
     }
 
-    "return check error when 409 response" in {
+    "return check error when 409 response ERR_CONFLICT" in {
       givenStatusCheckErrorWhenConflict()
 
       val result: StatusCheckResponse =
@@ -98,7 +98,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       result.error.get.errCode.get shouldBe "ERR_CONFLICT"
     }
 
-    "return check error when 422 response" in {
+    "return check error when 400 response ERR_VALIDATION" in {
       givenStatusCheckErrorWhenDOBInvalid()
 
       val result: StatusCheckResponse =
@@ -110,7 +110,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "throw exception if other 4xx response" in {
-      givenStatusPublicFundsByNinoStub(401, validRequestBody, "")
+      givenStatusPublicFundsByNinoStub(429, validRequestBody, "")
 
       an[Upstream4xxResponse] shouldBe thrownBy {
         await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))

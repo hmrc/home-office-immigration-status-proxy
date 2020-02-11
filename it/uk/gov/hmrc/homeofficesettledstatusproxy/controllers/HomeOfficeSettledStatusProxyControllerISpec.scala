@@ -90,7 +90,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         val result = publicFundsByNino(invalidNinoRequestBody)
 
-        result.status shouldBe 422
+        result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
             "error",
@@ -111,7 +111,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         val result = publicFundsByNino(validRequestBody)
 
-        result.status shouldBe 422
+        result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
             "error",

@@ -58,14 +58,13 @@ class HomeOfficeSettledStatusProxyController @Inject()(
               rightToPublicFundsConnector
                 .token()
                 .flatMap { token =>
-                  println(s"Received OAuth token: $token")
                   rightToPublicFundsConnector
                     .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
                     .map {
                       case HasError("ERR_NOT_FOUND", response) => NotFound(Json.toJson(response))
 
                       case HasError("ERR_VALIDATION", response) =>
-                        UnprocessableEntity(Json.toJson(response))
+                        BadRequest(Json.toJson(response))
 
                       case HasResult(response) => Ok(Json.toJson(response))
 
@@ -85,7 +84,7 @@ class HomeOfficeSettledStatusProxyController @Inject()(
             case InvalidInputFields(validationErrors) =>
               val result =
                 StatusCheckResponse.error(correlationId, "ERR_VALIDATION", Some(validationErrors))
-              Future.successful(UnprocessableEntity(Json.toJson(result)))
+              Future.successful(BadRequest(Json.toJson(result)))
           }
       }
   }
