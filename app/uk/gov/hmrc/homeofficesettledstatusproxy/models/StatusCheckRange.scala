@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.homeofficesettledstatusproxy.models
 
-import play.api.libs.json.Json
+import java.time.LocalDate
+
+import play.api.libs.json.{Format, Json}
 
 case class StatusCheckRange(
   // Requested status end date in ISO 8601 format
-  endDate: Option[String] = None,
+  endDate: Option[LocalDate] = None,
   // Requested status start date in ISO 8601 format
-  startDate: Option[String] = None
+  startDate: Option[LocalDate] = None
 )
 
 object StatusCheckRange {
-  implicit val formats = Json.format[StatusCheckRange]
+  implicit val formats: Format[StatusCheckRange] = Json.format[StatusCheckRange]
 }

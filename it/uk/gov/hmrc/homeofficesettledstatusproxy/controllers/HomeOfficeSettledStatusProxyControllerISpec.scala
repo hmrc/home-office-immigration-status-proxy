@@ -43,12 +43,13 @@ class HomeOfficeSettledStatusProxyControllerISpec
           and haveProperty[JsObject](
             "result",
             haveProperty[String]("dateOfBirth", be("2001-01-31"))
-              and haveProperty[String]("facialImage", be("string"))
+              and haveProperty[String]("nationality", be("IRL"))
               and haveProperty[String]("fullName", be("Jane Doe"))
               and havePropertyArrayOf[JsObject](
                 "statuses",
-                haveProperty[String]("immigrationStatus", be("ILR"))
-                  and haveProperty[Boolean]("rightToPublicFunds", be(true))
+                haveProperty[String]("productType", be("EUS"))
+                  and haveProperty[String]("immigrationStatus", be("ILR"))
+                  and haveProperty[Boolean]("noRecourseToPublicFunds", be(true))
                   and haveProperty[String]("statusEndDate", be("2018-01-31"))
                   and haveProperty[String]("statusStartDate", be("2018-12-12"))
               )

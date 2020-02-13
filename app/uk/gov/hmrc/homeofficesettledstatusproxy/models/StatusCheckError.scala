@@ -16,26 +16,26 @@
 
 package uk.gov.hmrc.homeofficesettledstatusproxy.models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 
 case class ValidationError(
+  // name of the parameter with a problem
+  name: String,
   // Code of the validation failure
-  code: String,
-  // Name of the field
-  name: String
+  code: String
 )
 
 object ValidationError {
-  implicit val formats = Json.format[ValidationError]
+  implicit val formats: Format[ValidationError] = Json.format[ValidationError]
 }
 
 case class StatusCheckError(
   // Top level error code
-  errCode: Option[String] = None,
+  errCode: String,
   // Field level validation errors
   fields: Option[List[ValidationError]] = None
 )
 
 object StatusCheckError {
-  implicit val formats = Json.format[StatusCheckError]
+  implicit val formats: Format[StatusCheckError] = Json.format[StatusCheckError]
 }

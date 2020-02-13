@@ -16,19 +16,21 @@
 
 package uk.gov.hmrc.homeofficesettledstatusproxy.models
 
-import play.api.libs.json.Json
+import java.time.LocalDate
+
+import play.api.libs.json.{Format, Json}
 
 case class StatusCheckResult(
+  // <name of the migrant that has matched
+  fullName: String,
   // Date of birth of person being checked in ISO 8601 format
-  dateOfBirth: Option[String] = None,
-  // Image of the person being checked
-  facialImage: Option[String] = None,
-  // Full name of person being checked
-  fullName: Option[String] = None,
-  // 'Right to public fund' statuses
-  statuses: Option[List[ImmigrationStatus]] = None
+  dateOfBirth: LocalDate,
+  // <the latest nationality that the matched migrant has provided to the Home Office
+  // (ICAO 3 letter acronym - ISO 3166-1)
+  nationality: String,
+  statuses: List[ImmigrationStatus]
 )
 
 object StatusCheckResult {
-  implicit val formats = Json.format[StatusCheckResult]
+  implicit val formats: Format[StatusCheckResult] = Json.format[StatusCheckResult]
 }

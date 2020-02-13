@@ -16,19 +16,23 @@
 
 package uk.gov.hmrc.homeofficesettledstatusproxy.models
 
-import play.api.libs.json.Json
+import java.time.LocalDate
+
+import play.api.libs.json.{Format, Json}
 
 case class ImmigrationStatus(
-  // Underlying Immigration Status
-  immigrationStatus: Option[String] = None,
-  // 'Right to public funds status
-  rightToPublicFunds: Option[Boolean] = None,
-  // Expiry date of the 'right to public fund' Status in ISO 8601 format
-  statusEndDate: Option[String] = None,
-  // Start date of the 'right to public fund' Status in ISO 8601 format
-  statusStartDate: Option[String] = None
+  // start date of this status
+  statusStartDate: LocalDate,
+  // end date of this status
+  statusEndDate: Option[LocalDate] = None,
+  // code representing the type of product that the status was associated with
+  productType: String,
+  // code representing the immigration status that is held
+  immigrationStatus: String,
+  // right to public funds status for this person
+  noRecourseToPublicFunds: Boolean
 )
 
 object ImmigrationStatus {
-  implicit val formats = Json.format[ImmigrationStatus]
+  implicit val formats: Format[ImmigrationStatus] = Json.format[ImmigrationStatus]
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.homeofficesettledstatusproxy.models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.domain.Nino
 
 case class StatusCheckByNinoRequest(
@@ -32,7 +32,7 @@ case class StatusCheckByNinoRequest(
 )
 
 object StatusCheckByNinoRequest {
-  implicit val formats = Json.format[StatusCheckByNinoRequest]
+  implicit val formats: Format[StatusCheckByNinoRequest] = Json.format[StatusCheckByNinoRequest]
 
   val mandatoryFields: Set[String] =
     Set("dateOfBirth", "familyName", "givenName", "nino")
