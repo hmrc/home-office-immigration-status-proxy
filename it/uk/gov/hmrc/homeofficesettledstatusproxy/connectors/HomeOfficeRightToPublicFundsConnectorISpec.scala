@@ -1,5 +1,7 @@
 package uk.gov.hmrc.homeofficesettledstatusproxy.connectors
 
+import java.time.LocalDate
+
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
@@ -18,7 +20,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
   val dummyCorrelationId = "dummyCorrelationId"
-  val dummyOAuthToken = OAuthToken("FOO0123456789", "not-used", "not-used", "SomeTokenType")
+  val dummyOAuthToken = OAuthToken("FOO0123456789", "not-used", "SomeTokenType")
 
   val request = StatusCheckByNinoRequest("2001-01-31", "Jane", "Doe", Nino("RJ301829A"))
 
@@ -46,7 +48,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
         "Jane",
         "Doe",
         Nino("RJ301829A"),
-        Some(StatusCheckRange(Some("2019-07-15"), Some("2019-04-15"))))
+        Some(
+          StatusCheckRange(
+            Some(LocalDate.parse("2019-07-15")),
+            Some(LocalDate.parse("2019-04-15")))))
 
       val result: StatusCheckResponse =
         await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
@@ -73,7 +78,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode.get shouldBe "ERR_REQUEST_INVALID"
+      result.error.get.errCode shouldBe "ERR_REQUEST_INVALID"
     }
 
     "return check error when 404 response ERR_NOT_FOUND" in {
@@ -84,7 +89,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode.get shouldBe "ERR_NOT_FOUND"
+      result.error.get.errCode shouldBe "ERR_NOT_FOUND"
     }
 
     "return check error when 409 response ERR_CONFLICT" in {
@@ -95,7 +100,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode.get shouldBe "ERR_CONFLICT"
+      result.error.get.errCode shouldBe "ERR_CONFLICT"
     }
 
     "return check error when 400 response ERR_VALIDATION" in {
@@ -106,7 +111,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode.get shouldBe "ERR_VALIDATION"
+      result.error.get.errCode shouldBe "ERR_VALIDATION"
     }
 
     "throw exception if other 4xx response" in {

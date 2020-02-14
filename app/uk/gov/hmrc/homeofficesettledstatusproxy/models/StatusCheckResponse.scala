@@ -19,8 +19,7 @@ package uk.gov.hmrc.homeofficesettledstatusproxy.models
 import play.api.libs.json.{Format, Json}
 
 case class StatusCheckResponse(
-  // Identifier associated with a checks,
-  // if x-correlation-id is not provided in request headers, a new id generated using token service
+  // Client provided or system generated transaction id
   correlationId: String,
   // Represents an error occurred
   error: Option[StatusCheckError] = None,
@@ -36,7 +35,7 @@ object StatusCheckResponse {
       correlationId = correlationId,
       error = Some(
         StatusCheckError(
-          errCode = Some(errCode),
+          errCode = errCode,
           fields = fields.map(f => f.map { case (code, name) => ValidationError(code, name) })))
     )
 
@@ -47,6 +46,6 @@ object StatusCheckResponse {
 
   object HasError {
     def unapply(response: StatusCheckResponse): Option[(String, StatusCheckResponse)] =
-      response.error.flatMap(_.errCode).map(errCode => (errCode, response))
+      response.error.map(_.errCode).map(errCode => (errCode, response))
   }
 }
