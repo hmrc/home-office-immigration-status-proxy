@@ -18,10 +18,8 @@ package uk.gov.hmrc.homeofficesettledstatusproxy.controllers
 
 import java.util.UUID
 
-import akka.util.ByteString
 import javax.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
-import play.api.http.Status.BAD_REQUEST
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.{Configuration, Environment}
