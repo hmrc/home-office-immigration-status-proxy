@@ -89,7 +89,7 @@ class HomeOfficeSettledStatusProxyController @Inject()(
       }
   }
 
-  def statusPublicFundsByNinoRaw: Action[AnyContent] = Action.async { implicit request =>
+  def statusPublicFundsByNinoRaw: Action[RawBuffer] = Action.async(parse.raw) { implicit request =>
     val correlationId =
       request.headers.get("x-correlation-id").getOrElse(UUID.randomUUID().toString)
 
@@ -97,7 +97,15 @@ class HomeOfficeSettledStatusProxyController @Inject()(
       .token()
       .flatMap { token =>
         rightToPublicFundsConnector
-          .statusPublicFundsByNinoRaw(request.body.asText.getOrElse(""), correlationId, token)
+          .statusPublicFundsByNinoRaw(
+            request.body
+              .asBytes()
+              .map(_.utf8String)
+              .getOrElse(throw new IllegalArgumentException(
+                "Failed to read request's body as an utf-8 string.")),
+            correlationId,
+            token
+          )
           .map { response =>
             new Status(response.status)(response.body)
               .withHeaders(response.allHeaders.toSeq.flatMap {

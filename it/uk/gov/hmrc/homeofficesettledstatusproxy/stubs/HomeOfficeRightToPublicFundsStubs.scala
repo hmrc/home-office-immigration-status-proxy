@@ -76,6 +76,32 @@ trait HomeOfficeRightToPublicFundsStubs {
     givenStatusPublicFundsByNinoStub(400, validRequestBody, errorResponseBody)
   }
 
+  def givenStatusCheckErrorWhenInvalidJson(): StubMapping = {
+
+    val errorResponseBody: String =
+      """{
+        |  "correlationId": "sjdfhks123",
+        |  "error": {
+        |    "errCode": "ERR_REQUEST_INVALID"
+        |  }
+        |}""".stripMargin
+
+    givenStatusPublicFundsByNinoStub(400, "[]", errorResponseBody)
+  }
+
+  def givenStatusCheckErrorWhenEmptyInput(): StubMapping = {
+
+    val errorResponseBody: String =
+      """{
+        |  "correlationId": "sjdfhks123",
+        |  "error": {
+        |    "errCode": "ERR_REQUEST_INVALID"
+        |  }
+        |}""".stripMargin
+
+    givenStatusPublicFundsByNinoStub(400, "{}", errorResponseBody)
+  }
+
   def givenStatusCheckErrorWhenStatusNotFound(): StubMapping = {
 
     val errorResponseBody: String =
@@ -96,7 +122,7 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  "correlationId": "sjdfhks123"
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(404, validRequestBody, errorResponseBody)
+    givenStatusPublicFundsByNinoStub(400, validRequestBody, errorResponseBody)
   }
 
   def givenStatusCheckErrorWhenConflict(): StubMapping = {

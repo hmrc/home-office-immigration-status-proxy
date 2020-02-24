@@ -29,7 +29,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
   def publicFundsByNinoRaw(payload: String, correlationId: String = "sjdfhks123"): WSResponse =
     wsClient
-      .url(s"$url/v1/status/public-funds/nino")
+      .url(s"$url/v1/status/public-funds/nino/raw")
       .addHttpHeaders("Content-Type" -> "application/json")
       .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
       .post(payload)
@@ -206,32 +206,17 @@ class HomeOfficeSettledStatusProxyControllerISpec
       "respond with 400 if one of the required input parameters is missing from the request" in {
         ping.status.shouldBe(200)
 
+        givenOAuthTokenGranted()
+        givenStatusCheckErrorWhenEmptyInput()
+
         val correlationId = UUID.randomUUID().toString
         val result = publicFundsByNinoRaw("{}", correlationId)
-
-        result.status shouldBe 400
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be(correlationId))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be("ERR_REQUEST_INVALID"))
-          ))
-      }
-
-      "respond with 422 if one of the input parameters passed in has failed internal validation" in {
-        ping.status.shouldBe(200)
-
-        val result = publicFundsByNinoRaw(invalidNinoRequestBody)
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
             "error",
-            haveProperty[String]("errCode", be("ERR_VALIDATION"))
-              and havePropertyArrayOf[JsObject](
-                "fields",
-                haveProperty[String]("code")
-                  and haveProperty[String]("name")
-              )
+            haveProperty[String]("errCode", be("ERR_REQUEST_INVALID"))
           ))
       }
 
@@ -260,6 +245,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
+        givenStatusCheckErrorWhenInvalidJson()
 
         val result = publicFundsByNinoRaw("[]")
 
