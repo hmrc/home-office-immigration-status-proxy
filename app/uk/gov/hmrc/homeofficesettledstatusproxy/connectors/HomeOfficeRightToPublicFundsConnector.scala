@@ -23,7 +23,7 @@ import com.google.inject.Singleton
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.Inject
 import play.api.libs.json.Json
-import play.mvc.Http.HeaderNames
+import play.mvc.Http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector.extractResponseBody
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckResponse}
@@ -70,6 +70,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
+
     val headers = Seq(HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
@@ -83,6 +84,24 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
           case e: Upstream4xxResponse if e.upstreamResponseCode == 409 =>
             Json.parse(extractResponseBody(e.message, "Response body: '")).as[StatusCheckResponse]
         }
+    }
+  }
+
+  def statusPublicFundsByNinoRaw(request: String, correlationId: String, token: OAuthToken)(
+    implicit ec: ExecutionContext): Future[HttpResponse] = {
+
+    implicit val hc: HeaderCarrier = HeaderCarrier()
+
+    val url = new URL(
+      appConfig.rightToPublicFundsBaseUrl,
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
+
+    val headers = Seq(
+      HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",
+      HeaderNames.CONTENT_TYPE  -> MimeTypes.JSON)
+
+    monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino-Raw") {
+      http.doPostString(url, request, headers)
     }
   }
 

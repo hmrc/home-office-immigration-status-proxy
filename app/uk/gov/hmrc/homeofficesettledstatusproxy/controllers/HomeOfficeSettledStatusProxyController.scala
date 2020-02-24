@@ -18,8 +18,10 @@ package uk.gov.hmrc.homeofficesettledstatusproxy.controllers
 
 import java.util.UUID
 
+import akka.util.ByteString
 import javax.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
+import play.api.http.Status.BAD_REQUEST
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.{Configuration, Environment}
@@ -85,6 +87,24 @@ class HomeOfficeSettledStatusProxyController @Inject()(
               val result =
                 StatusCheckResponse.error(correlationId, "ERR_VALIDATION", Some(validationErrors))
               Future.successful(BadRequest(Json.toJson(result)))
+          }
+      }
+  }
+
+  def statusPublicFundsByNinoRaw: Action[AnyContent] = Action.async { implicit request =>
+    val correlationId =
+      request.headers.get("x-correlation-id").getOrElse(UUID.randomUUID().toString)
+
+    rightToPublicFundsConnector
+      .token()
+      .flatMap { token =>
+        rightToPublicFundsConnector
+          .statusPublicFundsByNinoRaw(request.body.asText.getOrElse(""), correlationId, token)
+          .map { response =>
+            new Status(response.status)(response.body)
+              .withHeaders(response.allHeaders.toSeq.flatMap {
+                case (key, values) => values.map(v => (key, v))
+              }: _*)
           }
       }
   }
