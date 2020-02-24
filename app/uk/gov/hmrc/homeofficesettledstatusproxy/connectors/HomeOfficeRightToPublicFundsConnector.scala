@@ -101,7 +101,9 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
       HeaderNames.CONTENT_TYPE  -> MimeTypes.JSON)
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino-Raw") {
-      http.doPostString(url, request, headers)
+      val response = http.doPostString(url, request, headers)
+      http.hooks.foreach(hook => hook(url, "POST", Option(request), response))
+      response
     }
   }
 
