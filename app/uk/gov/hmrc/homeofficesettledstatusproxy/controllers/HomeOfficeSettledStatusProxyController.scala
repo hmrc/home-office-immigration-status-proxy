@@ -56,7 +56,7 @@ class HomeOfficeSettledStatusProxyController @Inject()(
 
             case ValidRequest(statusCheckByNinoRequest) =>
               rightToPublicFundsConnector
-                .token()
+                .token(correlationId)
                 .flatMap { token =>
                   rightToPublicFundsConnector
                     .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
@@ -94,7 +94,7 @@ class HomeOfficeSettledStatusProxyController @Inject()(
       request.headers.get("x-correlation-id").getOrElse(UUID.randomUUID().toString)
 
     rightToPublicFundsConnector
-      .token()
+      .token(correlationId)
       .flatMap { token =>
         rightToPublicFundsConnector
           .statusPublicFundsByNinoRaw(

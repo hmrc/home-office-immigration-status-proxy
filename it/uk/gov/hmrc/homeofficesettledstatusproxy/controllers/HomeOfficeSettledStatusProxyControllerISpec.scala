@@ -153,7 +153,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenOAuthTokenGranted()
         givenStatusCheckResponseUndefined()
 
-        val result = publicFundsByNino(validRequestBody, "")
+        val result = publicFundsByNino(validRequestBody, "sjdfhks123")
 
         result.status shouldBe 400
         result.json.as[JsObject] should haveProperty[String]("correlationId")
@@ -209,7 +209,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenEmptyInput()
 
-        val correlationId = UUID.randomUUID().toString
+        val correlationId = "sjdfhks123"
         val result = publicFundsByNinoRaw("{}", correlationId)
 
         result.status shouldBe 400
@@ -262,7 +262,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenOAuthTokenGranted()
         givenStatusCheckResponseUndefined()
 
-        val result = publicFundsByNinoRaw(validRequestBody, "")
+        val result = publicFundsByNinoRaw(validRequestBody, "sjdfhks123")
 
         result.status shouldBe 400
         result.json.as[JsObject] should haveProperty[String]("correlationId")

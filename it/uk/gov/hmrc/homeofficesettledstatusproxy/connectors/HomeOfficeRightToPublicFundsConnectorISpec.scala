@@ -20,7 +20,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
   lazy val connector: HomeOfficeRightToPublicFundsConnector =
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
-  val dummyCorrelationId = "dummyCorrelationId"
+  val dummyCorrelationId = "sjdfhks123"
   val dummyOAuthToken = OAuthToken("FOO0123456789", "not-used", "SomeTokenType")
 
   val request = StatusCheckByNinoRequest("2001-01-31", "Jane", "Doe", Nino("RJ301829A"))
@@ -28,14 +28,14 @@ class HomeOfficeRightToPublicFundsConnectorISpec
   "HomeOfficeRightToPublicFundsConnector.token" should {
     "return valid oauth token" in {
       givenOAuthTokenGranted()
-      val result: OAuthToken = await(connector.token())
+      val result: OAuthToken = await(connector.token(dummyCorrelationId))
       result.access_token shouldBe "FOO0123456789"
     }
 
     "raise exception if token denied" in {
       givenOAuthTokenDenied()
       an[Upstream4xxResponse] shouldBe thrownBy {
-        await(connector.token())
+        await(connector.token(dummyCorrelationId))
       }
     }
   }

@@ -181,6 +181,7 @@ trait HomeOfficeRightToPublicFundsStubs {
     responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/token"))
+        .withHeader("X-Correlation-Id", equalTo("sjdfhks123"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/x-www-form-urlencoded"))
         .withRequestBody(equalTo(requestBody))
         .willReturn(
@@ -196,6 +197,7 @@ trait HomeOfficeRightToPublicFundsStubs {
     responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/nino"))
+        .withHeader("X-Correlation-Id", equalTo("sjdfhks123"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
         .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
         .withRequestBody(equalToJson(requestBody, true, true))

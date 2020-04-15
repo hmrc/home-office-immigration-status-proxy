@@ -41,9 +41,10 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def token()(implicit ec: ExecutionContext): Future[OAuthToken] = {
+  def token(correlationId: String)(implicit ec: ExecutionContext): Future[OAuthToken] = {
 
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier().withExtraHeaders("X-Correlation-Id" -> correlationId)
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
@@ -65,13 +66,16 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     correlationId: String,
     token: OAuthToken)(implicit ec: ExecutionContext): Future[StatusCheckResponse] = {
 
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier().withExtraHeaders(
+        "X-Correlation-Id"        -> correlationId,
+        HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
 
-    val headers = Seq(HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
+    val headers = Seq()
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
       http
@@ -90,15 +94,17 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
   def statusPublicFundsByNinoRaw(request: String, correlationId: String, token: OAuthToken)(
     implicit ec: ExecutionContext): Future[HttpResponse] = {
 
-    implicit val hc: HeaderCarrier = HeaderCarrier()
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier().withExtraHeaders(
+        "X-Correlation-Id"        -> correlationId,
+        HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",
+        HeaderNames.CONTENT_TYPE  -> MimeTypes.JSON)
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
 
-    val headers = Seq(
-      HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",
-      HeaderNames.CONTENT_TYPE  -> MimeTypes.JSON)
+    val headers = Seq()
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino-Raw") {
       val response = http.doPostString(url, request, headers)
