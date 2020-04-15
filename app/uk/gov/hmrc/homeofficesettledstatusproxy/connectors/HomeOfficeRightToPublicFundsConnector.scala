@@ -41,10 +41,12 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
+  val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
+
   def token(correlationId: String)(implicit ec: ExecutionContext): Future[OAuthToken] = {
 
     implicit val hc: HeaderCarrier =
-      HeaderCarrier().withExtraHeaders("X-Correlation-Id" -> correlationId)
+      HeaderCarrier().withExtraHeaders(HEADER_X_CORRELATION_ID -> correlationId)
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
@@ -68,7 +70,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
     implicit val hc: HeaderCarrier =
       HeaderCarrier().withExtraHeaders(
-        "X-Correlation-Id"        -> correlationId,
+        HEADER_X_CORRELATION_ID   -> correlationId,
         HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
 
     val url = new URL(
@@ -96,9 +98,10 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
     implicit val hc: HeaderCarrier =
       HeaderCarrier().withExtraHeaders(
-        "X-Correlation-Id"        -> correlationId,
+        HEADER_X_CORRELATION_ID   -> correlationId,
         HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",
-        HeaderNames.CONTENT_TYPE  -> MimeTypes.JSON)
+        HeaderNames.CONTENT_TYPE  -> MimeTypes.JSON
+      )
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,

@@ -38,12 +38,12 @@ class HomeOfficeSettledStatusProxyController @Inject()(
   cc: ControllerComponents)(implicit val configuration: Configuration, ec: ExecutionContext)
     extends BackendController(cc) {
 
-  val HEADER_X_CORRELATION_ID = "x-correlation-id"
+  val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
 
   def statusPublicFundsByNino: Action[JsValue] = Action.async(parse.tolerantJson) {
     implicit request =>
       val correlationId =
-        request.headers.get("x-correlation-id").getOrElse(UUID.randomUUID().toString)
+        request.headers.get(HEADER_X_CORRELATION_ID).getOrElse(UUID.randomUUID().toString)
 
       request.body.asOpt[JsObject] match {
 
@@ -91,7 +91,7 @@ class HomeOfficeSettledStatusProxyController @Inject()(
 
   def statusPublicFundsByNinoRaw: Action[RawBuffer] = Action.async(parse.raw) { implicit request =>
     val correlationId =
-      request.headers.get("x-correlation-id").getOrElse(UUID.randomUUID().toString)
+      request.headers.get(HEADER_X_CORRELATION_ID).getOrElse(UUID.randomUUID().toString)
 
     rightToPublicFundsConnector
       .token(correlationId)
