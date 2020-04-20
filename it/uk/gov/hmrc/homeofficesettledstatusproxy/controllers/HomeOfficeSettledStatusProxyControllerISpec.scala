@@ -44,6 +44,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample()
+        givenAuthorisedForStride
 
         val result = publicFundsByNino(validRequestBody)
         result.status shouldBe 200
@@ -69,6 +70,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound()
+        givenAuthorisedForStride
 
         val result = publicFundsByNino(validRequestBody)
 
@@ -83,6 +85,8 @@ class HomeOfficeSettledStatusProxyControllerISpec
       "respond with 400 if one of the required input parameters is missing from the request" in {
         ping.status.shouldBe(200)
 
+        givenAuthorisedForStride
+
         val correlationId = UUID.randomUUID().toString
         val result = publicFundsByNino("{}", correlationId)
 
@@ -96,6 +100,8 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
       "respond with 422 if one of the input parameters passed in has failed internal validation" in {
         ping.status.shouldBe(200)
+
+        givenAuthorisedForStride
 
         val result = publicFundsByNino(invalidNinoRequestBody)
 
@@ -117,6 +123,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid()
+        givenAuthorisedForStride
 
         val result = publicFundsByNino(validRequestBody)
 
@@ -137,6 +144,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
+        givenAuthorisedForStride
 
         val result = publicFundsByNino("[]")
 
@@ -152,6 +160,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckResponseUndefined()
+        givenAuthorisedForStride
 
         val result = publicFundsByNino(validRequestBody, "sjdfhks123")
 
@@ -167,6 +176,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample()
+        givenAuthorisedForStride
 
         val result = publicFundsByNinoRaw(validRequestBody)
         result.status shouldBe 200
@@ -192,6 +202,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound()
+        givenAuthorisedForStride
 
         val result = publicFundsByNinoRaw(validRequestBody)
 
@@ -208,6 +219,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenEmptyInput()
+        givenAuthorisedForStride
 
         val correlationId = "sjdfhks123"
         val result = publicFundsByNinoRaw("{}", correlationId)
@@ -225,6 +237,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid()
+        givenAuthorisedForStride
 
         val result = publicFundsByNinoRaw(validRequestBody)
 
@@ -246,6 +259,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenInvalidJson()
+        givenAuthorisedForStride
 
         val result = publicFundsByNinoRaw("[]")
 
@@ -261,6 +275,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
         givenOAuthTokenGranted()
         givenStatusCheckResponseUndefined()
+        givenAuthorisedForStride
 
         val result = publicFundsByNinoRaw(validRequestBody, "sjdfhks123")
 

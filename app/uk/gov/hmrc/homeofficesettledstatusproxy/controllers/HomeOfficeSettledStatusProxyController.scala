@@ -24,7 +24,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import play.api.{Configuration, Environment}
 import play.mvc.Http.HeaderNames
-import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.{HomeOfficeRightToPublicFundsConnector, MicroserviceAuthConnector}
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.StatusCheckResponse.{HasError, HasResult}
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckResponse}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
@@ -34,58 +34,62 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class HomeOfficeSettledStatusProxyController @Inject()(
   rightToPublicFundsConnector: HomeOfficeRightToPublicFundsConnector,
+  val authConnector: MicroserviceAuthConnector,
   val env: Environment,
   cc: ControllerComponents)(implicit val configuration: Configuration, ec: ExecutionContext)
-    extends BackendController(cc) {
+    extends BackendController(cc) with AuthActions {
 
   val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
 
   def statusPublicFundsByNino: Action[JsValue] = Action.async(parse.tolerantJson) {
     implicit request =>
-      val correlationId =
-        request.headers.get(HEADER_X_CORRELATION_ID).getOrElse(UUID.randomUUID().toString)
+      authorisedWithStride {
 
-      request.body.asOpt[JsObject] match {
+        val correlationId =
+          request.headers.get(HEADER_X_CORRELATION_ID).getOrElse(UUID.randomUUID().toString)
 
-        case None =>
-          val result = StatusCheckResponse.error(correlationId, "ERR_REQUEST_INVALID")
-          Future.successful(BadRequest(Json.toJson(result)))
+        request.body.asOpt[JsObject] match {
 
-        case Some(payload) =>
-          validate(payload) match {
+          case None =>
+            val result = StatusCheckResponse.error(correlationId, "ERR_REQUEST_INVALID")
+            Future.successful(BadRequest(Json.toJson(result)))
 
-            case ValidRequest(statusCheckByNinoRequest) =>
-              rightToPublicFundsConnector
-                .token(correlationId)
-                .flatMap { token =>
-                  rightToPublicFundsConnector
-                    .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
-                    .map {
-                      case HasError("ERR_NOT_FOUND", response) => NotFound(Json.toJson(response))
+          case Some(payload) =>
+            validate(payload) match {
 
-                      case HasError("ERR_VALIDATION", response) =>
-                        BadRequest(Json.toJson(response))
+              case ValidRequest(statusCheckByNinoRequest) =>
+                rightToPublicFundsConnector
+                  .token(correlationId)
+                  .flatMap { token =>
+                    rightToPublicFundsConnector
+                      .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
+                      .map {
+                        case HasError("ERR_NOT_FOUND", response) => NotFound(Json.toJson(response))
 
-                      case HasResult(response) => Ok(Json.toJson(response))
+                        case HasError("ERR_VALIDATION", response) =>
+                          BadRequest(Json.toJson(response))
 
-                      case response => BadRequest(Json.toJson(response))
-                    }
-                }
-                .map(_.withHeaders(
-                  HEADER_X_CORRELATION_ID  -> correlationId,
-                  HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
+                        case HasResult(response) => Ok(Json.toJson(response))
 
-            case MissingInputFields(fields) =>
-              val result =
-                StatusCheckResponse
-                  .error(correlationId, "ERR_REQUEST_INVALID", Some(fields.map((_, "missing"))))
-              Future.successful(BadRequest(Json.toJson(result)))
+                        case response => BadRequest(Json.toJson(response))
+                      }
+                  }
+                  .map(_.withHeaders(
+                    HEADER_X_CORRELATION_ID  -> correlationId,
+                    HeaderNames.CONTENT_TYPE -> MimeTypes.JSON))
 
-            case InvalidInputFields(validationErrors) =>
-              val result =
-                StatusCheckResponse.error(correlationId, "ERR_VALIDATION", Some(validationErrors))
-              Future.successful(BadRequest(Json.toJson(result)))
-          }
+              case MissingInputFields(fields) =>
+                val result =
+                  StatusCheckResponse
+                    .error(correlationId, "ERR_REQUEST_INVALID", Some(fields.map((_, "missing"))))
+                Future.successful(BadRequest(Json.toJson(result)))
+
+              case InvalidInputFields(validationErrors) =>
+                val result =
+                  StatusCheckResponse.error(correlationId, "ERR_VALIDATION", Some(validationErrors))
+                Future.successful(BadRequest(Json.toJson(result)))
+            }
+        }
       }
   }
 
