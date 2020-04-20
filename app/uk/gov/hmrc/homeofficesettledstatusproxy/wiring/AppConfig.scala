@@ -31,6 +31,8 @@ trait AppConfig {
   val homeOfficeClientId: String
   val homeOfficeClientSecret: String
 
+  val authBaseUrl: String
+
 }
 
 class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
@@ -45,5 +47,7 @@ class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
     config.getConfString("home-office-right-to-public-funds.client_id", "")
   val homeOfficeClientSecret: String =
     config.getConfString("home-office-right-to-public-funds.client_secret", "")
+
+  val authBaseUrl: String = config.baseUrl("auth")
 
 }

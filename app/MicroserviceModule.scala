@@ -16,6 +16,8 @@
 
 import com.google.inject.AbstractModule
 import play.api.{Configuration, Environment, Logger}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.ProxyHttpClient
 import uk.gov.hmrc.http._
 
@@ -28,5 +30,7 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
 
     bind(classOf[HttpGet]).to(classOf[ProxyHttpClient])
     bind(classOf[HttpPost]).to(classOf[ProxyHttpClient])
+
+    bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
   }
 }
