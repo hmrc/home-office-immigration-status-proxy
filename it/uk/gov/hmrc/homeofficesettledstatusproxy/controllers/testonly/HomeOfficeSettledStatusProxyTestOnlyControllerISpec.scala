@@ -1,6 +1,4 @@
-package uk.gov.hmrc.homeofficesettledstatusproxy.controllers
-
-import java.util.UUID
+package uk.gov.hmrc.homeofficesettledstatusproxy.controllers.testonly
 
 import org.scalatest.Suite
 import org.scalatestplus.play.ServerProvider
@@ -9,7 +7,7 @@ import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
 import uk.gov.hmrc.homeofficesettledstatusproxy.support.{JsonMatchers, ServerBaseISpec}
 
-class HomeOfficeSettledStatusProxyControllerISpec
+class HomeOfficeSettledStatusProxyTestOnlyControllerISpec
     extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
   this: Suite with ServerProvider =>
 
@@ -19,14 +17,6 @@ class HomeOfficeSettledStatusProxyControllerISpec
 
   def ping: WSResponse = wsClient.url(s"$url/ping/ping").get.futureValue
 
-  def publicFundsByNino(payload: String, correlationId: String = "sjdfhks123"): WSResponse =
-    wsClient
-      .url(s"$url/v1/status/public-funds/nino")
-      .addHttpHeaders("Content-Type" -> "application/json")
-      .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
-      .post(payload)
-      .futureValue
-
   def publicFundsByNinoRaw(payload: String, correlationId: String = "sjdfhks123"): WSResponse =
     wsClient
       .url(s"$url/v1/status/public-funds/nino/raw")
@@ -35,9 +25,9 @@ class HomeOfficeSettledStatusProxyControllerISpec
       .post(payload)
       .futureValue
 
-  "HomeOfficeSettledStatusProxyController" when {
+  "HomeOfficeSettledStatusProxyTestOnlyController" when {
 
-    "POST /v1/status/public-funds/nino" should {
+    "POST /v1/status/public-funds/nino/raw" should {
 
       "respond with 200 if request is valid" in {
         ping.status.shouldBe(200)
@@ -46,7 +36,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenStatusCheckResultNoRangeExample()
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validRequestBody)
+        val result = publicFundsByNinoRaw(validRequestBody)
         result.status shouldBe 200
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
@@ -72,7 +62,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenStatusCheckErrorWhenStatusNotFound()
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validRequestBody)
+        val result = publicFundsByNinoRaw(validRequestBody)
 
         result.status shouldBe 404
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
@@ -85,36 +75,18 @@ class HomeOfficeSettledStatusProxyControllerISpec
       "respond with 400 if one of the required input parameters is missing from the request" in {
         ping.status.shouldBe(200)
 
+        givenOAuthTokenGranted()
+        givenStatusCheckErrorWhenEmptyInput()
         givenAuthorisedForStride
 
-        val correlationId = UUID.randomUUID().toString
-        val result = publicFundsByNino("{}", correlationId)
-
-        result.status shouldBe 400
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be(correlationId))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be("ERR_REQUEST_INVALID"))
-          ))
-      }
-
-      "respond with 422 if one of the input parameters passed in has failed internal validation" in {
-        ping.status.shouldBe(200)
-
-        givenAuthorisedForStride
-
-        val result = publicFundsByNino(invalidNinoRequestBody)
+        val correlationId = "sjdfhks123"
+        val result = publicFundsByNinoRaw("{}", correlationId)
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
             "error",
-            haveProperty[String]("errCode", be("ERR_VALIDATION"))
-              and havePropertyArrayOf[JsObject](
-                "fields",
-                haveProperty[String]("code")
-                  and haveProperty[String]("name")
-              )
+            haveProperty[String]("errCode", be("ERR_REQUEST_INVALID"))
           ))
       }
 
@@ -125,7 +97,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenStatusCheckErrorWhenDOBInvalid()
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validRequestBody)
+        val result = publicFundsByNinoRaw(validRequestBody)
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
@@ -144,9 +116,10 @@ class HomeOfficeSettledStatusProxyControllerISpec
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
+        givenStatusCheckErrorWhenInvalidJson()
         givenAuthorisedForStride
 
-        val result = publicFundsByNino("[]")
+        val result = publicFundsByNinoRaw("[]")
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
@@ -162,7 +135,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenStatusCheckResponseUndefined()
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validRequestBody, "sjdfhks123")
+        val result = publicFundsByNinoRaw(validRequestBody, "sjdfhks123")
 
         result.status shouldBe 400
         result.json.as[JsObject] should haveProperty[String]("correlationId")

@@ -1,0 +1,5 @@
+# microservice specific routes
+
+POST        /v1/status/public-funds/nino/raw                @uk.gov.hmrc.homeofficesettledstatusproxy.controllers.testonly.HomeOfficeSettledStatusProxyTestOnlyController.statusPublicFundsByNinoRaw
+
+->          /                                               prod.Routes
