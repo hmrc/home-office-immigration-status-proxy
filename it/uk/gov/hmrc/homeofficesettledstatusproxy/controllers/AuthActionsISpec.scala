@@ -59,12 +59,12 @@ trait AuthActionISpecSetup extends AppBaseISpec {
 
     import scala.concurrent.ExecutionContext.Implicits.global
 
-    def withAuthorisedWithStride[A]: Result =
+    def withAuthorisedWithStride: Result =
       await(super.authorisedWithStride {
         Future.successful(Ok("foo"))
       })
 
-    def withAuthorisedWithStride[A](raiseException: => Nothing): Result =
+    def withAuthorisedWithStride(raiseException: => Nothing): Result =
       await(super.authorisedWithStride {
         Future.successful(raiseException)
       })
