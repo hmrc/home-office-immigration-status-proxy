@@ -28,9 +28,6 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
     val appName = "home-office-settled-status-proxy"
     Logger(getClass).info(s"Starting microservice : $appName : in mode : ${environment.mode}")
 
-    bind(classOf[HttpGet]).to(classOf[ProxyHttpClient])
-    bind(classOf[HttpPost]).to(classOf[ProxyHttpClient])
-
     bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
   }
 }

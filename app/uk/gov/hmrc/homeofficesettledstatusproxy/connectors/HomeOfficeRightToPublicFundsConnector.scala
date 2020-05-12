@@ -27,7 +27,7 @@ import play.mvc.Http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector.extractResponseBody
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckResponse}
-import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.AppConfig
+import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.{AppConfig, ProxyHttpClient}
 import uk.gov.hmrc.http._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class HomeOfficeRightToPublicFundsConnector @Inject()(
   appConfig: AppConfig,
-  http: HttpPost,
+  http: ProxyHttpClient,
   metrics: Metrics)
     extends HttpAPIMonitor {
 
