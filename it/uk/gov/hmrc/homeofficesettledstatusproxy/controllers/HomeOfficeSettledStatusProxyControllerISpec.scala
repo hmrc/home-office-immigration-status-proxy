@@ -8,6 +8,7 @@ import play.api.libs.json.JsObject
 import play.api.libs.ws.{WSClient, WSResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
 import uk.gov.hmrc.homeofficesettledstatusproxy.support.{JsonMatchers, ServerBaseISpec}
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
 
 class HomeOfficeSettledStatusProxyControllerISpec
     extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
@@ -65,6 +66,19 @@ class HomeOfficeSettledStatusProxyControllerISpec
           ))
       }
 
+      "respond with 200 if request is valid and response is 202" in {
+        ping.status.shouldBe(200)
+
+        givenOAuthTokenGranted()
+        givenEmptyStatusCheckResult()
+        givenAuthorisedForStride
+
+        val result = publicFundsByNino(validRequestBody)
+        result.status shouldBe 200
+        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
+          and notHaveProperty("result") and notHaveProperty("error"))
+      }
+
       "respond with 404 if the service failed to find an identity based on the values provided" in {
         ping.status.shouldBe(200)
 
@@ -78,7 +92,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
             "error",
-            haveProperty[String]("errCode", be("ERR_NOT_FOUND"))
+            haveProperty[String]("errCode", be(ERR_NOT_FOUND))
           ))
       }
 
@@ -94,11 +108,11 @@ class HomeOfficeSettledStatusProxyControllerISpec
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be(correlationId))
           and haveProperty[JsObject](
             "error",
-            haveProperty[String]("errCode", be("ERR_REQUEST_INVALID"))
+            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
           ))
       }
 
-      "respond with 422 if one of the input parameters passed in has failed internal validation" in {
+      "respond with 400 if one of the input parameters passed in has failed internal validation" in {
         ping.status.shouldBe(200)
 
         givenAuthorisedForStride
@@ -109,7 +123,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
             "error",
-            haveProperty[String]("errCode", be("ERR_VALIDATION"))
+            haveProperty[String]("errCode", be(ERR_VALIDATION))
               and havePropertyArrayOf[JsObject](
                 "fields",
                 haveProperty[String]("code")
@@ -118,7 +132,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
           ))
       }
 
-      "respond with 422 if one of the input parameters passed in has failed external validation" in {
+      "respond with 400 if one of the input parameters passed in has failed external validation" in {
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
@@ -131,7 +145,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
             "error",
-            haveProperty[String]("errCode", be("ERR_VALIDATION"))
+            haveProperty[String]("errCode", be(ERR_VALIDATION))
               and havePropertyArrayOf[JsObject](
                 "fields",
                 haveProperty[String]("code")
@@ -152,20 +166,55 @@ class HomeOfficeSettledStatusProxyControllerISpec
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
             "error",
-            haveProperty[String]("errCode", be("ERR_REQUEST_INVALID"))))
+            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))))
       }
 
-      "respond with 400 if the service response undefined" in {
+      "respond with 400 even if the service error undefined" in {
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
-        givenStatusCheckResponseUndefined()
+        givenStatusCheckErrorUndefined(400)
         givenAuthorisedForStride
 
         val result = publicFundsByNino(validRequestBody, "sjdfhks123")
 
         result.status shouldBe 400
         result.json.as[JsObject] should haveProperty[String]("correlationId")
+        result.json.as[JsObject] should haveProperty[JsObject](
+          "error",
+          haveProperty[String]("errCode", be(ERR_REQUEST_INVALID)))
+      }
+
+      "respond with 404 even if the service error undefined" in {
+        ping.status.shouldBe(200)
+
+        givenOAuthTokenGranted()
+        givenStatusCheckErrorUndefined(404)
+        givenAuthorisedForStride
+
+        val result = publicFundsByNino(validRequestBody, "sjdfhks123")
+
+        result.status shouldBe 404
+        result.json.as[JsObject] should haveProperty[String]("correlationId")
+        result.json.as[JsObject] should haveProperty[JsObject](
+          "error",
+          haveProperty[String]("errCode", be(ERR_NOT_FOUND)))
+      }
+
+      "respond with 409 even if the service error undefined" in {
+        ping.status.shouldBe(200)
+
+        givenOAuthTokenGranted()
+        givenStatusCheckErrorUndefined(409)
+        givenAuthorisedForStride
+
+        val result = publicFundsByNino(validRequestBody, "sjdfhks123")
+
+        result.status shouldBe 409
+        result.json.as[JsObject] should haveProperty[String]("correlationId")
+        result.json.as[JsObject] should haveProperty[JsObject](
+          "error",
+          haveProperty[String]("errCode", be(ERR_CONFLICT)))
       }
     }
   }

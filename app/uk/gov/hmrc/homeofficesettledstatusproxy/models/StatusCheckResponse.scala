@@ -41,7 +41,7 @@ object StatusCheckResponse {
 
   object HasResult {
     def unapply(response: StatusCheckResponse): Option[StatusCheckResponse] =
-      response.result.map(_ => response)
+      if (response.error.isDefined) None else Some(response)
   }
 
   object HasError {

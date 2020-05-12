@@ -8,6 +8,7 @@ import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckB
 import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
 import uk.gov.hmrc.homeofficesettledstatusproxy.support.AppBaseISpec
 import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
 
 import scala.concurrent.ExecutionContext
 
@@ -79,7 +80,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode shouldBe "ERR_REQUEST_INVALID"
+      result.error.get.errCode shouldBe ERR_REQUEST_INVALID
     }
 
     "return check error when 404 response ERR_NOT_FOUND" in {
@@ -90,7 +91,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode shouldBe "ERR_NOT_FOUND"
+      result.error.get.errCode shouldBe ERR_NOT_FOUND
     }
 
     "return check error when 409 response ERR_CONFLICT" in {
@@ -101,7 +102,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode shouldBe "ERR_CONFLICT"
+      result.error.get.errCode shouldBe ERR_CONFLICT
     }
 
     "return check error when 400 response ERR_VALIDATION" in {
@@ -112,7 +113,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode shouldBe "ERR_VALIDATION"
+      result.error.get.errCode shouldBe ERR_VALIDATION
     }
 
     "throw exception if other 4xx response" in {
@@ -129,6 +130,17 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       an[Upstream5xxResponse] shouldBe thrownBy {
         await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
       }
+    }
+
+    "return empty response when 202" in {
+      givenEmptyStatusCheckResult()
+
+      val result: StatusCheckResponse =
+        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+
+      result.correlationId shouldBe dummyCorrelationId
+      result.result shouldBe None
+      result.error shouldBe None
     }
   }
 
@@ -174,7 +186,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
       result.result shouldBe None
       result.error shouldBe defined
-      result.error.get.errCode shouldBe "ERR_REQUEST_INVALID"
+      result.error.get.errCode shouldBe ERR_REQUEST_INVALID
     }
 
     "return check error when 404 response ERR_NOT_FOUND" in {

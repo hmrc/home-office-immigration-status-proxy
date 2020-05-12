@@ -28,6 +28,7 @@ import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.{HomeOfficeRightToPub
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.StatusCheckResponse.{HasError, HasResult}
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckResponse}
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,7 +52,7 @@ class HomeOfficeSettledStatusProxyController @Inject()(
         request.body.asOpt[JsObject] match {
 
           case None =>
-            val result = StatusCheckResponse.error(correlationId, "ERR_REQUEST_INVALID")
+            val result = StatusCheckResponse.error(correlationId, ERR_REQUEST_INVALID)
             Future.successful(BadRequest(Json.toJson(result)))
 
           case Some(payload) =>
@@ -64,10 +65,14 @@ class HomeOfficeSettledStatusProxyController @Inject()(
                     rightToPublicFundsConnector
                       .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
                       .map {
-                        case HasError("ERR_NOT_FOUND", response) => NotFound(Json.toJson(response))
+                        case HasError(ERR_NOT_FOUND, response) =>
+                          NotFound(Json.toJson(response))
 
-                        case HasError("ERR_VALIDATION", response) =>
+                        case HasError(ERR_VALIDATION, response) =>
                           BadRequest(Json.toJson(response))
+
+                        case HasError(ERR_CONFLICT, response) =>
+                          Conflict(Json.toJson(response))
 
                         case HasResult(response) => Ok(Json.toJson(response))
 
@@ -81,12 +86,12 @@ class HomeOfficeSettledStatusProxyController @Inject()(
               case MissingInputFields(fields) =>
                 val result =
                   StatusCheckResponse
-                    .error(correlationId, "ERR_REQUEST_INVALID", Some(fields.map((_, "missing"))))
+                    .error(correlationId, ERR_REQUEST_INVALID, Some(fields.map((_, "missing"))))
                 Future.successful(BadRequest(Json.toJson(result)))
 
               case InvalidInputFields(validationErrors) =>
                 val result =
-                  StatusCheckResponse.error(correlationId, "ERR_VALIDATION", Some(validationErrors))
+                  StatusCheckResponse.error(correlationId, ERR_VALIDATION, Some(validationErrors))
                 Future.successful(BadRequest(Json.toJson(result)))
             }
         }

@@ -63,6 +63,9 @@ trait HomeOfficeRightToPublicFundsStubs {
   def givenStatusCheckResultWithRangeExample(): StubMapping =
     givenStatusPublicFundsByNinoStub(200, requestBodyWithRange, responseBodyWithStatus)
 
+  def givenEmptyStatusCheckResult(): StubMapping =
+    givenStatusPublicFundsByNinoStub(202, validRequestBody, "")
+
   def givenStatusCheckErrorWhenMissingInputField(): StubMapping = {
 
     val errorResponseBody: String =
@@ -115,14 +118,16 @@ trait HomeOfficeRightToPublicFundsStubs {
     givenStatusPublicFundsByNinoStub(404, validRequestBody, errorResponseBody)
   }
 
-  def givenStatusCheckResponseUndefined(): StubMapping = {
+  def givenStatusCheckErrorUndefined(status: Int): StubMapping = {
+
+    assert(status >= 400 && status < 500)
 
     val errorResponseBody: String =
       """{
         |  "correlationId": "sjdfhks123"
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(400, validRequestBody, errorResponseBody)
+    givenStatusPublicFundsByNinoStub(status, validRequestBody, errorResponseBody)
   }
 
   def givenStatusCheckErrorWhenConflict(): StubMapping = {

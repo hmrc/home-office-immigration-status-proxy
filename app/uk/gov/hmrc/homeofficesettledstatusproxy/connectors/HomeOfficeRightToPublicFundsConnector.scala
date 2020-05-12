@@ -25,10 +25,11 @@ import javax.inject.Inject
 import play.api.libs.json.Json
 import play.mvc.Http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector.extractResponseBody
-import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckResponse}
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.HomeOfficeRightToPublicFundsConnector.{ensureHasError, extractResponseBody}
+import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckError, StatusCheckResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.{AppConfig, ProxyHttpClient}
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -81,14 +82,33 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
       http
-        .POST[StatusCheckByNinoRequest, StatusCheckResponse](url, request, headers)
+        .POST[StatusCheckByNinoRequest, HttpResponse](url, request, headers)
+        .map { response =>
+          if (response.status == 202) StatusCheckResponse(correlationId)
+          else
+            response.json.as[StatusCheckResponse]
+        }
         .recover {
           case e: BadRequestException =>
-            Json.parse(extractResponseBody(e.message, "Response body '")).as[StatusCheckResponse]
+            ensureHasError(
+              Json
+                .parse(extractResponseBody(e.message, "Response body '"))
+                .as[StatusCheckResponse],
+              ERR_REQUEST_INVALID)
+
           case e: NotFoundException =>
-            Json.parse(extractResponseBody(e.message, "Response body: '")).as[StatusCheckResponse]
+            ensureHasError(
+              Json
+                .parse(extractResponseBody(e.message, "Response body: '"))
+                .as[StatusCheckResponse],
+              ERR_NOT_FOUND)
+
           case e: Upstream4xxResponse if e.upstreamResponseCode == 409 =>
-            Json.parse(extractResponseBody(e.message, "Response body: '")).as[StatusCheckResponse]
+            ensureHasError(
+              Json
+                .parse(extractResponseBody(e.message, "Response body: '"))
+                .as[StatusCheckResponse],
+              ERR_CONFLICT)
         }
     }
   }
@@ -127,5 +147,11 @@ object HomeOfficeRightToPublicFundsConnector {
       else s"""{"error":{"errCode":"$message"}}"""
     body
   }
+
+  def ensureHasError(
+    response: StatusCheckResponse,
+    alternativeErrorCode: String): StatusCheckResponse =
+    if (response.error.isDefined) response
+    else response.copy(error = Some(StatusCheckError(alternativeErrorCode)))
 
 }
