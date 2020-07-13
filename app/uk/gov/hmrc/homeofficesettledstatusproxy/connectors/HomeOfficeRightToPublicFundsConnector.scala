@@ -84,9 +84,9 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
       http
         .POST[StatusCheckByNinoRequest, HttpResponse](url, request, headers)
         .map { response =>
-          if (response.status == 202) StatusCheckResponse(correlationId)
-          else
-            response.json.as[StatusCheckResponse]
+          Option(response.body)
+            .filter(!_.trim.isEmpty)
+            .fold(StatusCheckResponse(correlationId))(_ => response.json.as[StatusCheckResponse])
         }
         .recover {
           case e: BadRequestException =>

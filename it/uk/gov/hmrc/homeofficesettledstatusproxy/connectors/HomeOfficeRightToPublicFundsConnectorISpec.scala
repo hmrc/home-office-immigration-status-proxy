@@ -132,7 +132,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       }
     }
 
-    "return empty response when 202" in {
+    "return empty response when status is not active" in {
       givenEmptyStatusCheckResult()
 
       val result: StatusCheckResponse =

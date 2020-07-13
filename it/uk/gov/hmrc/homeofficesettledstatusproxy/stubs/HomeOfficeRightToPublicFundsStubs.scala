@@ -64,7 +64,7 @@ trait HomeOfficeRightToPublicFundsStubs {
     givenStatusPublicFundsByNinoStub(200, requestBodyWithRange, responseBodyWithStatus)
 
   def givenEmptyStatusCheckResult(): StubMapping =
-    givenStatusPublicFundsByNinoStub(202, validRequestBody, "")
+    givenStatusPublicFundsByNinoStub(200, validRequestBody, "")
 
   def givenStatusCheckErrorWhenMissingInputField(): StubMapping = {
 

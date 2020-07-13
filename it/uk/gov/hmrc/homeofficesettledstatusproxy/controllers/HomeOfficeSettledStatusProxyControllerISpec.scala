@@ -66,7 +66,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
           ))
       }
 
-      "respond with 200 if request is valid and response is 202" in {
+      "respond with 200 if request is valid but the status is not active" in {
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
