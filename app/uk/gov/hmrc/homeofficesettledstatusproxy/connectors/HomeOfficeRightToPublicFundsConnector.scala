@@ -30,6 +30,7 @@ import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckB
 import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.{AppConfig, ProxyHttpClient}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
+import uk.gov.hmrc.http.hooks.HookData
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -103,7 +104,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
                 .as[StatusCheckResponse],
               ERR_NOT_FOUND)
 
-          case e: Upstream4xxResponse if e.upstreamResponseCode == 409 =>
+          case UpstreamErrorResponse.Upstream4xxResponse(e) if e.statusCode == 409 =>
             ensureHasError(
               Json
                 .parse(extractResponseBody(e.message, "Response body: '"))
@@ -131,7 +132,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino-Raw") {
       val response = http.doPostString(url, request, headers)
-      http.hooks.foreach(hook => hook(url, "POST", Option(request), response))
+      http.hooks.foreach(hook => hook(url, "POST", Option(HookData.FromString(request)), response))
       response
     }
   }
