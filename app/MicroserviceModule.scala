@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import uk.gov.hmrc.http._
 class MicroserviceModule(val environment: Environment, val configuration: Configuration)
     extends AbstractModule {
 
-  def configure(): Unit = {
+  override def configure(): Unit = {
     val appName = "home-office-settled-status-proxy"
     Logger(getClass).info(s"Starting microservice : $appName : in mode : ${environment.mode}")
 
