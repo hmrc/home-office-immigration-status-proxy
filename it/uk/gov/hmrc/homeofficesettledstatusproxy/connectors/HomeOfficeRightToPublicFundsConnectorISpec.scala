@@ -1,19 +1,19 @@
 package uk.gov.hmrc.homeofficesettledstatusproxy.connectors
 
-import java.time.LocalDate
-
+import org.scalatest.concurrent.ScalaFutures
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
 import uk.gov.hmrc.homeofficesettledstatusproxy.support.AppBaseISpec
-import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, Upstream4xxResponse, Upstream5xxResponse}
-import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, Upstream4xxResponse, Upstream5xxResponse, UpstreamErrorResponse}
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
 class HomeOfficeRightToPublicFundsConnectorISpec
-    extends AppBaseISpec with HomeOfficeRightToPublicFundsStubs {
+    extends AppBaseISpec with HomeOfficeRightToPublicFundsStubs with ScalaFutures {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
@@ -22,22 +22,23 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
   val dummyCorrelationId = "sjdfhks123"
-  val dummyOAuthToken = OAuthToken("FOO0123456789", "not-used", "SomeTokenType")
+  val dummyOAuthToken: OAuthToken = OAuthToken("FOO0123456789", "not-used", "SomeTokenType")
 
-  val request = StatusCheckByNinoRequest("2001-01-31", "Jane", "Doe", Nino("RJ301829A"))
+  val request: StatusCheckByNinoRequest = StatusCheckByNinoRequest("2001-01-31", "Jane", "Doe", Nino("RJ301829A"))
 
   "HomeOfficeRightToPublicFundsConnector.token" should {
     "return valid oauth token" in {
       givenOAuthTokenGranted()
-      val result: OAuthToken = await(connector.token(dummyCorrelationId))
+      val result: OAuthToken = connector.token(dummyCorrelationId).futureValue
       result.access_token shouldBe "FOO0123456789"
     }
 
     "raise exception if token denied" in {
       givenOAuthTokenDenied()
-      an[Upstream4xxResponse] shouldBe thrownBy {
-        await(connector.token(dummyCorrelationId))
+      val result = intercept[RuntimeException]{
+        (connector.token(dummyCorrelationId)).futureValue
       }
+      result.getMessage should include("Upstream4xxResponse")
     }
   }
 
@@ -56,9 +57,9 @@ class HomeOfficeRightToPublicFundsConnectorISpec
             Some(LocalDate.parse("2019-04-15")))))
 
       val result: StatusCheckResponse =
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+        (connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue)
 
-      result.result shouldBe defined
+      result.result should not be None
       result.error shouldBe None
     }
 
@@ -66,9 +67,9 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckResultNoRangeExample()
 
       val result: StatusCheckResponse =
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
 
-      result.result shouldBe defined
+      result.result should not be None
       result.error shouldBe None
     }
 
@@ -76,10 +77,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenMissingInputField()
 
       val result: StatusCheckResponse =
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
 
       result.result shouldBe None
-      result.error shouldBe defined
+      result.error should not be None
       result.error.get.errCode shouldBe ERR_REQUEST_INVALID
     }
 
@@ -87,10 +88,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenStatusNotFound()
 
       val result: StatusCheckResponse =
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
 
       result.result shouldBe None
-      result.error shouldBe defined
+      result.error should not be None
       result.error.get.errCode shouldBe ERR_NOT_FOUND
     }
 
@@ -98,10 +99,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenConflict()
 
       val result: StatusCheckResponse =
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
 
       result.result shouldBe None
-      result.error shouldBe defined
+      result.error should not be None
       result.error.get.errCode shouldBe ERR_CONFLICT
     }
 
@@ -109,34 +110,36 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenDOBInvalid()
 
       val result: StatusCheckResponse =
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
 
       result.result shouldBe None
-      result.error shouldBe defined
+      result.error should not be None
       result.error.get.errCode shouldBe ERR_VALIDATION
     }
 
     "throw exception if other 4xx response" in {
       givenStatusPublicFundsByNinoStub(429, validRequestBody, "")
 
-      an[Upstream4xxResponse] shouldBe thrownBy {
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+      val result = intercept[RuntimeException] {
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
       }
+      result.getMessage should include("Upstream4xxResponse")
     }
 
     "throw exception if 5xx response" in {
       givenStatusPublicFundsByNinoStub(500, validRequestBody, "")
 
-      an[Upstream5xxResponse] shouldBe thrownBy {
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+      val result = intercept[RuntimeException] {
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
       }
+      result.getMessage should include("Upstream5xxResponse")
     }
 
     "return empty response when status is not active" in {
       givenEmptyStatusCheckResult()
 
       val result: StatusCheckResponse =
-        await(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken))
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
 
       result.correlationId shouldBe dummyCorrelationId
       result.result shouldBe None
@@ -159,15 +162,15 @@ class HomeOfficeRightToPublicFundsConnectorISpec
               Some(LocalDate.parse("2019-07-15")),
               Some(LocalDate.parse("2019-04-15")))))
 
-      val response: HttpResponse = await(
+      val response: HttpResponse =
         connector.statusPublicFundsByNinoRaw(
           Json.stringify(Json.toJson(request)),
           dummyCorrelationId,
-          dummyOAuthToken))
+          dummyOAuthToken).futureValue
 
       response.status shouldBe 200
       val result = Json.parse(response.body).as[StatusCheckResponse]
-      result.result shouldBe defined
+      result.result should not be None
       result.error shouldBe None
     }
 
@@ -175,17 +178,16 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenMissingInputField()
 
       val response: HttpResponse =
-        await(
           connector.statusPublicFundsByNinoRaw(
             Json.stringify(Json.toJson(request)),
             dummyCorrelationId,
-            dummyOAuthToken))
+            dummyOAuthToken).futureValue
 
       response.status shouldBe 400
       val result = Json.parse(response.body).as[StatusCheckResponse]
 
       result.result shouldBe None
-      result.error shouldBe defined
+      result.error should not be None
       result.error.get.errCode shouldBe ERR_REQUEST_INVALID
     }
 
@@ -193,11 +195,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenStatusNotFound()
 
       val response: HttpResponse =
-        await(
           connector.statusPublicFundsByNinoRaw(
             Json.stringify(Json.toJson(request)),
             dummyCorrelationId,
-            dummyOAuthToken))
+            dummyOAuthToken).futureValue
 
       response.status shouldBe 404
       response.body shouldBe """{
@@ -212,11 +213,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenConflict()
 
       val response: HttpResponse =
-        await(
           connector.statusPublicFundsByNinoRaw(
             Json.stringify(Json.toJson(request)),
             dummyCorrelationId,
-            dummyOAuthToken))
+            dummyOAuthToken).futureValue
 
       response.status shouldBe 409
       response.body shouldBe """{
@@ -231,11 +231,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenDOBInvalid()
 
       val response: HttpResponse =
-        await(
           connector.statusPublicFundsByNinoRaw(
             Json.stringify(Json.toJson(request)),
             dummyCorrelationId,
-            dummyOAuthToken))
+            dummyOAuthToken).futureValue
 
       response.status shouldBe 400
       response.body shouldBe """{
@@ -256,11 +255,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     "throw exception if other 4xx response" in {
       givenStatusPublicFundsByNinoStub(429, validRequestBody, "")
 
-      val response: HttpResponse = await(
+      val response: HttpResponse =
         connector.statusPublicFundsByNinoRaw(
           Json.stringify(Json.toJson(request)),
           dummyCorrelationId,
-          dummyOAuthToken))
+          dummyOAuthToken).futureValue
 
       response.status shouldBe 429
     }
@@ -268,11 +267,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     "throw exception if 5xx response" in {
       givenStatusPublicFundsByNinoStub(500, validRequestBody, "")
 
-      val response: HttpResponse = await(
+      val response: HttpResponse =
         connector.statusPublicFundsByNinoRaw(
           Json.stringify(Json.toJson(request)),
           dummyCorrelationId,
-          dummyOAuthToken))
+          dummyOAuthToken).futureValue
 
       response.status shouldBe 500
     }
