@@ -19,10 +19,9 @@ package uk.gov.hmrc.homeofficesettledstatusproxy.wiring
 import akka.actor.ActorSystem
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
-import play.api.libs.ws.{WSClient, WSProxyServer}
+import play.api.libs.ws.{WSClient}
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-import uk.gov.hmrc.play.http.ws.{WSProxy, WSProxyConfiguration}
 
 @Singleton
 class DirectHttpClient @Inject()(

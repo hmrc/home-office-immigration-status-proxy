@@ -6,21 +6,19 @@ object AppDependencies {
 
   private val compile = Seq(
     ws,
-    "uk.gov.hmrc" %% "bootstrap-backend-play-27" % "2.25.0",
-    "uk.gov.hmrc" %% "auth-client" % "2.35.0-play-26",
-    "com.kenshoo" %% "metrics-play" % "2.6.19_0.7.0",
-    "uk.gov.hmrc" %% "domain" % "5.9.0-play-26",
+    "uk.gov.hmrc" %% "bootstrap-backend-play-27" % "5.3.0",
+    "com.kenshoo" %% "metrics-play" % "2.7.3_0.8.1",
+    "uk.gov.hmrc" %% "domain" % "5.11.0-play-27",
     "com.github.blemale" %% "scaffeine" % "3.1.0",
-    "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "4.4.0",
+    "uk.gov.hmrc" %% "agent-kenshoo-monitoring" % "4.5.0-play-27",
     ws
   )
 
   private val test = Seq(
     "org.scalatest" %% "scalatest" % "3.0.9",
-    "uk.gov.hmrc"  %% "hmrctest"  % "3.10.0-play-26",
     "org.mockito" % "mockito-core" % "3.1.0",
     "org.pegdown" % "pegdown" % "1.6.0" ,
-    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.0",
+    "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3",
     "com.github.tomakehurst" % "wiremock" % "2.27.1"
   ).map(_ % "test, it")
 

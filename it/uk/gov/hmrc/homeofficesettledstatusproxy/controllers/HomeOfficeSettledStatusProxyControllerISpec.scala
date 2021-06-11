@@ -176,7 +176,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenStatusCheckErrorUndefined(400)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validRequestBody, "sjdfhks123")
+        val result = publicFundsByNino(validRequestBody)
 
         result.status shouldBe 400
         result.json.as[JsObject] should haveProperty[String]("correlationId")
@@ -192,7 +192,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenStatusCheckErrorUndefined(404)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validRequestBody, "sjdfhks123")
+        val result = publicFundsByNino(validRequestBody)
 
         result.status shouldBe 404
         result.json.as[JsObject] should haveProperty[String]("correlationId")
@@ -208,7 +208,7 @@ class HomeOfficeSettledStatusProxyControllerISpec
         givenStatusCheckErrorUndefined(409)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validRequestBody, "sjdfhks123")
+        val result = publicFundsByNino(validRequestBody)
 
         result.status shouldBe 409
         result.json.as[JsObject] should haveProperty[String]("correlationId")

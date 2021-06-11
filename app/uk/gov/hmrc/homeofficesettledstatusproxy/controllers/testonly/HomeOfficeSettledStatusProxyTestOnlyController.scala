@@ -21,8 +21,8 @@ import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.{HomeOfficeRightToPublicFundsConnector, MicroserviceAuthConnector}
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.{HomeOfficeRightToPublicFundsConnector}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.ExecutionContext
 
@@ -54,7 +54,7 @@ class HomeOfficeSettledStatusProxyTestOnlyController @Inject()(
           )
           .map { response =>
             new Status(response.status)(response.body)
-              .withHeaders(response.allHeaders.toSeq.flatMap {
+              .withHeaders(response.headers.toSeq.flatMap {
                 case (key, values) => values.map(v => (key, v))
               }: _*)
           }

@@ -19,7 +19,6 @@ package uk.gov.hmrc.homeofficesettledstatusproxy.connectors
 import javax.inject.{Inject, Singleton}
 import uk.gov.hmrc.auth.core.PlayAuthConnector
 import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.{AppConfig, DirectHttpClient}
-import uk.gov.hmrc.http.HttpPost
 
 @Singleton
 class MicroserviceAuthConnector @Inject()(appConfig: AppConfig, val http: DirectHttpClient)

@@ -31,7 +31,6 @@ import uk.gov.hmrc.homeofficesettledstatusproxy.wiring.{AppConfig, ProxyHttpClie
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
 import uk.gov.hmrc.http.hooks.HookData
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -86,7 +85,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
         .POST[StatusCheckByNinoRequest, HttpResponse](url, request, headers)
         .map { response =>
           Option(response.body)
-            .filter(!_.trim.isEmpty)
+            .filter(_.trim.nonEmpty)
             .fold(StatusCheckResponse(correlationId))(_ => response.json.as[StatusCheckResponse])
         }
         .recover {
@@ -115,24 +114,23 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
   }
 
   def statusPublicFundsByNinoRaw(request: String, correlationId: String, token: OAuthToken)(
-    implicit ec: ExecutionContext): Future[HttpResponse] = {
-
-    implicit val hc: HeaderCarrier =
-      HeaderCarrier().withExtraHeaders(
-        HEADER_X_CORRELATION_ID   -> correlationId,
-        HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",
-        HeaderNames.CONTENT_TYPE  -> MimeTypes.JSON
-      )
+    implicit ec: ExecutionContext,
+    hc: HeaderCarrier): Future[HttpResponse] = {
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
-      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino")
 
-    val headers = Seq()
+    val headers = Seq(
+      HEADER_X_CORRELATION_ID   -> correlationId,
+      HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",
+      HeaderNames.CONTENT_TYPE  -> MimeTypes.JSON
+    )
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino-Raw") {
-      val response = http.doPostString(url, request, headers)
-      http.hooks.foreach(hook => hook(url, "POST", Option(HookData.FromString(request)), response))
+      val response = http.doPostString(url.toString, request, headers)
+      http.hooks.foreach(hook =>
+        hook("POST", url, headers, Option(HookData.FromString(request)), response))
       response
     }
   }

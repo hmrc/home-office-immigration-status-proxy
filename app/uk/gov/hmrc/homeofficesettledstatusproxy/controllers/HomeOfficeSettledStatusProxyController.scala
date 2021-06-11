@@ -27,7 +27,7 @@ import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.{HomeOfficeRightToPublicFundsConnector, MicroserviceAuthConnector}
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.StatusCheckResponse.{HasError, HasResult}
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{StatusCheckByNinoRequest, StatusCheckResponse}
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.homeofficesettledstatusproxy.connectors.ErrorCodes._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -117,7 +117,7 @@ class HomeOfficeSettledStatusProxyController @Inject()(
           )
           .map { response =>
             new Status(response.status)(response.body)
-              .withHeaders(response.allHeaders.toSeq.flatMap {
+              .withHeaders(response.headers.toSeq.flatMap {
                 case (key, values) => values.map(v => (key, v))
               }: _*)
           }
