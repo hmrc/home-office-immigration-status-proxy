@@ -7,7 +7,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.homeofficesettledstatusproxy.models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckRange, StatusCheckResponse}
 import uk.gov.hmrc.homeofficesettledstatusproxy.stubs.HomeOfficeRightToPublicFundsStubs
 import uk.gov.hmrc.homeofficesettledstatusproxy.support.AppBaseISpec
-import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse, Upstream4xxResponse, Upstream5xxResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpErrorFunctions, HttpResponse}
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
@@ -35,9 +35,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
     "raise exception if token denied" in {
       givenOAuthTokenDenied()
-      val result = intercept[RuntimeException]{
-        (connector.token(dummyCorrelationId)).futureValue
-      }
+      val result = intercept[RuntimeException](connector.token(dummyCorrelationId).futureValue)
       result.getMessage should include("Upstream4xxResponse")
     }
   }
@@ -57,7 +55,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
             Some(LocalDate.parse("2019-04-15")))))
 
       val result: StatusCheckResponse =
-        (connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue)
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
 
       result.result should not be None
       result.error shouldBe None

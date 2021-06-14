@@ -1,6 +1,5 @@
 import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-import uk.gov.hmrc.SbtAutoBuildPlugin
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -40,7 +39,7 @@ lazy val root = (project in file("."))
     scalafmtOnCompile in IntegrationTest := true,
     majorVersion := 0
   )
-  .enablePlugins(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
+  .enablePlugins(PlayScala, SbtDistributablesPlugin)
 
    scalacOptions ++= Seq(
   "-P:silencer:pathFilters=views;routes"
