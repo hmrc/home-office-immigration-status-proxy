@@ -2,7 +2,7 @@ package uk.gov.hmrc.homeofficesettledstatusproxy.controllers
 
 import org.scalatest.concurrent.ScalaFutures
 import play.api.Application
-import play.api.mvc.Result
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -58,7 +58,7 @@ trait AuthActionISpecSetup extends AppBaseISpec {
     override def authConnector: AuthConnector = app.injector.instanceOf[AuthConnector]
 
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val request = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
+    implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
 
     import scala.concurrent.ExecutionContext.Implicits.global
 

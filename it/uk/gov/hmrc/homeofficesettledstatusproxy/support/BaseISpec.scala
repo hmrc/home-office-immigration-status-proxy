@@ -1,7 +1,9 @@
 package uk.gov.hmrc.homeofficesettledstatusproxy.support
 
 import akka.stream.Materializer
-import org.scalatest.{Matchers, OptionValues, WordSpecLike}
+import org.scalatest.OptionValues
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.Application
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -16,7 +18,7 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.Future
 abstract class BaseISpec
-    extends WordSpecLike with Matchers with OptionValues with MockitoSugar with WireMockSupport with AuthStubs with DataStreamStubs with MetricsTestSupport {
+    extends AnyWordSpecLike with Matchers with OptionValues with MockitoSugar with WireMockSupport with AuthStubs with DataStreamStubs with MetricsTestSupport {
 
   def app: Application
   protected def appBuilder: GuiceApplicationBuilder
