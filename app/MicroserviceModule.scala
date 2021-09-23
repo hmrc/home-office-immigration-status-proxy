@@ -23,7 +23,7 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
     extends AbstractModule with Logging {
 
   override def configure(): Unit = {
-    val appName = "home-office-settled-status-proxy"
+    val appName = "home-office-immigration-status-proxy"
     logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
 
     bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
