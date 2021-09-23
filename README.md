@@ -16,7 +16,7 @@ or
 
     sm --start HOSS
 
-It should then be listening on port 931021188
+It should then be listening on port 10211
 
 ### License
 
