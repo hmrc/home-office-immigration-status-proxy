@@ -15,7 +15,7 @@ lazy val scoverageSettings = {
 
 lazy val root = (project in file("."))
   .settings(
-    name := "home-office-settled-status-proxy",
+    name := "home-office-immigration-status-proxy",
     organization := "uk.gov.hmrc",
     scalaVersion := "2.12.12",
     PlayKeys.playDefaultPort := 10211,

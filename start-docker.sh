@@ -11,5 +11,5 @@ if [ -n "${CLIENT_JKS}" ] ; then
   fi
 fi
 
-SCRIPT=$(find . -type f -name home-office-settled-status-proxy)
-exec $SCRIPT $HMRC_CONFIG -Dconfig.file=conf/home-office-settled-status-proxy.conf
+SCRIPT=$(find . -type f -name home-office-immigration-status-proxy)
+exec $SCRIPT $HMRC_CONFIG -Dconfig.file=conf/home-office-immigration-status-proxy.conf
