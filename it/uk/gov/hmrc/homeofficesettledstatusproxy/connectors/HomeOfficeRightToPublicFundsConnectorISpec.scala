@@ -22,13 +22,19 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
   val dummyCorrelationId = "sjdfhks123"
-  val dummyOAuthToken: OAuthToken = OAuthToken("FOO0123456789", "not-used", "SomeTokenType")
+  val dummyOAuthToken: OAuthToken = OAuthToken("FOO0123456789", "SomeTokenType")
 
   val request: StatusCheckByNinoRequest = StatusCheckByNinoRequest("2001-01-31", "Jane", "Doe", Nino("RJ301829A"))
 
   "HomeOfficeRightToPublicFundsConnector.token" should {
     "return valid oauth token" in {
       givenOAuthTokenGranted()
+      val result: OAuthToken = connector.token(dummyCorrelationId).futureValue
+      result.access_token shouldBe "FOO0123456789"
+    }
+
+    "return valid oauth token without refresh token" in {
+      givenOAuthTokenGrantedWithoutRefresh()
       val result: OAuthToken = connector.token(dummyCorrelationId).futureValue
       result.access_token shouldBe "FOO0123456789"
     }

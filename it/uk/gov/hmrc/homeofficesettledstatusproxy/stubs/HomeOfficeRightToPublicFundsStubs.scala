@@ -177,6 +177,18 @@ trait HomeOfficeRightToPublicFundsStubs {
 
   }
 
+  def givenOAuthTokenGrantedWithoutRefresh(): StubMapping = {
+
+    val oAuthTokenResponse: String =
+      """{
+        |   "access_token": "FOO0123456789",
+        |   "token_type": "SomeTokenType"
+        |}""".stripMargin
+
+    givenStatusPublicFundsTokenStub(200, validTokenForm, oAuthTokenResponse)
+
+  }
+
   def givenOAuthTokenDenied(): StubMapping =
     givenStatusPublicFundsTokenStub(401, validTokenForm, "")
 
