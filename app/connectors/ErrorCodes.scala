@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logging}
-import uk.gov.hmrc.auth.core.AuthConnector
-import connectors.MicroserviceAuthConnector
+package connectors
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule with Logging {
+object ErrorCodes {
 
-  override def configure(): Unit = {
-    val appName = "home-office-immigration-status-proxy"
-    logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+  val ERR_REQUEST_INVALID = "ERR_REQUEST_INVALID"
+  val ERR_NOT_FOUND = "ERR_NOT_FOUND"
+  val ERR_VALIDATION = "ERR_VALIDATION"
+  val ERR_CONFLICT = "ERR_CONFLICT"
+  val ERR_UNKNOWN = "ERR_UNKNOWN"
+  val ERR_HOME_OFFICE_RESPONSE = "ERR_HOME_OFFICE_RESPONSE"
 
-    bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
-  }
 }

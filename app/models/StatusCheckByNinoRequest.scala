@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logging}
-import uk.gov.hmrc.auth.core.AuthConnector
-import connectors.MicroserviceAuthConnector
+package models
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule with Logging {
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.domain.Nino
 
-  override def configure(): Unit = {
-    val appName = "home-office-immigration-status-proxy"
-    logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+case class StatusCheckByNinoRequest(
+  dateOfBirth: String,
+  familyName: String,
+  givenName: String,
+  nino: Nino,
+  statusCheckRange: Option[StatusCheckRange] = None
+)
 
-    bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
-  }
+object StatusCheckByNinoRequest {
+  implicit val formats: Format[StatusCheckByNinoRequest] = Json.format[StatusCheckByNinoRequest]
+
+  val mandatoryFields: Set[String] =
+    Set("dateOfBirth", "familyName", "givenName", "nino")
 }
