@@ -51,7 +51,7 @@
 
     <logger name="uk.gov.hmrc.homeofficesettledstatusproxy" level="INFO"/>
 
-    <logger name="uk.gov.hmrc.homeofficesettledstatusproxy.repository" level="ERROR"/>
+    <logger name="repository" level="ERROR"/>
 
     <logger name="akka" level="ERROR"/>
 

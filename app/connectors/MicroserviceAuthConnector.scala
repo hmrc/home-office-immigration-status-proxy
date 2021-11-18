@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logging}
-import uk.gov.hmrc.auth.core.AuthConnector
-import connectors.MicroserviceAuthConnector
+package connectors
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule with Logging {
+import javax.inject.{Inject, Singleton}
+import uk.gov.hmrc.auth.core.PlayAuthConnector
+import wiring.{AppConfig, DirectHttpClient}
 
-  override def configure(): Unit = {
-    val appName = "home-office-immigration-status-proxy"
-    logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+@Singleton
+class MicroserviceAuthConnector @Inject()(appConfig: AppConfig, val http: DirectHttpClient)
+    extends PlayAuthConnector {
 
-    bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
-  }
+  override val serviceUrl: String = appConfig.authBaseUrl
 }

@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logging}
-import uk.gov.hmrc.auth.core.AuthConnector
-import connectors.MicroserviceAuthConnector
+package controllers
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule with Logging {
+import akka.stream.Materializer
+import com.google.inject.Inject
+import play.api.mvc._
 
-  override def configure(): Unit = {
-    val appName = "home-office-immigration-status-proxy"
-    logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+import scala.concurrent.{ExecutionContext, Future}
 
-    bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
-  }
+class FakeAuthAction @Inject()(implicit materializer: Materializer) extends AuthAction {
+  override def parser: BodyParser[AnyContent] = new BodyParsers.Default()
+
+  override def invokeBlock[A](
+    request: Request[A],
+    block: Request[A] => Future[Result]): Future[Result] =
+    block(request)
+
+  override protected def executionContext: ExecutionContext = ???
 }

@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logging}
-import uk.gov.hmrc.auth.core.AuthConnector
-import connectors.MicroserviceAuthConnector
+package models
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule with Logging {
+import java.time.LocalDate
 
-  override def configure(): Unit = {
-    val appName = "home-office-immigration-status-proxy"
-    logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+import play.api.libs.json.{Format, Json}
 
-    bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
-  }
+case class StatusCheckRange(
+  // Requested status end date in ISO 8601 format
+  endDate: Option[LocalDate] = None,
+  // Requested status start date in ISO 8601 format
+  startDate: Option[LocalDate] = None
+)
+
+object StatusCheckRange {
+  implicit val formats: Format[StatusCheckRange] = Json.format[StatusCheckRange]
 }

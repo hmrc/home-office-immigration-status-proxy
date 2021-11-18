@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment, Logging}
-import uk.gov.hmrc.auth.core.AuthConnector
-import connectors.MicroserviceAuthConnector
+package wiring
 
-class MicroserviceModule(val environment: Environment, val configuration: Configuration)
-    extends AbstractModule with Logging {
+import javax.inject.{Inject, Singleton}
 
-  override def configure(): Unit = {
-    val appName = "home-office-immigration-status-proxy"
-    logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+import com.kenshoo.play.metrics.MetricsFilter
+import play.api.http.DefaultHttpFilters
+import uk.gov.hmrc.play.bootstrap.filters.{AuditFilter, CacheControlFilter, LoggingFilter}
 
-    bind(classOf[AuthConnector]).to(classOf[MicroserviceAuthConnector])
-  }
-}
+@Singleton
+class MicroserviceFilters @Inject()(
+  metricsFilter: MetricsFilter,
+  auditFilter: AuditFilter,
+  loggingFilter: LoggingFilter,
+  cacheFilter: CacheControlFilter,
+  monitoringFilter: MicroserviceMonitoringFilter)
+    extends DefaultHttpFilters(
+      metricsFilter,
+      monitoringFilter,
+      auditFilter,
+      loggingFilter,
+      cacheFilter)
