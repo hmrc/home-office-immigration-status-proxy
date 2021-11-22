@@ -20,6 +20,4 @@ sealed trait ValidationResult[A]
 
 case class ValidRequest[A](request: A) extends ValidationResult[A]
 
-case class MissingInputFields[A](fields: List[String]) extends ValidationResult[A]
-
 case class InvalidInputFields[A](fields: List[(String, String)]) extends ValidationResult[A]

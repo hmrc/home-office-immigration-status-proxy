@@ -23,7 +23,7 @@ import play.api.http.Status._
 import play.api.mvc._
 import play.api.mvc.Results._
 import java.time.LocalDate
-import play.api.libs.json.{Format, JsNull, JsObject, Json, Reads}
+import play.api.libs.json.{Format, Json, Reads}
 import scala.concurrent.Future
 import connectors.ErrorCodes._
 import play.api.test.FakeRequest
@@ -40,13 +40,9 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
   case class SomeRequest(intParam: Int, stringParam1: String, stringParam2: String)
   object SomeRequest {
     implicit val formats: Format[SomeRequest] = Json.format[SomeRequest]
-    val mandatoryFields: Set[String] =
-      Set("intParam", "stringParam1", "stringParam2")
   }
 
-  object TestController extends BaseController {
-    val mandatoryFields = SomeRequest.mandatoryFields
-  }
+  object TestController extends BaseController
 
   "eitherToResult" should {
 
@@ -93,112 +89,43 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
   }
 
-  "validateJson" should {
-    "return a MissingInputFields" when {
-      "all fields are missing" in {
-        val json = Json.parse("""{"differentParam":"something"}""").as[JsObject]
-        TestController
-          .validateJson[SomeRequest](json) shouldEqual MissingInputFields(
-          SomeRequest.mandatoryFields.toList)
-      }
-
-      "one field is missing" in {
-        val json = Json.parse("""{"intParam":1, "stringParam1":"string"}""").as[JsObject]
-        TestController
-          .validateJson[SomeRequest](json) shouldEqual MissingInputFields(List("stringParam2"))
-      }
-    }
-
-    "return a InvalidInputFields" when {
-      "all fields are invalid" in {
-        val json = Json
-          .parse("""{"intParam":"something", "stringParam1": 2, "stringParam2": 3}""")
-          .as[JsObject]
-        val result = TestController
-          .validateJson[SomeRequest](json)
-        result shouldEqual InvalidInputFields(
-          List(
-            "/intParam"     -> "error.expected.jsnumber",
-            "/stringParam1" -> "error.expected.jsstring",
-            "/stringParam2" -> "error.expected.jsstring"))
-      }
-
-      "one field is invalid" in {
-        val json = Json
-          .parse(
-            """{"intParam":"something", "stringParam1": "something", "stringParam2": "something"}""")
-          .as[JsObject]
-        val result = TestController
-          .validateJson[SomeRequest](json)
-        result shouldEqual InvalidInputFields(List("/intParam" -> "error.expected.jsnumber"))
-      }
-    }
-
-    "return a ValidRequest" in {
-      val json = Json
-        .parse("""{"intParam":1, "stringParam1": "something", "stringParam2": "something"}""")
-        .as[JsObject]
-      val result = TestController
-        .validateJson[SomeRequest](json)
-      result shouldEqual ValidRequest(SomeRequest(1, "something", "something"))
-    }
-  }
-
   val successFunction: SomeRequest => Future[Result] = request =>
     Future.successful(Ok("Great success"))
 
-  "validate" should {
+  "withValidParameters" should {
     "return a BadRequest" when {
       "a field is missing" in {
         val correlationId = "correlationId1"
-        val json = Json.parse("""{"intParam":1, "stringParam1":"string"}""").as[JsObject]
+        val request =
+          FakeRequest().withBody(Json.parse("""{"intParam":1, "stringParam1":"string"}"""))
         val expectedResult = StatusCheckErrorResponse
-          .error(Some(correlationId), ERR_REQUEST_INVALID, Some(List("/stringParam2" -> "missing")))
+          .error(
+            Some(correlationId),
+            ERR_REQUEST_INVALID,
+            Some(List("/stringParam2" -> "error.path.missing")))
 
-        val result = TestController.validate(json, successFunction, correlationId)
+        val result = TestController.withValidParameters(correlationId)(successFunction)(
+          request,
+          implicitly[Reads[SomeRequest]])
         await(result) shouldEqual BadRequest(Json.toJson(expectedResult))
       }
 
       "a field is invalid" in {
         val correlationId = "correlationId1"
-        val json = Json
+        val request = FakeRequest().withBody(Json
           .parse(
-            """{"intParam":"something", "stringParam1": "something", "stringParam2": "something"}""")
-          .as[JsObject]
+            """{"intParam":"something", "stringParam1": "something", "stringParam2": "something"}"""))
         val expectedResult = StatusCheckErrorResponse
           .error(
             Some(correlationId),
-            ERR_VALIDATION,
+            ERR_REQUEST_INVALID,
             Some(List("/intParam" -> "error.expected.jsnumber")))
 
-        val result = TestController.validate(json, successFunction, correlationId)
-        await(result) shouldEqual BadRequest(Json.toJson(expectedResult))
-      }
-    }
-
-    "call our function with a valid object" in {
-      val correlationId = "correlationId1"
-      val json = Json
-        .parse("""{"intParam":1, "stringParam1": "something", "stringParam2": "something"}""")
-        .as[JsObject]
-
-      val result = TestController.validate(json, successFunction, correlationId)
-      await(result) shouldEqual Ok("Great success")
-    }
-
-  }
-
-  "withValidParameters" should {
-    "return a BadRequest when we don't have valid json" in {
-      val request = FakeRequest().withBody(JsNull)
-      val correlationId = "correlationId1"
-      val expectedResult = StatusCheckErrorResponse.error(Some(correlationId), ERR_REQUEST_INVALID)
-
-      val result =
-        TestController.withValidParameters(correlationId)(successFunction)(
+        val result = TestController.withValidParameters(correlationId)(successFunction)(
           request,
           implicitly[Reads[SomeRequest]])
-      await(result) shouldEqual BadRequest(Json.toJson(expectedResult))
+        await(result) shouldEqual BadRequest(Json.toJson(expectedResult))
+      }
     }
 
     "call our function with a valid object" in {

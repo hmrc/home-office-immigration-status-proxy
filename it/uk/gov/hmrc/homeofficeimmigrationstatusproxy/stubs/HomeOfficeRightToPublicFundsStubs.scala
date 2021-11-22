@@ -24,7 +24,20 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  }
       |}""".stripMargin
 
-  val validRequestBody: String =
+  val mrzRequestBodyWithRange: String =
+    """{
+      |  "dateOfBirth": "2001-01-31",
+      |  "documentNumber": "1234567890",
+      |  "documentType": "PASSPORT",
+      |  "nationality": "USA",
+      |  "statusCheckRange": {
+      |    "endDate": "2019-07-15",
+      |    "startDate": "2019-04-15"
+      |  }
+      |}""".stripMargin
+
+
+  val validNinoRequestBody: String =
     """{
       |  "dateOfBirth": "2001-01-31",
       |  "familyName": "Jane",
@@ -38,6 +51,21 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  "familyName": "Jane",
       |  "givenName": "Doe",
       |  "nino": "invailid"
+      |}""".stripMargin
+
+  val validMrzRequestBody: String =
+    """{
+      |  "dateOfBirth": "2001-01-31",
+      |  "documentNumber": "1234567890",
+      |  "documentType": "PASSPORT",
+      |  "nationality": "USA"
+      |}""".stripMargin
+
+  val invalidMrzRequestBody: String =
+    """{
+      |  "dateOfBirth": "2001-01-31",
+      |  "documentNumber": "Jane",
+      |  "documentType": "Doe"
       |}""".stripMargin
 
   val responseBodyWithStatus: String =
@@ -76,13 +104,23 @@ trait HomeOfficeRightToPublicFundsStubs {
         )
        )
 
-  def givenStatusCheckResultNoRangeExample(): StubMapping =
-    givenStatusPublicFundsByNinoStub(200, validRequestBody, responseBodyWithStatus)
+  def getValidRequest(requestType: RequestType) = requestType match {
+    case RequestType.Nino => validNinoRequestBody
+    case RequestType.Mrz => validMrzRequestBody
+  }
 
-  def givenStatusCheckResultWithRangeExample(): StubMapping =
-    givenStatusPublicFundsByNinoStub(200, requestBodyWithRange, responseBodyWithStatus)
+  def getRequestWithRange(requestType: RequestType) = requestType match {
+    case RequestType.Nino => requestBodyWithRange
+    case RequestType.Mrz => mrzRequestBodyWithRange
+  }
 
-  def givenStatusCheckErrorWhenMissingInputField(): StubMapping = {
+  def givenStatusCheckResultNoRangeExample(requestType: RequestType): StubMapping =
+    givenSearchStub(requestType, 200, getValidRequest(requestType), responseBodyWithStatus)
+
+  def givenStatusCheckResultWithRangeExample(requestType: RequestType): StubMapping =
+    givenSearchStub(requestType, 200, getRequestWithRange(requestType), responseBodyWithStatus)
+
+  def givenStatusCheckErrorWhenMissingInputField(requestType: RequestType): StubMapping = {
 
     val errorResponseBody: String =
       """{
@@ -92,10 +130,10 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(400, validRequestBody, errorResponseBody)
+    givenSearchStub(requestType, 400, getValidRequest(requestType), errorResponseBody)
   }
 
-  def givenStatusCheckErrorWhenInvalidJson(): StubMapping = {
+  def givenStatusCheckErrorWhenInvalidJson(requestType: RequestType): StubMapping = {
 
     val errorResponseBody: String =
       """{
@@ -105,10 +143,10 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(400, "[]", errorResponseBody)
+    givenSearchStub(requestType, 400, "[]", errorResponseBody)
   }
 
-  def givenStatusCheckErrorWhenEmptyInput(): StubMapping = {
+  def givenStatusCheckErrorWhenEmptyInput(requestType: RequestType): StubMapping = {
 
     val errorResponseBody: String =
       """{
@@ -118,10 +156,10 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(400, "{}", errorResponseBody)
+    givenSearchStub(requestType, 400, "{}", errorResponseBody)
   }
 
-  def givenStatusCheckErrorWhenStatusNotFound(): StubMapping = {
+  def givenStatusCheckErrorWhenStatusNotFound(requestType: RequestType): StubMapping = {
 
     val errorResponseBody: String =
       """{
@@ -131,10 +169,10 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(404, validRequestBody, errorResponseBody)
+    givenSearchStub(requestType, 404, getValidRequest(requestType), errorResponseBody)
   }
 
-  def givenStatusCheckErrorUndefined(status: Int): StubMapping = {
+  def givenStatusCheckErrorUndefined(status: Int, requestType: RequestType): StubMapping = {
 
     assert(status >= 400 && status < 500)
 
@@ -143,10 +181,10 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  "correlationId": "sjdfhks123"
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(status, validRequestBody, errorResponseBody)
+    givenSearchStub(requestType, status, getValidRequest(requestType), errorResponseBody)
   }
 
-  def givenStatusCheckErrorWhenConflict(): StubMapping = {
+  def givenStatusCheckErrorWhenConflict(requestType: RequestType): StubMapping = {
 
     val errorResponseBody: String =
       """{
@@ -156,11 +194,11 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(409, validRequestBody, errorResponseBody)
+    givenSearchStub(requestType, 409, getValidRequest(requestType), errorResponseBody)
 
   }
 
-  def givenStatusCheckErrorWhenDOBInvalid(): StubMapping = {
+  def givenStatusCheckErrorWhenDOBInvalid(requestType: RequestType): StubMapping = {
 
     val errorResponseBody: String =
       """{
@@ -176,7 +214,7 @@ trait HomeOfficeRightToPublicFundsStubs {
         |  }
         |}""".stripMargin
 
-    givenStatusPublicFundsByNinoStub(400, validRequestBody, errorResponseBody)
+    givenSearchStub(requestType, 400, getValidRequest(requestType), errorResponseBody)
 
   }
 
@@ -224,6 +262,23 @@ trait HomeOfficeRightToPublicFundsStubs {
             .withBody(responseBody)
         ))
 
+  sealed trait RequestType
+  object RequestType {
+    case object Mrz extends RequestType
+    case object Nino extends RequestType
+  }
+
+  def givenSearchStub(
+    requestType: RequestType,
+    httpResponseCode: Int,
+    requestBody: String,
+    responseBody: String): StubMapping =
+    requestType match {
+      case RequestType.Mrz => givenStatusPublicFundsByMrzStub(httpResponseCode, requestBody, responseBody)
+      case RequestType.Nino => givenStatusPublicFundsByNinoStub(httpResponseCode, requestBody, responseBody)
+    }
+
+
   def givenStatusPublicFundsByNinoStub(
     httpResponseCode: Int,
     requestBody: String,
@@ -241,5 +296,24 @@ trait HomeOfficeRightToPublicFundsStubs {
             .withHeader("X-Correlation-Id", "sjdfhks123")
             .withBody(responseBody)
         ))
+
+  def givenStatusPublicFundsByMrzStub(
+    httpResponseCode: Int,
+    requestBody: String,
+    responseBody: String): StubMapping =
+    stubFor(
+      post(urlEqualTo(s"/v1/status/public-funds/mrz"))
+        .withHeader("X-Correlation-Id", equalTo("sjdfhks123"))
+        .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
+        .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
+        .withRequestBody(equalToJson(requestBody, true, true))
+        .willReturn(
+          aResponse()
+            .withStatus(httpResponseCode)
+            .withHeader("Content-Type", "application/json")
+            .withHeader("X-Correlation-Id", "sjdfhks123")
+            .withBody(responseBody)
+        ))
+
 
 }

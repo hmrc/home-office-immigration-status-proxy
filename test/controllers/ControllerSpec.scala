@@ -16,9 +16,10 @@
 
 package controllers
 
+import org.mockito.ArgumentMatchers.any
 import akka.util.Timeout
 import wiring.AppConfig
-import org.mockito.Mockito.{mock, reset}
+import org.mockito.Mockito.{mock, reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -28,6 +29,11 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
 import connectors.HomeOfficeRightToPublicFundsConnector
+import play.api.mvc.Result
+import scala.concurrent.Future
+import play.mvc.Http.HeaderNames
+import play.api.http.MimeTypes
+import models.{OAuthToken, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Awaitable}
@@ -54,4 +60,30 @@ trait ControllerSpec
   def await[T](future: Awaitable[T]): T = Await.result(future, timeoutDuration)
   lazy val messages: Messages = inject[MessagesApi].preferred(Seq.empty)
   lazy val appConfig: AppConfig = inject[AppConfig]
+  val correlationId = "CorrelationId123"
+
+  def tokenCallFails =
+    when(mockConnector.token(any())(any()))
+      .thenReturn(Future.failed(new Exception("Oh no - token")))
+  def tokenCallIsSuccessful =
+    when(mockConnector.token(any())(any()))
+      .thenReturn(Future.successful(OAuthToken("String", "String")))
+  def requestMrzCallFails =
+    when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
+      .thenReturn(Future.failed(new Exception("Oh no - connector")))
+  def requestMrzCallIsSuccessful(
+    response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
+    when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
+      .thenReturn(Future.successful(response))
+  def requestNinoCallFails =
+    when(mockConnector.statusPublicFundsByNino(any(), any(), any())(any()))
+      .thenReturn(Future.failed(new Exception("Oh no - connector")))
+  def requestNinoCallIsSuccessful(
+    response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
+    when(mockConnector.statusPublicFundsByNino(any(), any(), any())(any()))
+      .thenReturn(Future.successful(response))
+
+  def withHeaders(result: Result): Result =
+    result
+      .withHeaders("X-Correlation-Id" -> correlationId, HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
 }

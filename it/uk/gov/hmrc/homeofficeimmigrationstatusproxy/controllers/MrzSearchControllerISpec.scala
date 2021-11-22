@@ -10,7 +10,7 @@ import stubs.HomeOfficeRightToPublicFundsStubs
 import support.{JsonMatchers, ServerBaseISpec}
 import connectors.ErrorCodes._
 
-class NinoSearchControllerISpec
+class MrzSearchControllerISpec
     extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
   this: Suite with ServerProvider =>
 
@@ -20,26 +20,26 @@ class NinoSearchControllerISpec
 
   def ping: WSResponse = wsClient.url(s"$url/ping/ping").get.futureValue
 
-  def publicFundsByNino(payload: String, correlationId: String = "sjdfhks123"): WSResponse =
+  def publicFundsByMrz(payload: String, correlationId: String = "sjdfhks123"): WSResponse =
     wsClient
-      .url(s"$url/v1/status/public-funds/nino")
+      .url(s"$url/v1/status/public-funds/mrz")
       .addHttpHeaders("Content-Type" -> "application/json")
       .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
       .post(payload)
       .futureValue
 
-  "NinoSearchController" when {
+  "MrzSearchController" when {
 
-    "POST /v1/status/public-funds/nino" should {
+    "POST /v1/status/public-funds/mrz" should {
 
       "respond with 200 if request is valid" in {
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
-        givenStatusCheckResultNoRangeExample(RequestType.Nino)
+        givenStatusCheckResultNoRangeExample(RequestType.Mrz)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = publicFundsByMrz(validMrzRequestBody)
         result.status shouldBe 200
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
           and haveProperty[JsObject](
@@ -62,10 +62,10 @@ class NinoSearchControllerISpec
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
-        givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
+        givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = publicFundsByMrz(validMrzRequestBody)
 
         result.status shouldBe 404
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
@@ -81,7 +81,7 @@ class NinoSearchControllerISpec
         givenAuthorisedForStride
 
         val correlationId = UUID.randomUUID().toString
-        val result = publicFundsByNino("{}", correlationId)
+        val result = publicFundsByMrz("{}", correlationId)
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be(correlationId))
@@ -91,34 +91,14 @@ class NinoSearchControllerISpec
           ))
       }
 
-      "respond with 400 if one of the input parameters passed in has failed internal validation" in {
-        ping.status.shouldBe(200)
-
-        givenAuthorisedForStride
-
-        val result = publicFundsByNino(invalidNinoRequestBody)
-
-        result.status shouldBe 400
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
-              and havePropertyArrayOf[JsObject](
-                "fields",
-                haveProperty[String]("code")
-                  and haveProperty[String]("name")
-              )
-          ))
-      }
-
       "respond with 400 if one of the input parameters passed in has failed external validation" in {
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
-        givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
+        givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = publicFundsByMrz(validMrzRequestBody)
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
@@ -139,7 +119,7 @@ class NinoSearchControllerISpec
         givenOAuthTokenGranted()
         givenAuthorisedForStride
 
-        val result = publicFundsByNino("[]")
+        val result = publicFundsByMrz("[]")
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
@@ -152,10 +132,10 @@ class NinoSearchControllerISpec
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(400, RequestType.Nino)
+        givenStatusCheckErrorUndefined(400, RequestType.Mrz)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = publicFundsByMrz(validMrzRequestBody)
 
         result.status shouldBe 400
         result.json.as[JsObject] should haveProperty[String]("correlationId")
@@ -168,10 +148,10 @@ class NinoSearchControllerISpec
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(404, RequestType.Nino)
+        givenStatusCheckErrorUndefined(404, RequestType.Mrz)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = publicFundsByMrz(validMrzRequestBody)
 
         result.status shouldBe 404
         result.json.as[JsObject] should haveProperty[String]("correlationId")
@@ -184,10 +164,10 @@ class NinoSearchControllerISpec
         ping.status.shouldBe(200)
 
         givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(409, RequestType.Nino)
+        givenStatusCheckErrorUndefined(409, RequestType.Mrz)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = publicFundsByMrz(validMrzRequestBody)
 
         result.status shouldBe 409
         result.json.as[JsObject] should haveProperty[String]("correlationId")

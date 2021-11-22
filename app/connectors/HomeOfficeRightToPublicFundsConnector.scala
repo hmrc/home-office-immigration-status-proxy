@@ -24,7 +24,7 @@ import com.kenshoo.play.metrics.Metrics
 import javax.inject.Inject
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
+import models.{OAuthToken, StatusCheckByMrzRequest, StatusCheckByNinoRequest, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import wiring.{AppConfig, ProxyHttpClient}
 import uk.gov.hmrc.http._
 import scala.concurrent.{ExecutionContext, Future}
@@ -81,6 +81,31 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
       http
         .POST[
           StatusCheckByNinoRequest,
+          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request, headers)
+    }
+  }
+
+  def statusPublicFundsByMrz(
+    request: StatusCheckByMrzRequest,
+    correlationId: String,
+    token: OAuthToken)(implicit ec: ExecutionContext)
+    : Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier().withExtraHeaders(
+        HEADER_X_CORRELATION_ID   -> correlationId,
+        HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
+
+    val url = new URL(
+      appConfig.rightToPublicFundsBaseUrl,
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/mrz").toString
+
+    val headers = Seq()
+
+    monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Mrz") {
+      http
+        .POST[
+          StatusCheckByMrzRequest,
           Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request, headers)
     }
   }

@@ -40,8 +40,6 @@ class AuthActionImpl @Inject()(
     implicit val hc: HeaderCarrier =
       HeaderCarrierConverter.fromRequest(request)
 
-    println(hc.authorization)
-
     authorised(AuthProviders(PrivilegedApplication))(block(request))
       .recover {
         case e: AuthorisationException =>
