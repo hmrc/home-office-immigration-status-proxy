@@ -18,16 +18,14 @@ package models
 
 import play.api.libs.json.{Format, Json}
 
-case class StatusCheckByMrzRequest(
-  dateOfBirth: String,
-  familyName: String,
-  givenName: String,
+final case class StatusCheckByMrzRequest(
+  documentType: DocumentType,
+  documentNumber: DocumentNumber,
+  dateOfBirth: DateOfBirth,
+  nationality: Nationality,
   statusCheckRange: Option[StatusCheckRange] = None
 )
 
 object StatusCheckByMrzRequest {
   implicit val formats: Format[StatusCheckByMrzRequest] = Json.format[StatusCheckByMrzRequest]
-
-  val mandatoryFields: Set[String] =
-    Set("dateOfBirth", "familyName", "givenName", "nino")
 }

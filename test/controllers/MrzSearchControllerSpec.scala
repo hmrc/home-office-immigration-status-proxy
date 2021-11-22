@@ -22,19 +22,24 @@ import models._
 import play.api.mvc.Results._
 import play.api.http.Status._
 import java.time.LocalDate
-import uk.gov.hmrc.domain.Nino
 import connectors.ErrorCodes._
+import cats.implicits._
 
-class NinoSearchControllerSpec extends ControllerSpec {
+class MrzSearchControllerSpec extends ControllerSpec {
 
-  val controller = inject[NinoSearchController]
+  val controller = inject[MrzSearchController]
+
+  val req: StatusCheckByMrzRequest = (
+    DocumentNumber("1234567890"),
+    DateOfBirth(LocalDate.now.minusDays(1)),
+    Nationality("USA")
+  ).mapN((docNumber, dob, nat) =>
+      StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat))
+    .toOption
+    .get
 
   "post" should {
 
-    val req = DateOfBirth(LocalDate.now.minusDays(1))
-      .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A")))
-      .toOption
-      .get
     val requestBody = Json.toJson(req)
     val request: FakeRequest[JsValue] =
       FakeRequest().withBody(requestBody).withHeaders("X-Correlation-Id" -> correlationId)
@@ -46,9 +51,9 @@ class NinoSearchControllerSpec extends ControllerSpec {
         intercept[Exception](await(controller.post(request)))
       }
 
-      "connector.token is successful but connector.statusPublicFundsByNino fails" in {
+      "connector.token is successful but connector.statusPublicFundsByMrz fails" in {
         tokenCallIsSuccessful
-        requestNinoCallFails
+        requestMrzCallFails
         intercept[Exception](await(controller.post(request)))
       }
 
@@ -60,7 +65,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
         tokenCallIsSuccessful
         val statusCheckResult = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
-        requestNinoCallIsSuccessful(Right(statusCheckResponse))
+        requestMrzCallIsSuccessful(Right(statusCheckResponse))
         await(controller.post(request)) mustEqual withHeaders(Ok(Json.toJson(statusCheckResponse)))
       }
 
@@ -74,7 +79,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
           StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
         val errorResponseWithStatus =
           StatusCheckErrorResponseWithStatus(INTERNAL_SERVER_ERROR, errorResponse)
-        requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
+        requestMrzCallIsSuccessful(Left(errorResponseWithStatus))
         await(controller.post(request)) mustEqual withHeaders(
           InternalServerError(Json.toJson(errorResponse)))
       }
@@ -85,7 +90,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
           StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
         val errorResponseWithStatus =
           StatusCheckErrorResponseWithStatus(BAD_REQUEST, errorResponse)
-        requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
+        requestMrzCallIsSuccessful(Left(errorResponseWithStatus))
         await(controller.post(request)) mustEqual withHeaders(
           BadRequest(Json.toJson(errorResponse)))
       }

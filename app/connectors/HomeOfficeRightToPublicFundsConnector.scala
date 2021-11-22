@@ -24,11 +24,13 @@ import com.kenshoo.play.metrics.Metrics
 import javax.inject.Inject
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
-import models.{OAuthToken, StatusCheckByNinoRequest, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
+import models.{OAuthToken, StatusCheckByMrzRequest, StatusCheckByNinoRequest, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import wiring.{AppConfig, ProxyHttpClient}
 import uk.gov.hmrc.http._
 import scala.concurrent.{ExecutionContext, Future}
 import connectors.StatusCheckResponseHttpParser._
+import HttpReads.Implicits._
+import wiring.Constants._
 
 @Singleton
 class HomeOfficeRightToPublicFundsConnector @Inject()(
@@ -38,8 +40,6 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
-
-  val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
 
   def token(correlationId: String)(implicit ec: ExecutionContext): Future[OAuthToken] = {
 
@@ -75,13 +75,34 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
 
-    val headers = Seq()
-
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
       http
         .POST[
           StatusCheckByNinoRequest,
-          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request, headers)
+          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
+    }
+  }
+
+  def statusPublicFundsByMrz(
+    request: StatusCheckByMrzRequest,
+    correlationId: String,
+    token: OAuthToken)(implicit ec: ExecutionContext)
+    : Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
+
+    implicit val hc: HeaderCarrier =
+      HeaderCarrier().withExtraHeaders(
+        HEADER_X_CORRELATION_ID   -> correlationId,
+        HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
+
+    val url = new URL(
+      appConfig.rightToPublicFundsBaseUrl,
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/mrz").toString
+
+    monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Mrz") {
+      http
+        .POST[
+          StatusCheckByMrzRequest,
+          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
     }
   }
 

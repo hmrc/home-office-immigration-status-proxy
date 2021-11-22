@@ -22,57 +22,28 @@ import play.api.mvc.Results._
 import models.{StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import connectors.ErrorCodes._
 import java.util.UUID
+import wiring.Constants._
 
 import scala.concurrent.Future
 
 trait BaseController {
 
-  val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
-
-  def mandatoryFields: Set[String]
-
   def withValidParameters[A](correlationId: String)(
     f: A => Future[Result])(implicit request: Request[JsValue], reads: Reads[A]): Future[Result] =
-    request.body.asOpt[JsObject] match {
-      case None =>
-        val result = StatusCheckErrorResponse.error(Some(correlationId), ERR_REQUEST_INVALID)
-        Future.successful(BadRequest(Json.toJson(result)))
-      case Some(json) =>
-        validate(json, f, correlationId)
+    request.body.validate[A] match {
+      case JsSuccess(result, _) => f(result)
+      case JsError(errors)      => jsErrorToResponse(correlationId, errors)
     }
 
-  def validate[A](json: JsObject, f: A => Future[Result], correlationId: String)(
-    implicit reads: Reads[A]): Future[Result] =
-    validateJson(json) match {
-      case ValidRequest(r) =>
-        f(r)
-      case MissingInputFields(fields) =>
-        val result =
-          StatusCheckErrorResponse
-            .error(
-              Some(correlationId),
-              ERR_REQUEST_INVALID,
-              Some(fields.map(f => (s"/$f", "missing"))))
-        Future.successful(BadRequest(Json.toJson(result)))
-      case InvalidInputFields(validationErrors) =>
-        val result =
-          StatusCheckErrorResponse
-            .error(Some(correlationId), ERR_VALIDATION, Some(validationErrors))
-        Future.successful(BadRequest(Json.toJson(result)))
-    }
-
-  def validateJson[A](json: JsObject)(implicit reads: Reads[A]): ValidationResult[A] = {
-    val providedFields: Set[String] = json.fields.map(_._1).toSet
-    val missingFields = mandatoryFields.diff(providedFields)
-    if (missingFields.nonEmpty) MissingInputFields(missingFields.toList)
-    else
-      json.validate[A] match {
-        case JsSuccess(result, _) => ValidRequest(result)
-        case JsError(errors) =>
-          val validationErrors =
-            errors.flatMap { case (p, ve) => ve.map(e => (p.toString, e.message)) }.toList
-          InvalidInputFields(validationErrors)
-      }
+  private def jsErrorToResponse(
+    correlationId: String,
+    errors: Seq[(JsPath, Seq[JsonValidationError])]): Future[Result] = {
+    val validationErrors =
+      errors.flatMap { case (path, err) => err.map(e => (path.toString, e.message)) }.toList
+    val result =
+      StatusCheckErrorResponse
+        .error(Some(correlationId), ERR_REQUEST_INVALID, Some(validationErrors))
+    Future.successful(BadRequest(Json.toJson(result)))
   }
 
   def eitherToResult(

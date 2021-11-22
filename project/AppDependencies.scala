@@ -12,6 +12,7 @@ object AppDependencies {
     "uk.gov.hmrc"         %% "domain"                         % "6.2.0-play-28",
     "com.github.blemale"  %% "scaffeine"                      % "5.1.0",
     "uk.gov.hmrc"         %% "agent-kenshoo-monitoring"       % "4.7.0-play-27",
+    "org.typelevel"       %% "cats-core"                      % "2.0.0",
     ws
   )
 

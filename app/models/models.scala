@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
-package binders
+import play.api.libs.json.{JsError, JsPath, JsonValidationError, Reads}
+import models.ErrorMessage._
+import cats.data.Validated._
 
-object UrlBinders {}
+package object models {
+  implicit class RichReadsValidationResult[A](reads: Reads[ValidationResult[A]]) {
+    def flattenValidated: Reads[A] = reads.flatMap {
+      case Invalid(errors) =>
+        val validationErrors: List[JsonValidationError] =
+          errors.map(e => JsonValidationError(e.message)).toChain.toList
+        Reads(_ => JsError(Seq(JsPath -> validationErrors)))
+      case Valid(value) => Reads.pure(value)
+    }
+  }
+}

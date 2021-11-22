@@ -16,17 +16,10 @@
 
 package models
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.domain.Nino
+import cats.data.ValidatedNec
 
-case class StatusCheckByNinoRequest(
-  dateOfBirth: DateOfBirth,
-  familyName: String,
-  givenName: String,
-  nino: Nino,
-  statusCheckRange: Option[StatusCheckRange] = None
-)
+final case class ErrorMessage(message: String) extends AnyVal
 
-object StatusCheckByNinoRequest {
-  implicit val formats: Format[StatusCheckByNinoRequest] = Json.format[StatusCheckByNinoRequest]
+object ErrorMessage {
+  type ValidationResult[A] = ValidatedNec[ErrorMessage, A]
 }

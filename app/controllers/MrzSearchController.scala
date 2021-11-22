@@ -23,14 +23,14 @@ import play.api.mvc._
 import play.api.{Configuration, Environment}
 import play.mvc.Http.HeaderNames
 import connectors.HomeOfficeRightToPublicFundsConnector
-import models.StatusCheckByNinoRequest
+import models.StatusCheckByMrzRequest
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import wiring.Constants._
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class NinoSearchController @Inject()(
+class MrzSearchController @Inject()(
   rightToPublicFundsConnector: HomeOfficeRightToPublicFundsConnector,
   authAction: AuthAction,
   val env: Environment,
@@ -40,11 +40,11 @@ class NinoSearchController @Inject()(
   def post: Action[JsValue] = authAction.async(parse.tolerantJson) { implicit request =>
     val correlationId = getCorrelationId
 
-    withValidParameters[StatusCheckByNinoRequest](correlationId) { statusCheckByNinoRequest =>
+    withValidParameters[StatusCheckByMrzRequest](correlationId) { statusCheckByMrzRequest =>
       for {
         token <- rightToPublicFundsConnector.token(correlationId)
         either <- rightToPublicFundsConnector
-                   .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
+                   .statusPublicFundsByMrz(statusCheckByMrzRequest, correlationId, token)
         result = eitherToResult(either)
       } yield
         result.withHeaders(
