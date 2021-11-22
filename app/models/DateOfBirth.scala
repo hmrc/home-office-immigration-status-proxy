@@ -17,7 +17,6 @@
 package models
 
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
-import models.TypeClasses._
 import models.ErrorMessage._
 import cats.implicits._
 import java.time.LocalDate
@@ -27,7 +26,7 @@ object DateOfBirth {
   def apply(dob: LocalDate): ValidationResult[DateOfBirth] =
     validateDate(dob).map(new DateOfBirth(_))
 
-  def validateDate(dob: LocalDate): ValidationResult[LocalDate] =
+  private def validateDate(dob: LocalDate): ValidationResult[LocalDate] =
     if (dob.isBefore(LocalDate.now)) dob.validNec
     else ErrorMessage("Date of birth must be before today").invalidNec
 

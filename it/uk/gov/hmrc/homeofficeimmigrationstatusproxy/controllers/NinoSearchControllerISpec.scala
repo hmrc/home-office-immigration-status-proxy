@@ -20,7 +20,7 @@ class NinoSearchControllerISpec
 
   def ping: WSResponse = wsClient.url(s"$url/ping/ping").get.futureValue
 
-  def publicFundsByNino(payload: String, correlationId: String = "sjdfhks123"): WSResponse =
+  def publicFundsByNino(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
     wsClient
       .url(s"$url/v1/status/public-funds/nino")
       .addHttpHeaders("Content-Type" -> "application/json")
@@ -41,7 +41,7 @@ class NinoSearchControllerISpec
 
         val result = publicFundsByNino(validNinoRequestBody)
         result.status shouldBe 200
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
+        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "result",
             haveProperty[String]("dateOfBirth", be("2001-01-31"))
@@ -68,7 +68,7 @@ class NinoSearchControllerISpec
         val result = publicFundsByNino(validNinoRequestBody)
 
         result.status shouldBe 404
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
+        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_NOT_FOUND))
@@ -99,7 +99,7 @@ class NinoSearchControllerISpec
         val result = publicFundsByNino(invalidNinoRequestBody)
 
         result.status shouldBe 400
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
+        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
@@ -121,7 +121,7 @@ class NinoSearchControllerISpec
         val result = publicFundsByNino(validNinoRequestBody)
 
         result.status shouldBe 400
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
+        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_VALIDATION))
@@ -142,7 +142,7 @@ class NinoSearchControllerISpec
         val result = publicFundsByNino("[]")
 
         result.status shouldBe 400
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("sjdfhks123"))
+        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))))

@@ -17,7 +17,6 @@
 package models
 
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
-import models.TypeClasses._
 import models.ErrorMessage._
 import cats.implicits._
 
@@ -26,7 +25,7 @@ object Nationality {
   def apply(nationality: String): ValidationResult[Nationality] =
     validateLength(nationality).map(new Nationality(_))
 
-  def validateLength(nationality: String): ValidationResult[String] =
+  private def validateLength(nationality: String): ValidationResult[String] =
     if (nationality.length == 3) nationality.validNec
     else ErrorMessage("Nationality needs to be 3 characters long").invalidNec
 

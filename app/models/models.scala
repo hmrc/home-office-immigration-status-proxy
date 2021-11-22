@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package models
-
 import play.api.libs.json.{JsError, JsPath, JsonValidationError, Reads}
 import models.ErrorMessage._
 import cats.data.Validated._
 
-object TypeClasses {
+package object models {
   implicit class RichReadsValidationResult[A](reads: Reads[ValidationResult[A]]) {
     def flattenValidated: Reads[A] = reads.flatMap {
       case Invalid(errors) =>
@@ -30,10 +28,4 @@ object TypeClasses {
       case Valid(value) => Reads.pure(value)
     }
   }
-//   implicit class RichReadsValidationResult[A](reads: Reads[ValidatedNec[ErrorMessage, A]]) {
-//     def flattenEither: Reads[A] = reads.flatMap {
-//       case Invalid(error) => Reads.failed(error)
-//       case Right(value)   => Reads.pure(value)
-//     }
-//   }
 }

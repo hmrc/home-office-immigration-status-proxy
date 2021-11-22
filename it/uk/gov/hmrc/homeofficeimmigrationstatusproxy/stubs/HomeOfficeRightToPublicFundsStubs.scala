@@ -70,7 +70,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
   val responseBodyWithStatus: String =
     """{
-      |  "correlationId": "sjdfhks123",
+      |  "correlationId": "some-correlation-id",
       |  "result": {
       |    "dateOfBirth": "2001-01-31",
       |    "nationality": "IRL",
@@ -87,7 +87,7 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  }
       |}""".stripMargin
   val responseBodyWithStatusObject = StatusCheckResponse(
-        correlationId = "sjdfhks123",
+        correlationId = "some-correlation-id",
        result = StatusCheckResult(
         dateOfBirth = LocalDate.parse("2001-01-31"),
         nationality = "IRL",
@@ -124,7 +124,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
     val errorResponseBody: String =
       """{
-        |  "correlationId": "sjdfhks123",
+        |  "correlationId": "some-correlation-id",
         |  "error": {
         |    "errCode": "ERR_REQUEST_INVALID"
         |  }
@@ -137,7 +137,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
     val errorResponseBody: String =
       """{
-        |  "correlationId": "sjdfhks123",
+        |  "correlationId": "some-correlation-id",
         |  "error": {
         |    "errCode": "ERR_REQUEST_INVALID"
         |  }
@@ -150,7 +150,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
     val errorResponseBody: String =
       """{
-        |  "correlationId": "sjdfhks123",
+        |  "correlationId": "some-correlation-id",
         |  "error": {
         |    "errCode": "ERR_REQUEST_INVALID"
         |  }
@@ -163,7 +163,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
     val errorResponseBody: String =
       """{
-        |  "correlationId": "sjdfhks123",
+        |  "correlationId": "some-correlation-id",
         |  "error": {
         |    "errCode": "ERR_NOT_FOUND"
         |  }
@@ -178,7 +178,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
     val errorResponseBody: String =
       """{
-        |  "correlationId": "sjdfhks123"
+        |  "correlationId": "some-correlation-id"
         |}""".stripMargin
 
     givenSearchStub(requestType, status, getValidRequest(requestType), errorResponseBody)
@@ -188,7 +188,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
     val errorResponseBody: String =
       """{
-        |  "correlationId": "sjdfhks123",
+        |  "correlationId": "some-correlation-id",
         |  "error": {
         |    "errCode": "ERR_CONFLICT"
         |  }
@@ -202,7 +202,7 @@ trait HomeOfficeRightToPublicFundsStubs {
 
     val errorResponseBody: String =
       """{
-        |  "correlationId": "sjdfhks123",
+        |  "correlationId": "some-correlation-id",
         |  "error": {
         |    "errCode": "ERR_VALIDATION",
         |    "fields": [
@@ -252,7 +252,7 @@ trait HomeOfficeRightToPublicFundsStubs {
     responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/token"))
-        .withHeader("X-Correlation-Id", equalTo("sjdfhks123"))
+        .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/x-www-form-urlencoded"))
         .withRequestBody(equalTo(requestBody))
         .willReturn(
@@ -285,7 +285,7 @@ trait HomeOfficeRightToPublicFundsStubs {
     responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/nino"))
-        .withHeader("X-Correlation-Id", equalTo("sjdfhks123"))
+        .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
         .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
         .withRequestBody(equalToJson(requestBody, true, true))
@@ -293,7 +293,7 @@ trait HomeOfficeRightToPublicFundsStubs {
           aResponse()
             .withStatus(httpResponseCode)
             .withHeader("Content-Type", "application/json")
-            .withHeader("X-Correlation-Id", "sjdfhks123")
+            .withHeader("X-Correlation-Id", "some-correlation-id")
             .withBody(responseBody)
         ))
 
@@ -303,7 +303,7 @@ trait HomeOfficeRightToPublicFundsStubs {
     responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/mrz"))
-        .withHeader("X-Correlation-Id", equalTo("sjdfhks123"))
+        .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
         .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
         .withRequestBody(equalToJson(requestBody, true, true))
@@ -311,7 +311,7 @@ trait HomeOfficeRightToPublicFundsStubs {
           aResponse()
             .withStatus(httpResponseCode)
             .withHeader("Content-Type", "application/json")
-            .withHeader("X-Correlation-Id", "sjdfhks123")
+            .withHeader("X-Correlation-Id", "some-correlation-id")
             .withBody(responseBody)
         ))
 

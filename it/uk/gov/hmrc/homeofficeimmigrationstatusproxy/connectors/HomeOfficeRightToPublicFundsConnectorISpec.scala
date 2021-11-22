@@ -22,7 +22,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
   lazy val connector: HomeOfficeRightToPublicFundsConnector =
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
-  val dummyCorrelationId = "sjdfhks123"
+  val dummyCorrelationId = "some-correlation-id"
   val dummyOAuthToken: OAuthToken = OAuthToken("FOO0123456789", "SomeTokenType")
 
   val request = DateOfBirth(LocalDate.parse("2001-01-31"))

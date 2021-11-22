@@ -17,7 +17,6 @@
 package models
 
 import play.api.libs.json.{JsPath, JsString, Reads, Writes}
-import models.TypeClasses._
 import models.ErrorMessage._
 import cats.implicits._
 
@@ -33,7 +32,7 @@ object DocumentType {
     case "NAT"      => EUNationalID.validNec
     case "BRC"      => BRC.validNec
     case "BRP"      => BRP.validNec
-    case str        => ErrorMessage("Document type must be PASSPORT, NAT, BRC, or BRP").invalidNec
+    case _          => ErrorMessage("Document type must be PASSPORT, NAT, BRC, or BRP").invalidNec
   }
 
   implicit lazy val reads: Reads[DocumentType] =

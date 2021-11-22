@@ -17,7 +17,6 @@
 package models
 
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
-import models.TypeClasses._
 import models.ErrorMessage._
 import cats.implicits._
 
@@ -29,11 +28,11 @@ object DocumentNumber {
       validateCharacters(doc)
     ).mapN { case _ => new DocumentNumber(doc) }
 
-  def validateLength(doc: String): ValidationResult[String] =
+  private def validateLength(doc: String): ValidationResult[String] =
     if (doc.length > 0 && doc.length < 31) doc.validNec
     else ErrorMessage("Document number must be between 1 and 30 characters").invalidNec
 
-  def validateCharacters(doc: String): ValidationResult[String] = {
+  private def validateCharacters(doc: String): ValidationResult[String] = {
     val regex = "^[0-9A-Z-]*$".r
     doc match {
       case regex(_*) => doc.validNec
