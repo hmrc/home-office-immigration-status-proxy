@@ -22,12 +22,11 @@ import play.api.mvc.Results._
 import models.{StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import connectors.ErrorCodes._
 import java.util.UUID
+import wiring.Constants._
 
 import scala.concurrent.Future
 
 trait BaseController {
-
-  val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
 
   def withValidParameters[A](correlationId: String)(
     f: A => Future[Result])(implicit request: Request[JsValue], reads: Reads[A]): Future[Result] =

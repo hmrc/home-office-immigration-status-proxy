@@ -22,13 +22,12 @@ import play.api.Logging
 import scala.util.{Failure, Success, Try}
 import models.{StatusCheckError, StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import connectors.ErrorCodes._
+import wiring.Constants._
 
 object StatusCheckResponseHttpParser extends Logging {
 
   implicit object StatusCheckResponseReads
       extends HttpReads[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] {
-
-    val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
 
     override def read(
       method: String,

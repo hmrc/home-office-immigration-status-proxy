@@ -25,6 +25,7 @@ import play.mvc.Http.HeaderNames
 import connectors.HomeOfficeRightToPublicFundsConnector
 import models.StatusCheckByMrzRequest
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import wiring.Constants._
 
 import scala.concurrent.ExecutionContext
 

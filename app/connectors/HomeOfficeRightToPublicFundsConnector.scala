@@ -29,6 +29,8 @@ import wiring.{AppConfig, ProxyHttpClient}
 import uk.gov.hmrc.http._
 import scala.concurrent.{ExecutionContext, Future}
 import connectors.StatusCheckResponseHttpParser._
+import HttpReads.Implicits._
+import wiring.Constants._
 
 @Singleton
 class HomeOfficeRightToPublicFundsConnector @Inject()(
@@ -38,8 +40,6 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
-
-  val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
 
   def token(correlationId: String)(implicit ec: ExecutionContext): Future[OAuthToken] = {
 
@@ -75,13 +75,11 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
 
-    val headers = Seq()
-
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
       http
         .POST[
           StatusCheckByNinoRequest,
-          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request, headers)
+          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
     }
   }
 
@@ -100,13 +98,11 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
       appConfig.rightToPublicFundsBaseUrl,
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/mrz").toString
 
-    val headers = Seq()
-
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Mrz") {
       http
         .POST[
           StatusCheckByMrzRequest,
-          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request, headers)
+          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
     }
   }
 
