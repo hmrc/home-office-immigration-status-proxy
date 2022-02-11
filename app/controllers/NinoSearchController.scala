@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.http.MimeTypes
 import play.api.libs.json._
 import play.api.mvc._
-import play.api.{Configuration, Environment}
+import play.api.Configuration
 import play.mvc.Http.HeaderNames
 import connectors.HomeOfficeRightToPublicFundsConnector
 import models.StatusCheckByNinoRequest
@@ -33,7 +33,6 @@ import scala.concurrent.ExecutionContext
 class NinoSearchController @Inject()(
   rightToPublicFundsConnector: HomeOfficeRightToPublicFundsConnector,
   authAction: AuthAction,
-  val env: Environment,
   cc: ControllerComponents)(implicit val configuration: Configuration, ec: ExecutionContext)
     extends BackendController(cc) with BaseController {
 
