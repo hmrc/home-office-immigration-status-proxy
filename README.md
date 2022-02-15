@@ -1,5 +1,7 @@
 # Home Office Settled Status Proxy
 
+Backend proxy API to connect the Check Immigration Status web service which checks a customer's immigration status and rights to public funds to a Home Office API.
+
 ## Running the tests
 
     sbt test it:test

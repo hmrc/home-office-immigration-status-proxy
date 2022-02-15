@@ -7,11 +7,10 @@ object AppDependencies {
   val silencerVersion = "1.7.1"
 
   private val compile = Seq(
-    "uk.gov.hmrc"         %% "bootstrap-backend-play-28"      % "5.19.0",
+    "uk.gov.hmrc"         %% "bootstrap-backend-play-28"      % "5.20.0",
     "com.kenshoo"         %% "metrics-play"                   % "2.7.3_0.8.1",
-    "uk.gov.hmrc"         %% "domain"                         % "6.2.0-play-28",
-    "com.github.blemale"  %% "scaffeine"                      % "5.1.0",
-    "uk.gov.hmrc"         %% "agent-kenshoo-monitoring"       % "4.8.0-play-27",
+    "uk.gov.hmrc"         %% "domain"                         % "7.0.0-play-28",
+    "uk.gov.hmrc"         %% "agent-kenshoo-monitoring"       % "4.8.0-play-28",
     "org.typelevel"       %% "cats-core"                      % "2.0.0",
     ws
   )

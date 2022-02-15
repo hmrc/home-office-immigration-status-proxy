@@ -67,9 +67,6 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <!--  Allow /app/MicroserviceModule.scala to log  -->
-    <logger name="MicroserviceModule" level="INFO"/>
-
     <!--  /wiring/MicroserviceMonitoringFilter.scala  -->
     <logger name="wiring" level="INFO"/>
 
