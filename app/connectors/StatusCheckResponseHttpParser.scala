@@ -37,19 +37,17 @@ object StatusCheckResponseHttpParser extends Logging {
         case OK =>
           Try(response.json.as[StatusCheckResponse]) match {
             case Success(res) =>
-              logger.info(s"Successful request with response ${response.body}")
               Right(res)
             case Failure(e) =>
-              logger.error(s"Invalid json returned in ${response.body}", e)
+              logger.error(s"Invalid json returned in response", e)
               val correlationId = response.header(HEADER_X_CORRELATION_ID)
               Left(jsonParsingError(correlationId))
           }
-        case status =>
-          logger.info(s"A $status response was returned with body ${response.body}")
+        case _ =>
           Try(response.json.as[StatusCheckErrorResponse]) match {
             case Success(errorResponse) =>
               Left(StatusCheckErrorResponseWithStatus(response.status, errorResponse))
-            case Failure(e) =>
+            case Failure(_) =>
               val correlationId = response.header(HEADER_X_CORRELATION_ID)
               Left(unknownError(response.status, correlationId))
           }
