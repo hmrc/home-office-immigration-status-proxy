@@ -55,7 +55,10 @@ trait AuthActionISpecSetup extends AppBaseISpec {
   object TestController {
 
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSession(SessionKeys.authToken -> "Bearer XYZ")
+    implicit val request: FakeRequest[AnyContentAsEmpty.type] =
+      FakeRequest()
+        .withHeaders(AUTHORIZATION -> "Bearer 123")
+        .withSession(SessionKeys.authToken -> "Bearer XYZ")
 
     val sut = app.injector.instanceOf[AuthAction]
 

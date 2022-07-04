@@ -9,7 +9,7 @@ lazy val scoverageSettings = {
     ScoverageKeys.coverageMinimum := 90.00,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true,
-    parallelExecution in Test := false
+    Test / parallelExecution := false
   )
 }
 
@@ -17,25 +17,24 @@ lazy val root = (project in file("."))
   .settings(
     name := "home-office-immigration-status-proxy",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.12",
+    scalaVersion := "2.12.15",
     PlayKeys.playDefaultPort := 10211,
     resolvers += Resolver.jcenterRepo,
     libraryDependencies ++= AppDependencies(),
-    dependencyOverrides ++= AppDependencies.jettyOverrides,
     publishingSettings,
     scoverageSettings,
-    unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
-    scalafmtOnCompile in Compile := true,
-    scalafmtOnCompile in Test := true
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+    Compile / scalafmtOnCompile := true,
+    Test / scalafmtOnCompile := true
   )
   .configs(IntegrationTest)
   .settings(
-    Keys.fork in IntegrationTest := false,
+    IntegrationTest / Keys.fork := false,
     Defaults.itSettings,
-    unmanagedSourceDirectories in IntegrationTest += baseDirectory(_ / "it").value,
-    parallelExecution in IntegrationTest := false,
-    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
-    scalafmtOnCompile in IntegrationTest := true,
+    IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "it").value,
+    IntegrationTest / parallelExecution := false,
+    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
+    IntegrationTest / scalafmtOnCompile := true,
     majorVersion := 0
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
@@ -46,6 +45,8 @@ lazy val root = (project in file("."))
 
 
 inConfig(IntegrationTest)(scalafmtCoreSettings)
+
+Global / excludeLintKeys += IntegrationTest / scalafmtOnCompile
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] = {
   tests.map { test =>
