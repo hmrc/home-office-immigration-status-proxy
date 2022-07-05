@@ -17,7 +17,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "home-office-immigration-status-proxy",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.15",
+    scalaVersion := "2.12.16",
     PlayKeys.playDefaultPort := 10211,
     resolvers += Resolver.jcenterRepo,
     libraryDependencies ++= AppDependencies(),
