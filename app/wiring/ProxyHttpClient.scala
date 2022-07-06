@@ -33,6 +33,6 @@ class ProxyHttpClient @Inject()(
     extends DefaultHttpClient(conf, httpAuditing, wsClient, actorSystem) with WSProxy {
 
   override val wsProxyServer: Option[WSProxyServer] = {
-    WSProxyConfiguration(configPrefix = "proxy", configuration = conf)
+    WSProxyConfiguration.buildWsProxyServer(configuration = conf)
   }
 }

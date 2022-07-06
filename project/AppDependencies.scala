@@ -5,7 +5,7 @@ import sbt._
 object AppDependencies {
 
   private val silencerVersion = "1.7.9"
-  private val bootstrapPlayVersion = "5.24.0"
+  private val bootstrapPlayVersion = "6.2.0"
 
   private val compile = Seq(
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-28"  % bootstrapPlayVersion,
