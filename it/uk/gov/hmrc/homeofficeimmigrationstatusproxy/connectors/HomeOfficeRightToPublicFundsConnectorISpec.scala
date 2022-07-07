@@ -6,7 +6,7 @@ import uk.gov.hmrc.domain.Nino
 import models._
 import stubs.HomeOfficeRightToPublicFundsStubs
 import support.AppBaseISpec
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, RequestId}
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
@@ -23,6 +23,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
   val dummyCorrelationId = "some-correlation-id"
+  val dummyRequestId = Some(RequestId("request-id"))
   val dummyOAuthToken: OAuthToken = OAuthToken("FOO0123456789", "SomeTokenType")
 
   val request = DateOfBirth(LocalDate.parse("2001-01-31"))
@@ -41,19 +42,19 @@ class HomeOfficeRightToPublicFundsConnectorISpec
   "token" should {
     "return valid oauth token" in {
       givenOAuthTokenGranted()
-      val result: OAuthToken = connector.token(dummyCorrelationId).futureValue
+      val result: OAuthToken = connector.token(dummyCorrelationId, dummyRequestId).futureValue
       result.access_token shouldBe "FOO0123456789"
     }
 
     "return valid oauth token without refresh token" in {
       givenOAuthTokenGrantedWithoutRefresh()
-      val result: OAuthToken = connector.token(dummyCorrelationId).futureValue
+      val result: OAuthToken = connector.token(dummyCorrelationId, dummyRequestId).futureValue
       result.access_token shouldBe "FOO0123456789"
     }
 
     "raise exception if token denied" in {
       givenOAuthTokenDenied()
-      val result = intercept[RuntimeException](connector.token(dummyCorrelationId).futureValue)
+      val result = intercept[RuntimeException](connector.token(dummyCorrelationId, dummyRequestId).futureValue)
       result.getMessage should include("Upstream4xxResponse")
     }
   }
@@ -72,7 +73,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
         .get
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.right.get shouldBe responseBodyWithStatusObject
     }
@@ -81,7 +82,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckResultNoRangeExample(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.right.get shouldBe responseBodyWithStatusObject
     }
@@ -90,7 +91,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenMissingInputField(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe BAD_REQUEST
       result.left.get.errorResponse.error.errCode shouldBe ERR_REQUEST_INVALID
@@ -100,7 +101,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe NOT_FOUND
       result.left.get.errorResponse.error.errCode shouldBe ERR_NOT_FOUND
@@ -110,7 +111,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenConflict(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe CONFLICT
       result.left.get.errorResponse.error.errCode shouldBe ERR_CONFLICT
@@ -120,7 +121,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe BAD_REQUEST
       result.left.get.errorResponse.error.errCode shouldBe ERR_VALIDATION
@@ -130,7 +131,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusPublicFundsByNinoStub(TOO_MANY_REQUESTS, validNinoRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe TOO_MANY_REQUESTS
       result.left.get.errorResponse.error.errCode shouldBe ERR_UNKNOWN
@@ -140,7 +141,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusPublicFundsByNinoStub(INTERNAL_SERVER_ERROR, validNinoRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe INTERNAL_SERVER_ERROR
       result.left.get.errorResponse.error.errCode shouldBe ERR_UNKNOWN
@@ -167,7 +168,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
           .get
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.right.get shouldBe responseBodyWithStatusObject
     }
@@ -176,7 +177,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckResultNoRangeExample(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.right.get shouldBe responseBodyWithStatusObject
     }
@@ -185,7 +186,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenMissingInputField(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe BAD_REQUEST
       result.left.get.errorResponse.error.errCode shouldBe ERR_REQUEST_INVALID
@@ -195,7 +196,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe NOT_FOUND
       result.left.get.errorResponse.error.errCode shouldBe ERR_NOT_FOUND
@@ -205,7 +206,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenConflict(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe CONFLICT
       result.left.get.errorResponse.error.errCode shouldBe ERR_CONFLICT
@@ -215,7 +216,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe BAD_REQUEST
       result.left.get.errorResponse.error.errCode shouldBe ERR_VALIDATION
@@ -225,7 +226,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusPublicFundsByMrzStub(TOO_MANY_REQUESTS, validMrzRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe TOO_MANY_REQUESTS
       result.left.get.errorResponse.error.errCode shouldBe ERR_UNKNOWN
@@ -235,7 +236,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       givenStatusPublicFundsByMrzStub(INTERNAL_SERVER_ERROR, validMrzRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
       result.left.get.statusCode shouldBe INTERNAL_SERVER_ERROR
       result.left.get.errorResponse.error.errCode shouldBe ERR_UNKNOWN

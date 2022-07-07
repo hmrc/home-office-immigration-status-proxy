@@ -63,24 +63,24 @@ trait ControllerSpec
   val correlationId = "CorrelationId123"
 
   def tokenCallFails =
-    when(mockConnector.token(any())(any()))
+    when(mockConnector.token(any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - token")))
   def tokenCallIsSuccessful =
-    when(mockConnector.token(any())(any()))
+    when(mockConnector.token(any(), any())(any()))
       .thenReturn(Future.successful(OAuthToken("String", "String")))
   def requestMrzCallFails =
-    when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
+    when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))
   def requestMrzCallIsSuccessful(
     response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
-    when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
+    when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any())(any()))
       .thenReturn(Future.successful(response))
   def requestNinoCallFails =
-    when(mockConnector.statusPublicFundsByNino(any(), any(), any())(any()))
+    when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))
   def requestNinoCallIsSuccessful(
     response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
-    when(mockConnector.statusPublicFundsByNino(any(), any(), any())(any()))
+    when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any())(any()))
       .thenReturn(Future.successful(response))
 
   def withHeaders(result: Result): Result =

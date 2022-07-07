@@ -17,20 +17,23 @@
 package connectors
 
 import java.net.URL
-
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.Singleton
 import com.kenshoo.play.metrics.Metrics
+
 import javax.inject.Inject
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import models.{OAuthToken, StatusCheckByMrzRequest, StatusCheckByNinoRequest, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import wiring.{AppConfig, ProxyHttpClient}
 import uk.gov.hmrc.http._
+
 import scala.concurrent.{ExecutionContext, Future}
 import connectors.StatusCheckResponseHttpParser._
 import HttpReads.Implicits._
 import wiring.Constants._
+
+import java.util.UUID.randomUUID
 
 @Singleton
 class HomeOfficeRightToPublicFundsConnector @Inject()(
@@ -41,10 +44,14 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def token(correlationId: String)(implicit ec: ExecutionContext): Future[OAuthToken] = {
+  def token(xCorrelationId: String, requestId: Option[RequestId])(
+    implicit ec: ExecutionContext): Future[OAuthToken] = {
 
     implicit val hc: HeaderCarrier =
-      HeaderCarrier().withExtraHeaders(HEADER_X_CORRELATION_ID -> correlationId)
+      HeaderCarrier().withExtraHeaders(
+        HEADER_X_CORRELATION_ID -> xCorrelationId,
+        "CorrelationId"         -> correlationId(requestId)
+      )
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
@@ -62,14 +69,12 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
   def statusPublicFundsByNino(
     request: StatusCheckByNinoRequest,
-    correlationId: String,
+    xCorrelationId: String,
+    requestId: Option[RequestId],
     token: OAuthToken)(implicit ec: ExecutionContext)
     : Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
 
-    implicit val hc: HeaderCarrier =
-      HeaderCarrier().withExtraHeaders(
-        HEADER_X_CORRELATION_ID   -> correlationId,
-        HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
+    implicit val hc: HeaderCarrier = getHeaderCarrier(xCorrelationId, requestId, token)
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
@@ -85,14 +90,12 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
   def statusPublicFundsByMrz(
     request: StatusCheckByMrzRequest,
-    correlationId: String,
+    xCorrelationId: String,
+    requestId: Option[RequestId],
     token: OAuthToken)(implicit ec: ExecutionContext)
     : Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
 
-    implicit val hc: HeaderCarrier =
-      HeaderCarrier().withExtraHeaders(
-        HEADER_X_CORRELATION_ID   -> correlationId,
-        HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}")
+    implicit val hc: HeaderCarrier = getHeaderCarrier(xCorrelationId, requestId, token)
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
@@ -106,4 +109,28 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     }
   }
 
+  private def getHeaderCarrier(
+    xCorrelationId: String,
+    requestId: Option[RequestId],
+    token: OAuthToken) =
+    HeaderCarrier().withExtraHeaders(
+      HEADER_X_CORRELATION_ID   -> xCorrelationId,
+      HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",
+      "CorrelationId"           -> correlationId(requestId)
+    )
+
+  private[connectors] def generateNewUUID: String = randomUUID.toString
+
+  private[connectors] def correlationId(requestId: Option[RequestId]): String = {
+    val CorrelationIdPattern =
+      """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
+    requestId match {
+      case Some(requestId) =>
+        requestId.value match {
+          case CorrelationIdPattern(prefix) => prefix + "-" + generateNewUUID.substring(24)
+          case _                            => generateNewUUID
+        }
+      case _ => generateNewUUID
+    }
+  }
 }
