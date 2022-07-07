@@ -9,6 +9,7 @@ import play.api.libs.ws.{WSClient, WSResponse}
 import stubs.HomeOfficeRightToPublicFundsStubs
 import support.{JsonMatchers, ServerBaseISpec}
 import connectors.ErrorCodes._
+import play.api.test.Helpers.AUTHORIZATION
 
 class MrzSearchControllerISpec
     extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
@@ -23,7 +24,7 @@ class MrzSearchControllerISpec
   def publicFundsByMrz(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
     wsClient
       .url(s"$url/v1/status/public-funds/mrz")
-      .addHttpHeaders("Content-Type" -> "application/json")
+      .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> "Bearer 123")
       .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
       .post(payload)
       .futureValue
