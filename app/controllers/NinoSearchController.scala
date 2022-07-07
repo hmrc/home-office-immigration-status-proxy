@@ -41,9 +41,13 @@ class NinoSearchController @Inject()(
 
     withValidParameters[StatusCheckByNinoRequest](correlationId) { statusCheckByNinoRequest =>
       for {
-        token <- rightToPublicFundsConnector.token(correlationId)
+        token <- rightToPublicFundsConnector.token(correlationId, hc.requestId)
         either <- rightToPublicFundsConnector
-                   .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, token)
+                   .statusPublicFundsByNino(
+                     statusCheckByNinoRequest,
+                     correlationId,
+                     hc.requestId,
+                     token)
         result = eitherToResult(either)
       } yield
         result.withHeaders(

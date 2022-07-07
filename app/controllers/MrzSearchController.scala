@@ -41,9 +41,13 @@ class MrzSearchController @Inject()(
 
     withValidParameters[StatusCheckByMrzRequest](correlationId) { statusCheckByMrzRequest =>
       for {
-        token <- rightToPublicFundsConnector.token(correlationId)
+        token <- rightToPublicFundsConnector.token(correlationId, hc.requestId)
         either <- rightToPublicFundsConnector
-                   .statusPublicFundsByMrz(statusCheckByMrzRequest, correlationId, token)
+                   .statusPublicFundsByMrz(
+                     statusCheckByMrzRequest,
+                     correlationId,
+                     hc.requestId,
+                     token)
         result = eitherToResult(either)
       } yield
         result.withHeaders(
