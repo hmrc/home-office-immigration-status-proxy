@@ -22,12 +22,10 @@ import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class FakeAuthAction @Inject()(implicit materializer: Materializer) extends AuthAction {
+class FakeAuthAction @Inject() (implicit materializer: Materializer) extends AuthAction {
   override def parser: BodyParser[AnyContent] = new BodyParsers.Default()
 
-  override def invokeBlock[A](
-    request: Request[A],
-    block: Request[A] => Future[Result]): Future[Result] =
+  override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] =
     block(request)
 
   override protected def executionContext: ExecutionContext = ???

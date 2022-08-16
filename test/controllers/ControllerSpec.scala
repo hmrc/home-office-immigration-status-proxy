@@ -39,8 +39,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Awaitable}
 import scala.language.postfixOps
 
-trait ControllerSpec
-    extends PlaySpec with GuiceOneAppPerSuite with Injecting with BeforeAndAfterEach {
+trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting with BeforeAndAfterEach {
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .overrides(
@@ -54,13 +53,13 @@ trait ControllerSpec
     reset(mockConnector)
   }
 
-  val mockConnector = mock(classOf[HomeOfficeRightToPublicFundsConnector])
-  val timeoutDuration: FiniteDuration = 5 seconds
-  implicit val timeout: Timeout = Timeout(timeoutDuration)
+  val mockConnector                     = mock(classOf[HomeOfficeRightToPublicFundsConnector])
+  val timeoutDuration: FiniteDuration   = 5 seconds
+  implicit val timeout: Timeout         = Timeout(timeoutDuration)
   def await[T](future: Awaitable[T]): T = Await.result(future, timeoutDuration)
-  lazy val messages: Messages = inject[MessagesApi].preferred(Seq.empty)
-  lazy val appConfig: AppConfig = inject[AppConfig]
-  val correlationId = "CorrelationId123"
+  lazy val messages: Messages           = inject[MessagesApi].preferred(Seq.empty)
+  lazy val appConfig: AppConfig         = inject[AppConfig]
+  val correlationId                     = "CorrelationId123"
 
   def tokenCallFails =
     when(mockConnector.token(any(), any())(any()))
@@ -71,15 +70,13 @@ trait ControllerSpec
   def requestMrzCallFails =
     when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))
-  def requestMrzCallIsSuccessful(
-    response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
+  def requestMrzCallIsSuccessful(response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
     when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any())(any()))
       .thenReturn(Future.successful(response))
   def requestNinoCallFails =
     when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))
-  def requestNinoCallIsSuccessful(
-    response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
+  def requestNinoCallIsSuccessful(response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
     when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any())(any()))
       .thenReturn(Future.successful(response))
 

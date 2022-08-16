@@ -12,7 +12,9 @@ trait AuthStubs {
         .willReturn(
           aResponse()
             .withStatus(401)
-            .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")))
+            .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")
+        )
+    )
     this
   }
 
@@ -20,8 +22,9 @@ trait AuthStubs {
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)
-        .withRequestBody(equalToJson(
-          s"""
+        .withRequestBody(
+          equalToJson(
+            s"""
              |{
              |  "authorise": [
              |    {
@@ -32,19 +35,26 @@ trait AuthStubs {
              |  ]
              |}
            """.stripMargin,
-          true,
-          true
-        ))
-        .willReturn(aResponse()
-          .withBody("{}")
-          .withStatus(200)))
+            true,
+            true
+          )
+        )
+        .willReturn(
+          aResponse()
+            .withBody("{}")
+            .withStatus(200)
+        )
+    )
 
     stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(2)
-        .willReturn(aResponse()
-          .withStatus(401)
-          .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")))
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")
+        )
+    )
     this
   }
 

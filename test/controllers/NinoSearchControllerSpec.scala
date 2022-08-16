@@ -58,7 +58,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
 
       "the connector calls are successful and the validation passes" in {
         tokenCallIsSuccessful
-        val statusCheckResult = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestNinoCallIsSuccessful(Right(statusCheckResponse))
         await(controller.post(request)) mustEqual withHeaders(Ok(Json.toJson(statusCheckResponse)))
@@ -75,8 +75,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
         val errorResponseWithStatus =
           StatusCheckErrorResponseWithStatus(INTERNAL_SERVER_ERROR, errorResponse)
         requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
-        await(controller.post(request)) mustEqual withHeaders(
-          InternalServerError(Json.toJson(errorResponse)))
+        await(controller.post(request)) mustEqual withHeaders(InternalServerError(Json.toJson(errorResponse)))
       }
 
       "the validation passes but the connector returns a bad request status" in {
@@ -86,8 +85,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
         val errorResponseWithStatus =
           StatusCheckErrorResponseWithStatus(BAD_REQUEST, errorResponse)
         requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
-        await(controller.post(request)) mustEqual withHeaders(
-          BadRequest(Json.toJson(errorResponse)))
+        await(controller.post(request)) mustEqual withHeaders(BadRequest(Json.toJson(errorResponse)))
       }
 
     }

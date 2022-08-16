@@ -36,16 +36,12 @@ import wiring.Constants._
 import java.util.UUID.randomUUID
 
 @Singleton
-class HomeOfficeRightToPublicFundsConnector @Inject()(
-  appConfig: AppConfig,
-  http: ProxyHttpClient,
-  metrics: Metrics)
+class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient, metrics: Metrics)
     extends HttpAPIMonitor {
 
   override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
 
-  def token(xCorrelationId: String, requestId: Option[RequestId])(
-    implicit ec: ExecutionContext): Future[OAuthToken] = {
+  def token(xCorrelationId: String, requestId: Option[RequestId])(implicit ec: ExecutionContext): Future[OAuthToken] = {
 
     implicit val hc: HeaderCarrier =
       HeaderCarrier().withExtraHeaders(
@@ -55,7 +51,8 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
-      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/token").toString
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/token"
+    ).toString
 
     val form: Map[String, Seq[String]] = Map(
       "grant_type"    -> Seq("client_credentials"),
@@ -71,20 +68,19 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     request: StatusCheckByNinoRequest,
     xCorrelationId: String,
     requestId: Option[RequestId],
-    token: OAuthToken)(implicit ec: ExecutionContext)
-    : Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
+    token: OAuthToken
+  )(implicit ec: ExecutionContext): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
 
     implicit val hc: HeaderCarrier = getHeaderCarrier(xCorrelationId, requestId, token)
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
-      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino").toString
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino"
+    ).toString
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
       http
-        .POST[
-          StatusCheckByNinoRequest,
-          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
+        .POST[StatusCheckByNinoRequest, Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
     }
   }
 
@@ -92,27 +88,23 @@ class HomeOfficeRightToPublicFundsConnector @Inject()(
     request: StatusCheckByMrzRequest,
     xCorrelationId: String,
     requestId: Option[RequestId],
-    token: OAuthToken)(implicit ec: ExecutionContext)
-    : Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
+    token: OAuthToken
+  )(implicit ec: ExecutionContext): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
 
     implicit val hc: HeaderCarrier = getHeaderCarrier(xCorrelationId, requestId, token)
 
     val url = new URL(
       appConfig.rightToPublicFundsBaseUrl,
-      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/mrz").toString
+      appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/mrz"
+    ).toString
 
     monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Mrz") {
       http
-        .POST[
-          StatusCheckByMrzRequest,
-          Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
+        .POST[StatusCheckByMrzRequest, Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
     }
   }
 
-  private def getHeaderCarrier(
-    xCorrelationId: String,
-    requestId: Option[RequestId],
-    token: OAuthToken) =
+  private def getHeaderCarrier(xCorrelationId: String, requestId: Option[RequestId], token: OAuthToken) =
     HeaderCarrier().withExtraHeaders(
       HEADER_X_CORRELATION_ID   -> xCorrelationId,
       HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",

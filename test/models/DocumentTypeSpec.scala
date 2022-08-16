@@ -27,8 +27,7 @@ class DocumentTypeSpec extends AnyWordSpecLike with Matchers {
   "apply" should {
     "return a failed validation" when {
       "the string is not an allowed value" in {
-        DocumentType("ABC") shouldEqual Invalid(
-          Chain(ErrorMessage("Document type must be PASSPORT, NAT, BRC, or BRP")))
+        DocumentType("ABC") shouldEqual Invalid(Chain(ErrorMessage("Document type must be PASSPORT, NAT, BRC, or BRP")))
       }
     }
     "return a successful validation" when {

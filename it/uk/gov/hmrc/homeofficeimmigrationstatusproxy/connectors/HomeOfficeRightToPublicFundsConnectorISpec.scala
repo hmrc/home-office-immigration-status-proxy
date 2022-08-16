@@ -14,16 +14,18 @@ import play.api.http.Status._
 import cats.implicits._
 
 class HomeOfficeRightToPublicFundsConnectorISpec
-    extends AppBaseISpec with HomeOfficeRightToPublicFundsStubs with ScalaFutures {
+    extends AppBaseISpec
+    with HomeOfficeRightToPublicFundsStubs
+    with ScalaFutures {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   lazy val connector: HomeOfficeRightToPublicFundsConnector =
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
-  val dummyCorrelationId = "some-correlation-id"
-  val dummyRequestId = Some(RequestId("request-id"))
+  val dummyCorrelationId          = "some-correlation-id"
+  val dummyRequestId              = Some(RequestId("request-id"))
   val dummyOAuthToken: OAuthToken = OAuthToken("FOO0123456789", "SomeTokenType")
 
   val request = DateOfBirth(LocalDate.parse("2001-01-31"))
@@ -31,13 +33,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     .toOption
     .get
   val mrzRequest: StatusCheckByMrzRequest = (
-      DocumentNumber("1234567890"),
-      DateOfBirth(LocalDate.parse("2001-01-31")),
-      Nationality("USA")
-    ).mapN((docNumber, dob, nat) =>
-        StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat))
-      .toOption
-      .get
+    DocumentNumber("1234567890"),
+    DateOfBirth(LocalDate.parse("2001-01-31")),
+    Nationality("USA")
+  ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat)).toOption.get
 
   "token" should {
     "return valid oauth token" in {
@@ -63,10 +62,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
     "return status when range provided" in {
       givenStatusCheckResultWithRangeExample(RequestType.Nino)
-      val range = Some(
-        StatusCheckRange(
-          Some(LocalDate.parse("2019-07-15")),
-          Some(LocalDate.parse("2019-04-15"))))
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
       val request = DateOfBirth(LocalDate.parse("2001-01-31"))
         .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A"), range))
         .toOption
@@ -93,7 +89,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe BAD_REQUEST
+      result.left.get.statusCode                  shouldBe BAD_REQUEST
       result.left.get.errorResponse.error.errCode shouldBe ERR_REQUEST_INVALID
     }
 
@@ -103,7 +99,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe NOT_FOUND
+      result.left.get.statusCode                  shouldBe NOT_FOUND
       result.left.get.errorResponse.error.errCode shouldBe ERR_NOT_FOUND
     }
 
@@ -113,7 +109,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe CONFLICT
+      result.left.get.statusCode                  shouldBe CONFLICT
       result.left.get.errorResponse.error.errCode shouldBe ERR_CONFLICT
     }
 
@@ -123,7 +119,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe BAD_REQUEST
+      result.left.get.statusCode                  shouldBe BAD_REQUEST
       result.left.get.errorResponse.error.errCode shouldBe ERR_VALIDATION
     }
 
@@ -133,7 +129,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe TOO_MANY_REQUESTS
+      result.left.get.statusCode                  shouldBe TOO_MANY_REQUESTS
       result.left.get.errorResponse.error.errCode shouldBe ERR_UNKNOWN
     }
 
@@ -143,7 +139,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe INTERNAL_SERVER_ERROR
+      result.left.get.statusCode                  shouldBe INTERNAL_SERVER_ERROR
       result.left.get.errorResponse.error.errCode shouldBe ERR_UNKNOWN
     }
 
@@ -153,19 +149,15 @@ class HomeOfficeRightToPublicFundsConnectorISpec
 
     "return status when range provided" in {
       givenStatusCheckResultWithRangeExample(RequestType.Mrz)
-      val range = Some(
-          StatusCheckRange(
-            Some(LocalDate.parse("2019-07-15")),
-            Some(LocalDate.parse("2019-04-15"))))
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
 
       val mrzRequest: StatusCheckByMrzRequest = (
-          DocumentNumber("1234567890"),
-          DateOfBirth(LocalDate.parse("2001-01-31")),
-          Nationality("USA")
-        ).mapN((docNumber, dob, nat) =>
-            StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
-          .toOption
-          .get
+        DocumentNumber("1234567890"),
+        DateOfBirth(LocalDate.parse("2001-01-31")),
+        Nationality("USA")
+      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
+        .toOption
+        .get
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
@@ -188,7 +180,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe BAD_REQUEST
+      result.left.get.statusCode                  shouldBe BAD_REQUEST
       result.left.get.errorResponse.error.errCode shouldBe ERR_REQUEST_INVALID
     }
 
@@ -198,7 +190,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe NOT_FOUND
+      result.left.get.statusCode                  shouldBe NOT_FOUND
       result.left.get.errorResponse.error.errCode shouldBe ERR_NOT_FOUND
     }
 
@@ -208,7 +200,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe CONFLICT
+      result.left.get.statusCode                  shouldBe CONFLICT
       result.left.get.errorResponse.error.errCode shouldBe ERR_CONFLICT
     }
 
@@ -218,7 +210,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe BAD_REQUEST
+      result.left.get.statusCode                  shouldBe BAD_REQUEST
       result.left.get.errorResponse.error.errCode shouldBe ERR_VALIDATION
     }
 
@@ -228,7 +220,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe TOO_MANY_REQUESTS
+      result.left.get.statusCode                  shouldBe TOO_MANY_REQUESTS
       result.left.get.errorResponse.error.errCode shouldBe ERR_UNKNOWN
     }
 
@@ -238,11 +230,10 @@ class HomeOfficeRightToPublicFundsConnectorISpec
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
 
-      result.left.get.statusCode shouldBe INTERNAL_SERVER_ERROR
+      result.left.get.statusCode                  shouldBe INTERNAL_SERVER_ERROR
       result.left.get.errorResponse.error.errCode shouldBe ERR_UNKNOWN
     }
 
   }
-
 
 }

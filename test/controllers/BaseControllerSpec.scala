@@ -34,7 +34,7 @@ import scala.language.postfixOps
 
 class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
-  val timeoutDuration: FiniteDuration = 5 seconds
+  val timeoutDuration: FiniteDuration   = 5 seconds
   def await[T](future: Awaitable[T]): T = Await.result(future, timeoutDuration)
 
   case class SomeRequest(intParam: Int, stringParam1: String, stringParam2: String)
@@ -47,7 +47,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
   "eitherToResult" should {
 
     "return Ok when it's a right" in {
-      val statusCheckResult = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+      val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
       val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
       val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         Right(statusCheckResponse)
@@ -56,41 +56,34 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
     "return NotFound when it's a left with a 404 status" in {
       val response =
-        StatusCheckErrorResponseWithStatus(
-          NOT_FOUND,
-          StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
+        StatusCheckErrorResponseWithStatus(NOT_FOUND, StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
       val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         Left(response)
-      TestController.eitherToResult(either) shouldEqual NotFound(
-        Json.toJson(response.errorResponse))
+      TestController.eitherToResult(either) shouldEqual NotFound(Json.toJson(response.errorResponse))
     }
 
     "return BadRequest when it's a left with a 400 status" in {
       val response =
-        StatusCheckErrorResponseWithStatus(
-          BAD_REQUEST,
-          StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
+        StatusCheckErrorResponseWithStatus(BAD_REQUEST, StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
       val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         Left(response)
-      TestController.eitherToResult(either) shouldEqual BadRequest(
-        Json.toJson(response.errorResponse))
+      TestController.eitherToResult(either) shouldEqual BadRequest(Json.toJson(response.errorResponse))
     }
 
     "return InternalServerError when it's a left with a 500 status" in {
       val response =
         StatusCheckErrorResponseWithStatus(
           INTERNAL_SERVER_ERROR,
-          StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
+          StatusCheckErrorResponse(None, StatusCheckError("SOMETHING"))
+        )
       val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         Left(response)
-      TestController.eitherToResult(either) shouldEqual InternalServerError(
-        Json.toJson(response.errorResponse))
+      TestController.eitherToResult(either) shouldEqual InternalServerError(Json.toJson(response.errorResponse))
     }
 
   }
 
-  val successFunction: SomeRequest => Future[Result] = request =>
-    Future.successful(Ok("Great success"))
+  val successFunction: SomeRequest => Future[Result] = request => Future.successful(Ok("Great success"))
 
   "withValidParameters" should {
     "return a BadRequest" when {
@@ -99,31 +92,24 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
         val request =
           FakeRequest().withBody(Json.parse("""{"intParam":1, "stringParam1":"string"}"""))
         val expectedResult = StatusCheckErrorResponse
-          .error(
-            Some(correlationId),
-            ERR_REQUEST_INVALID,
-            Some(List("/stringParam2" -> "error.path.missing")))
+          .error(Some(correlationId), ERR_REQUEST_INVALID, Some(List("/stringParam2" -> "error.path.missing")))
 
-        val result = TestController.withValidParameters(correlationId)(successFunction)(
-          request,
-          implicitly[Reads[SomeRequest]])
+        val result =
+          TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
         await(result) shouldEqual BadRequest(Json.toJson(expectedResult))
       }
 
       "a field is invalid" in {
         val correlationId = "correlationId1"
-        val request = FakeRequest().withBody(Json
-          .parse(
-            """{"intParam":"something", "stringParam1": "something", "stringParam2": "something"}"""))
+        val request = FakeRequest().withBody(
+          Json
+            .parse("""{"intParam":"something", "stringParam1": "something", "stringParam2": "something"}""")
+        )
         val expectedResult = StatusCheckErrorResponse
-          .error(
-            Some(correlationId),
-            ERR_REQUEST_INVALID,
-            Some(List("/intParam" -> "error.expected.jsnumber")))
+          .error(Some(correlationId), ERR_REQUEST_INVALID, Some(List("/intParam" -> "error.expected.jsnumber")))
 
-        val result = TestController.withValidParameters(correlationId)(successFunction)(
-          request,
-          implicitly[Reads[SomeRequest]])
+        val result =
+          TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
         await(result) shouldEqual BadRequest(Json.toJson(expectedResult))
       }
     }
@@ -131,13 +117,11 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
     "call our function with a valid object" in {
       val json = Json
         .parse("""{"intParam":1, "stringParam1": "something", "stringParam2": "something"}""")
-      val request = FakeRequest().withBody(json)
+      val request       = FakeRequest().withBody(json)
       val correlationId = "correlationId1"
 
       val result =
-        TestController.withValidParameters(correlationId)(successFunction)(
-          request,
-          implicitly[Reads[SomeRequest]])
+        TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
       await(result) shouldEqual Ok("Great success")
     }
   }

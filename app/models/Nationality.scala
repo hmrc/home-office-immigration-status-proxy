@@ -26,10 +26,13 @@ object Nationality {
     validateLength(nationality).map(new Nationality(_))
 
   private def validateLength(nationality: String): ValidationResult[String] =
-    if (nationality.length == 3) nationality.validNec
-    else ErrorMessage("Nationality needs to be 3 characters long").invalidNec
+    if (nationality.length == 3) {
+      nationality.validNec
+    } else {
+      ErrorMessage("Nationality needs to be 3 characters long").invalidNec
+    }
 
   implicit lazy val reads: Reads[Nationality] =
-    (JsPath).read[String].map(Nationality.apply).flattenValidated
+    JsPath.read[String].map(Nationality.apply).flattenValidated
   implicit lazy val writes: Writes[Nationality] = Json.valueWrites[Nationality]
 }

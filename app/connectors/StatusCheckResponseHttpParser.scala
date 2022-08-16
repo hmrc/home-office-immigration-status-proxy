@@ -32,7 +32,8 @@ object StatusCheckResponseHttpParser extends Logging {
     override def read(
       method: String,
       url: String,
-      response: HttpResponse): Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+      response: HttpResponse
+    ): Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
       response.status match {
         case OK =>
           Try(response.json.as[StatusCheckResponse]) match {
@@ -57,11 +58,10 @@ object StatusCheckResponseHttpParser extends Logging {
   def jsonParsingError(correlationId: Option[String]): StatusCheckErrorResponseWithStatus =
     StatusCheckErrorResponseWithStatus(
       INTERNAL_SERVER_ERROR,
-      StatusCheckErrorResponse(correlationId, StatusCheckError(ERR_HOME_OFFICE_RESPONSE)))
+      StatusCheckErrorResponse(correlationId, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
+    )
 
   def unknownError(status: Int, correlationId: Option[String]): StatusCheckErrorResponseWithStatus =
-    StatusCheckErrorResponseWithStatus(
-      status,
-      StatusCheckErrorResponse(correlationId, StatusCheckError(ERR_UNKNOWN)))
+    StatusCheckErrorResponseWithStatus(status, StatusCheckErrorResponse(correlationId, StatusCheckError(ERR_UNKNOWN)))
 
 }

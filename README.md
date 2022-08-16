@@ -10,6 +10,10 @@ Backend proxy API to connect the Check Immigration Status web service which chec
 
     sbt clean coverageOn test it:test coverageReport
 
+## Running the tests with coverage, scalafmt, scalastyle and dependency checks
+
+    ./run_all_tests
+
 ## Running the app locally
 
     sbt run

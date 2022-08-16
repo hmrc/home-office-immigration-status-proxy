@@ -22,7 +22,7 @@ class AuthActionsISpec extends AuthActionISpecSetup with ScalaFutures {
       val result: Future[Result] = TestController.withAuthorisedWithStride
 
       contentAsString(result) should include("foo")
-      status(result) shouldBe 200
+      status(result)        shouldBe 200
 
     }
 
@@ -36,7 +36,7 @@ class AuthActionsISpec extends AuthActionISpecSetup with ScalaFutures {
     "do not catch ordinary exceptions" in {
       givenAuthorisedForStride
 
-      intercept[RuntimeException]{
+      intercept[RuntimeException] {
         val result: Future[Result] = TestController.withAuthorisedWithStride {
           throw new RuntimeException
         }

@@ -26,9 +26,9 @@ import wiring.{AppConfig, ProxyHttpClient}
 
 class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Matchers {
 
-  private lazy val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  private lazy val mockAppConfig: AppConfig        = mock(classOf[AppConfig])
   private lazy val mockHttpClient: ProxyHttpClient = mock(classOf[ProxyHttpClient])
-  lazy val metrics: Metrics = mock(classOf[Metrics])
+  lazy val metrics: Metrics                        = mock(classOf[Metrics])
 
   trait Setup {
     val uuid = "123f4567-g89c-42c3-b456-557742330000"

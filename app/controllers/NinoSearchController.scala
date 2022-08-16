@@ -30,11 +30,13 @@ import wiring.Constants._
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class NinoSearchController @Inject()(
+class NinoSearchController @Inject() (
   rightToPublicFundsConnector: HomeOfficeRightToPublicFundsConnector,
   authAction: AuthAction,
-  cc: ControllerComponents)(implicit val configuration: Configuration, ec: ExecutionContext)
-    extends BackendController(cc) with BaseController {
+  cc: ControllerComponents
+)(implicit val configuration: Configuration, ec: ExecutionContext)
+    extends BackendController(cc)
+    with BaseController {
 
   def post: Action[JsValue] = authAction.async(parse.tolerantJson) { implicit request =>
     val correlationId = getCorrelationId
@@ -43,16 +45,9 @@ class NinoSearchController @Inject()(
       for {
         token <- rightToPublicFundsConnector.token(correlationId, hc.requestId)
         either <- rightToPublicFundsConnector
-                   .statusPublicFundsByNino(
-                     statusCheckByNinoRequest,
-                     correlationId,
-                     hc.requestId,
-                     token)
+                    .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, hc.requestId, token)
         result = eitherToResult(either)
-      } yield
-        result.withHeaders(
-          HEADER_X_CORRELATION_ID  -> correlationId,
-          HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+      } yield result.withHeaders(HEADER_X_CORRELATION_ID -> correlationId, HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
     }
 
   }

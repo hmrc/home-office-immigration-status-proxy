@@ -34,10 +34,10 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
 
     "return a right" when {
       "a 200 is returned with a valid response" in {
-        val statusCheckResult = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
-        val responseBody = Json.toJson(statusCheckResponse).toString
-        val response = HttpResponse(OK, responseBody)
+        val responseBody        = Json.toJson(statusCheckResponse).toString
+        val response            = HttpResponse(OK, responseBody)
 
         val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
           StatusCheckResponseReads.read("POST", "some url", response)
@@ -48,27 +48,29 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
     "return a left" when {
       "a 200 is returned without json" in {
         val responseBody = "This is not a valid response"
-        val response = HttpResponse(OK, responseBody)
+        val response     = HttpResponse(OK, responseBody)
 
         val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
           StatusCheckResponseReads.read("POST", "some url", response)
         val expectedResult =
           StatusCheckErrorResponseWithStatus(
             INTERNAL_SERVER_ERROR,
-            StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE)))
+            StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
+          )
         result.left.get shouldEqual expectedResult
       }
 
       "a 200 is returned with an invalid json response" in {
         val responseBody = """{"response": "Something"}"""
-        val response = HttpResponse(OK, responseBody)
+        val response     = HttpResponse(OK, responseBody)
 
         val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
           StatusCheckResponseReads.read("POST", "some url", response)
         val expectedResult =
           StatusCheckErrorResponseWithStatus(
             INTERNAL_SERVER_ERROR,
-            StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE)))
+            StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
+          )
         result.left.get shouldEqual expectedResult
       }
 
@@ -82,7 +84,8 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
         val expectedResult =
           StatusCheckErrorResponseWithStatus(
             BAD_REQUEST,
-            StatusCheckErrorResponse(Some("Something"), StatusCheckError("ERR_SOMETHING")))
+            StatusCheckErrorResponse(Some("Something"), StatusCheckError("ERR_SOMETHING"))
+          )
         result.left.get shouldEqual expectedResult
       }
 
@@ -96,33 +99,33 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
         val expectedResult =
           StatusCheckErrorResponseWithStatus(
             INTERNAL_SERVER_ERROR,
-            StatusCheckErrorResponse(Some("Something"), StatusCheckError("ERR_SOMETHING")))
+            StatusCheckErrorResponse(Some("Something"), StatusCheckError("ERR_SOMETHING"))
+          )
         result.left.get shouldEqual expectedResult
       }
 
       "a 400 is returned with an invalid json response" in {
         val responseBody = ""
-        val response = HttpResponse(BAD_REQUEST, responseBody)
+        val response     = HttpResponse(BAD_REQUEST, responseBody)
 
         val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
           StatusCheckResponseReads.read("POST", "some url", response)
         val expectedResult =
-          StatusCheckErrorResponseWithStatus(
-            BAD_REQUEST,
-            StatusCheckErrorResponse(None, StatusCheckError(ERR_UNKNOWN)))
+          StatusCheckErrorResponseWithStatus(BAD_REQUEST, StatusCheckErrorResponse(None, StatusCheckError(ERR_UNKNOWN)))
         result.left.get shouldEqual expectedResult
       }
 
       "a 500 is returned with an invalid json response" in {
         val responseBody = ""
-        val response = HttpResponse(INTERNAL_SERVER_ERROR, responseBody)
+        val response     = HttpResponse(INTERNAL_SERVER_ERROR, responseBody)
 
         val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
           StatusCheckResponseReads.read("POST", "some url", response)
         val expectedResult =
           StatusCheckErrorResponseWithStatus(
             INTERNAL_SERVER_ERROR,
-            StatusCheckErrorResponse(None, StatusCheckError(ERR_UNKNOWN)))
+            StatusCheckErrorResponse(None, StatusCheckError(ERR_UNKNOWN))
+          )
         result.left.get shouldEqual expectedResult
       }
     }

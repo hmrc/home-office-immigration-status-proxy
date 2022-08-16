@@ -18,7 +18,14 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.Future
 abstract class BaseISpec
-    extends AnyWordSpecLike with Matchers with OptionValues with MockitoSugar with WireMockSupport with AuthStubs with DataStreamStubs with MetricsTestSupport {
+    extends AnyWordSpecLike
+    with Matchers
+    with OptionValues
+    with MockitoSugar
+    with WireMockSupport
+    with AuthStubs
+    with DataStreamStubs
+    with MetricsTestSupport {
 
   def app: Application
   protected def appBuilder: GuiceApplicationBuilder
@@ -31,13 +38,13 @@ abstract class BaseISpec
   protected implicit def materializer: Materializer = app.materializer
 
   protected def checkHtmlResultWithBodyText(result: Future[Result], expectedSubstring: String): Unit = {
-    status(result) shouldBe 200
-    contentType(result) shouldBe Some("text/html")
-    charset(result) shouldBe Some("utf-8")
+    status(result)        shouldBe 200
+    contentType(result)   shouldBe Some("text/html")
+    charset(result)       shouldBe Some("utf-8")
     contentAsString(result) should include(expectedSubstring)
   }
 
-  private lazy val messagesApi = app.injector.instanceOf[MessagesApi]
+  private lazy val messagesApi            = app.injector.instanceOf[MessagesApi]
   private implicit def messages: Messages = messagesApi.preferred(Seq.empty[Lang])
 
   protected def htmlEscapedMessage(key: String): String = HtmlFormat.escape(Messages(key)).toString
