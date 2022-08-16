@@ -30,10 +30,12 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Injecting
 import connectors.HomeOfficeRightToPublicFundsConnector
 import play.api.mvc.Result
+
 import scala.concurrent.Future
 import play.mvc.Http.HeaderNames
 import play.api.http.MimeTypes
 import models.{OAuthToken, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
+import org.mockito.stubbing.OngoingStubbing
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Awaitable}
@@ -61,22 +63,26 @@ trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
   lazy val appConfig: AppConfig         = inject[AppConfig]
   val correlationId                     = "CorrelationId123"
 
-  def tokenCallFails =
+  def tokenCallFails: OngoingStubbing[Future[OAuthToken]] =
     when(mockConnector.token(any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - token")))
-  def tokenCallIsSuccessful =
+  def tokenCallIsSuccessful: OngoingStubbing[Future[OAuthToken]] =
     when(mockConnector.token(any(), any())(any()))
       .thenReturn(Future.successful(OAuthToken("String", "String")))
-  def requestMrzCallFails =
+  def requestMrzCallFails: OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
     when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))
-  def requestMrzCallIsSuccessful(response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
+  def requestMrzCallIsSuccessful(
+    response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]
+  ): OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
     when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any())(any()))
       .thenReturn(Future.successful(response))
-  def requestNinoCallFails =
+  def requestNinoCallFails: OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
     when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))
-  def requestNinoCallIsSuccessful(response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]) =
+  def requestNinoCallIsSuccessful(
+    response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]
+  ): OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
     when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any())(any()))
       .thenReturn(Future.successful(response))
 

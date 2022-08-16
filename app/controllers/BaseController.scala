@@ -54,7 +54,7 @@ trait BaseController {
       r => Ok(Json.toJson(r))
     )
 
-  def getCorrelationId(implicit request: Request[JsValue]) =
+  def getCorrelationId(implicit request: Request[JsValue]): String =
     request.headers.get(HEADER_X_CORRELATION_ID).getOrElse(UUID.randomUUID().toString)
 
 }

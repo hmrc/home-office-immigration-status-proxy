@@ -114,12 +114,13 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
   private[connectors] def generateNewUUID: String = randomUUID.toString
 
   private[connectors] def correlationId(requestId: Option[RequestId]): String = {
+    val uuidLength = 24
     val CorrelationIdPattern =
       """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
     requestId match {
       case Some(requestId) =>
         requestId.value match {
-          case CorrelationIdPattern(prefix) => prefix + "-" + generateNewUUID.substring(24)
+          case CorrelationIdPattern(prefix) => prefix + "-" + generateNewUUID.substring(uuidLength)
           case _                            => generateNewUUID
         }
       case _ => generateNewUUID

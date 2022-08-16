@@ -31,7 +31,11 @@ case class StatusCheckErrorResponse(
 object StatusCheckErrorResponse {
   implicit val formats: Format[StatusCheckErrorResponse] = Json.format[StatusCheckErrorResponse]
 
-  def error(correlationId: Option[String], errCode: String, fields: Option[List[(String, String)]] = None) =
+  def error(
+    correlationId: Option[String],
+    errCode: String,
+    fields: Option[List[(String, String)]] = None
+  ): StatusCheckErrorResponse =
     StatusCheckErrorResponse(
       correlationId = correlationId,
       error = StatusCheckError(
