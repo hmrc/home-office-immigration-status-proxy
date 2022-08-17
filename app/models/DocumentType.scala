@@ -36,7 +36,7 @@ object DocumentType {
   }
 
   implicit lazy val reads: Reads[DocumentType] =
-    (JsPath).read[String].map(DocumentType.apply).flattenValidated
+    JsPath.read[String].map(DocumentType.apply).flattenValidated
   implicit lazy val writes: Writes[DocumentType] = Writes { model =>
     JsString(model.code)
   }

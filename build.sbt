@@ -13,6 +13,9 @@ lazy val scoverageSettings = {
   )
 }
 
+addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt test:scalafmt")
+addCommandAlias("scalastyleAll", "all scalastyle test:scalastyle")
+
 lazy val root = (project in file("."))
   .settings(
     name := "home-office-immigration-status-proxy",
@@ -28,6 +31,7 @@ lazy val root = (project in file("."))
     Test / scalafmtOnCompile := true
   )
   .configs(IntegrationTest)
+  .settings(inConfig(IntegrationTest)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings): _*)
   .settings(
     IntegrationTest / Keys.fork := false,
     Defaults.itSettings,
@@ -39,17 +43,13 @@ lazy val root = (project in file("."))
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
 
-   scalacOptions ++= Seq(
+scalacOptions ++= Seq(
   "-P:silencer:pathFilters=views;routes"
-   )
-
-
-inConfig(IntegrationTest)(scalafmtCoreSettings)
+)
 
 Global / excludeLintKeys += IntegrationTest / scalafmtOnCompile
 
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] = {
+def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] =
   tests.map { test =>
     Group(test.name, Seq(test), SubProcess(ForkOptions().withRunJVMOptions(Vector(s"-Dtest.name=${test.name}"))))
   }
-}

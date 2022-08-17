@@ -27,16 +27,13 @@ class NationalitySpec extends AnyWordSpecLike with Matchers {
   "apply" should {
     "return a failed validation" when {
       "the string is empty" in {
-        Nationality("") shouldEqual Invalid(
-          Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("") shouldEqual Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
       "the string is shorter than 3 chars" in {
-        Nationality("AB") shouldEqual Invalid(
-          Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("AB") shouldEqual Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
       "the string is longer than 3 chars" in {
-        Nationality("ABVD") shouldEqual Invalid(
-          Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("ABVD") shouldEqual Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
     }
     "return a successful validation" when {

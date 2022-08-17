@@ -34,11 +34,13 @@ object StatusCheckErrorResponse {
   def error(
     correlationId: Option[String],
     errCode: String,
-    fields: Option[List[(String, String)]] = None) =
+    fields: Option[List[(String, String)]] = None
+  ): StatusCheckErrorResponse =
     StatusCheckErrorResponse(
       correlationId = correlationId,
       error = StatusCheckError(
         errCode = errCode,
-        fields = fields.map(f => f.map { case (code, name) => ValidationError(code, name) }))
+        fields = fields.map(f => f.map { case (code, name) => ValidationError(code, name) })
+      )
     )
 }

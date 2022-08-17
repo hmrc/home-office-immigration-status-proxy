@@ -28,12 +28,12 @@ class DateOfBirthSpec extends AnyWordSpecLike with Matchers {
   "apply" should {
     "return a failed validation" when {
       "the date is today" in {
-        DateOfBirth(LocalDate.now) shouldEqual Invalid(
-          Chain(ErrorMessage("Date of birth must be before today")))
+        DateOfBirth(LocalDate.now) shouldEqual Invalid(Chain(ErrorMessage("Date of birth must be before today")))
       }
       "the date is after today" in {
         DateOfBirth(LocalDate.now.plusDays(1)) shouldEqual Invalid(
-          Chain(ErrorMessage("Date of birth must be before today")))
+          Chain(ErrorMessage("Date of birth must be before today"))
+        )
       }
     }
     "return a successful validation" when {
@@ -63,7 +63,8 @@ class DateOfBirthSpec extends AnyWordSpecLike with Matchers {
   "writes" should {
     "return a JsString" in {
       DateOfBirth(LocalDate.now.minusDays(1)).map(doc =>
-        Json.toJson(doc) shouldEqual JsString(LocalDate.now.minusDays(1).toString))
+        Json.toJson(doc) shouldEqual JsString(LocalDate.now.minusDays(1).toString)
+      )
     }
   }
 

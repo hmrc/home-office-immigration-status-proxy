@@ -27,10 +27,13 @@ object DateOfBirth {
     validateDate(dob).map(new DateOfBirth(_))
 
   private def validateDate(dob: LocalDate): ValidationResult[LocalDate] =
-    if (dob.isBefore(LocalDate.now)) dob.validNec
-    else ErrorMessage("Date of birth must be before today").invalidNec
+    if (dob.isBefore(LocalDate.now)) {
+      dob.validNec
+    } else {
+      ErrorMessage("Date of birth must be before today").invalidNec
+    }
 
   implicit lazy val reads: Reads[DateOfBirth] =
-    (JsPath).read[LocalDate].map(DateOfBirth.apply).flattenValidated
+    JsPath.read[LocalDate].map(DateOfBirth.apply).flattenValidated
   implicit lazy val writes: Writes[DateOfBirth] = Json.valueWrites[DateOfBirth]
 }

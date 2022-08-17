@@ -11,8 +11,7 @@ import support.{JsonMatchers, ServerBaseISpec}
 import connectors.ErrorCodes._
 import play.api.test.Helpers.AUTHORIZATION
 
-class MrzSearchControllerISpec
-    extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
+class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
   this: Suite with ServerProvider =>
 
   val url = s"http://localhost:$port"
@@ -82,7 +81,7 @@ class MrzSearchControllerISpec
         givenAuthorisedForStride
 
         val correlationId = UUID.randomUUID().toString
-        val result = publicFundsByMrz("{}", correlationId)
+        val result        = publicFundsByMrz("{}", correlationId)
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be(correlationId))
@@ -124,9 +123,7 @@ class MrzSearchControllerISpec
 
         result.status shouldBe 400
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))))
+          and haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))))
       }
 
       "respond with 400 even if the service error undefined" in {
@@ -138,11 +135,10 @@ class MrzSearchControllerISpec
 
         val result = publicFundsByMrz(validMrzRequestBody)
 
-        result.status shouldBe 400
+        result.status          shouldBe 400
         result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json.as[JsObject] should haveProperty[JsObject](
-          "error",
-          haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+        result.json
+          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
 
       "respond with 404 even if the service error undefined" in {
@@ -154,11 +150,10 @@ class MrzSearchControllerISpec
 
         val result = publicFundsByMrz(validMrzRequestBody)
 
-        result.status shouldBe 404
+        result.status          shouldBe 404
         result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json.as[JsObject] should haveProperty[JsObject](
-          "error",
-          haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+        result.json
+          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
 
       "respond with 409 even if the service error undefined" in {
@@ -170,11 +165,10 @@ class MrzSearchControllerISpec
 
         val result = publicFundsByMrz(validMrzRequestBody)
 
-        result.status shouldBe 409
+        result.status          shouldBe 409
         result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json.as[JsObject] should haveProperty[JsObject](
-          "error",
-          haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+        result.json
+          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
     }
   }

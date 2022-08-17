@@ -29,20 +29,22 @@ object DocumentNumber {
     ).mapN { case _ => new DocumentNumber(doc) }
 
   private def validateLength(doc: String): ValidationResult[String] =
-    if (doc.length > 0 && doc.length < 31) doc.validNec
-    else ErrorMessage("Document number must be between 1 and 30 characters").invalidNec
+    if (doc.nonEmpty && doc.length < 31) {
+      doc.validNec
+    } else {
+      ErrorMessage("Document number must be between 1 and 30 characters").invalidNec
+    }
 
   private def validateCharacters(doc: String): ValidationResult[String] = {
     val regex = "^[0-9A-Z-]*$".r
     doc match {
       case regex(_*) => doc.validNec
       case _ =>
-        ErrorMessage(
-          "Document number must only contain upper case alphanumeric characters or hyphens").invalidNec
+        ErrorMessage("Document number must only contain upper case alphanumeric characters or hyphens").invalidNec
     }
   }
 
   implicit lazy val reads: Reads[DocumentNumber] =
-    (JsPath).read[String].map(DocumentNumber.apply).flattenValidated
+    JsPath.read[String].map(DocumentNumber.apply).flattenValidated
   implicit lazy val writes: Writes[DocumentNumber] = Json.valueWrites[DocumentNumber]
 }

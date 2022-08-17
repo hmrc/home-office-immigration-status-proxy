@@ -35,7 +35,7 @@ trait AppConfig {
 
 }
 
-class AppConfigImpl @Inject()(config: ServicesConfig) extends AppConfig {
+class AppConfigImpl @Inject() (config: ServicesConfig) extends AppConfig {
 
   val rightToPublicFundsPathPrefix: String =
     config.getConfString("home-office-right-to-public-funds.pathPrefix", "")

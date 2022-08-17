@@ -26,24 +26,22 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import play.api.Environment
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthActionImpl @Inject()(
+class AuthActionImpl @Inject() (
   val env: Environment,
   override val authConnector: AuthConnector,
   val parser: BodyParsers.Default
 )(implicit val executionContext: ExecutionContext)
-    extends AuthAction with AuthorisedFunctions {
+    extends AuthAction
+    with AuthorisedFunctions {
 
-  override def invokeBlock[A](
-    request: Request[A],
-    block: Request[A] => Future[Result]): Future[Result] = {
+  override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier =
       HeaderCarrierConverter.fromRequest(request)
 
     authorised(AuthProviders(PrivilegedApplication))(block(request))
-      .recover {
-        case e: AuthorisationException =>
-          Forbidden("PrivilegedApplication required.")
+      .recover { case e: AuthorisationException =>
+        Forbidden("PrivilegedApplication required.")
       }
   }
 

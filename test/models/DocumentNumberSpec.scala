@@ -28,21 +28,23 @@ class DocumentNumberSpec extends AnyWordSpecLike with Matchers {
     "return a failed validation" when {
       "the string is empty" in {
         DocumentNumber("") shouldEqual Invalid(
-          Chain(ErrorMessage("Document number must be between 1 and 30 characters")))
+          Chain(ErrorMessage("Document number must be between 1 and 30 characters"))
+        )
       }
       "the string is shorter than 3 chars" in {
         DocumentNumber("ABCDEFGHIJABCDEFGHIJABCDEFGHIJ1") shouldEqual Invalid(
-          Chain(ErrorMessage("Document number must be between 1 and 30 characters")))
+          Chain(ErrorMessage("Document number must be between 1 and 30 characters"))
+        )
       }
       "the string contains lower case" in {
         DocumentNumber("ABC-123-abc") shouldEqual Invalid(
-          Chain(ErrorMessage(
-            "Document number must only contain upper case alphanumeric characters or hyphens")))
+          Chain(ErrorMessage("Document number must only contain upper case alphanumeric characters or hyphens"))
+        )
       }
       "the string contains non alpha (or hyphen) chars" in {
         DocumentNumber("ABC-123-???") shouldEqual Invalid(
-          Chain(ErrorMessage(
-            "Document number must only contain upper case alphanumeric characters or hyphens")))
+          Chain(ErrorMessage("Document number must only contain upper case alphanumeric characters or hyphens"))
+        )
       }
     }
     "return a successful validation" when {
@@ -64,8 +66,7 @@ class DocumentNumberSpec extends AnyWordSpecLike with Matchers {
       }
       "the string is 30 chars" in {
         DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-") shouldBe a[Valid[_]]
-        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-").map(
-          _.doc shouldEqual "ABCDEFGHIJ1234567890ABCDEFGHI-")
+        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-").map(_.doc shouldEqual "ABCDEFGHIJ1234567890ABCDEFGHI-")
       }
     }
   }

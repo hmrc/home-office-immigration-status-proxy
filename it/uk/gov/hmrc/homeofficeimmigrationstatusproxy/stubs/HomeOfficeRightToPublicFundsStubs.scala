@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.mvc.Http.HeaderNames
 import support.WireMockSupport
-import models.{StatusCheckResponse, StatusCheckResult, ImmigrationStatus}
+import models.{ImmigrationStatus, StatusCheckResponse, StatusCheckResult}
 import java.time.LocalDate
 
 trait HomeOfficeRightToPublicFundsStubs {
@@ -35,7 +35,6 @@ trait HomeOfficeRightToPublicFundsStubs {
       |    "startDate": "2019-04-15"
       |  }
       |}""".stripMargin
-
 
   val validNinoRequestBody: String =
     """{
@@ -87,31 +86,31 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  }
       |}""".stripMargin
   val responseBodyWithStatusObject = StatusCheckResponse(
-        correlationId = "some-correlation-id",
-       result = StatusCheckResult(
-        dateOfBirth = LocalDate.parse("2001-01-31"),
-        nationality = "IRL",
-        fullName = "Jane Doe",
-        statuses = List(
-            ImmigrationStatus(
-              productType = "EUS",
-              immigrationStatus = "ILR",
-              noRecourseToPublicFunds = true,
-              statusEndDate = Some(LocalDate.parse("2018-01-31")),
-              statusStartDate = LocalDate.parse("2018-12-12")
-            )
-          )
+    correlationId = "some-correlation-id",
+    result = StatusCheckResult(
+      dateOfBirth = LocalDate.parse("2001-01-31"),
+      nationality = "IRL",
+      fullName = "Jane Doe",
+      statuses = List(
+        ImmigrationStatus(
+          productType = "EUS",
+          immigrationStatus = "ILR",
+          noRecourseToPublicFunds = true,
+          statusEndDate = Some(LocalDate.parse("2018-01-31")),
+          statusStartDate = LocalDate.parse("2018-12-12")
         )
-       )
+      )
+    )
+  )
 
   def getValidRequest(requestType: RequestType) = requestType match {
     case RequestType.Nino => validNinoRequestBody
-    case RequestType.Mrz => validMrzRequestBody
+    case RequestType.Mrz  => validMrzRequestBody
   }
 
   def getRequestWithRange(requestType: RequestType) = requestType match {
     case RequestType.Nino => requestBodyWithRange
-    case RequestType.Mrz => mrzRequestBodyWithRange
+    case RequestType.Mrz  => mrzRequestBodyWithRange
   }
 
   def givenStatusCheckResultNoRangeExample(requestType: RequestType): StubMapping =
@@ -246,10 +245,7 @@ trait HomeOfficeRightToPublicFundsStubs {
   def givenOAuthTokenDenied(): StubMapping =
     givenStatusPublicFundsTokenStub(401, validTokenForm, "")
 
-  def givenStatusPublicFundsTokenStub(
-    httpResponseCode: Int,
-    requestBody: String,
-    responseBody: String): StubMapping =
+  def givenStatusPublicFundsTokenStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/token"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -260,7 +256,8 @@ trait HomeOfficeRightToPublicFundsStubs {
             .withStatus(httpResponseCode)
             .withHeader("Content-Type", "application/json")
             .withBody(responseBody)
-        ))
+        )
+    )
 
   sealed trait RequestType
   object RequestType {
@@ -272,17 +269,14 @@ trait HomeOfficeRightToPublicFundsStubs {
     requestType: RequestType,
     httpResponseCode: Int,
     requestBody: String,
-    responseBody: String): StubMapping =
+    responseBody: String
+  ): StubMapping =
     requestType match {
-      case RequestType.Mrz => givenStatusPublicFundsByMrzStub(httpResponseCode, requestBody, responseBody)
+      case RequestType.Mrz  => givenStatusPublicFundsByMrzStub(httpResponseCode, requestBody, responseBody)
       case RequestType.Nino => givenStatusPublicFundsByNinoStub(httpResponseCode, requestBody, responseBody)
     }
 
-
-  def givenStatusPublicFundsByNinoStub(
-    httpResponseCode: Int,
-    requestBody: String,
-    responseBody: String): StubMapping =
+  def givenStatusPublicFundsByNinoStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/nino"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -295,12 +289,10 @@ trait HomeOfficeRightToPublicFundsStubs {
             .withHeader("Content-Type", "application/json")
             .withHeader("X-Correlation-Id", "some-correlation-id")
             .withBody(responseBody)
-        ))
+        )
+    )
 
-  def givenStatusPublicFundsByMrzStub(
-    httpResponseCode: Int,
-    requestBody: String,
-    responseBody: String): StubMapping =
+  def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/mrz"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -313,7 +305,7 @@ trait HomeOfficeRightToPublicFundsStubs {
             .withHeader("Content-Type", "application/json")
             .withHeader("X-Correlation-Id", "some-correlation-id")
             .withBody(responseBody)
-        ))
-
+        )
+    )
 
 }

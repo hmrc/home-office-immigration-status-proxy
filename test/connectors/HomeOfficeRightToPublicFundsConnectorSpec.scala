@@ -26,9 +26,9 @@ import wiring.{AppConfig, ProxyHttpClient}
 
 class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Matchers {
 
-  private lazy val mockAppConfig: AppConfig = mock(classOf[AppConfig])
+  private lazy val mockAppConfig: AppConfig        = mock(classOf[AppConfig])
   private lazy val mockHttpClient: ProxyHttpClient = mock(classOf[ProxyHttpClient])
-  lazy val metrics: Metrics = mock(classOf[Metrics])
+  lazy val metrics: Metrics                        = mock(classOf[Metrics])
 
   trait Setup {
     val uuid = "123f4567-g89c-42c3-b456-557742330000"
@@ -40,8 +40,9 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
 
   "requestID is present in the headerCarrier" should {
     "return new ID pre-appending the requestID when the requestID matches the format(8-4-4-4)" in new Setup {
-      val requestId = "dcba0000-ij12-df34-jk56"
-      connector.correlationId(Some(RequestId(requestId))) mustBe s"$requestId-${uuid.substring(24)}"
+      val requestId  = "dcba0000-ij12-df34-jk56"
+      val uuidLength = 24
+      connector.correlationId(Some(RequestId(requestId))) mustBe s"$requestId-${uuid.substring(uuidLength)}"
     }
 
     "return new ID when the requestID does not match the format(8-4-4-4)" in new Setup {

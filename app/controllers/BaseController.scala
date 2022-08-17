@@ -28,8 +28,9 @@ import scala.concurrent.Future
 
 trait BaseController {
 
-  def withValidParameters[A](correlationId: String)(
-    f: A => Future[Result])(implicit request: Request[JsValue], reads: Reads[A]): Future[Result] =
+  def withValidParameters[A](
+    correlationId: String
+  )(f: A => Future[Result])(implicit request: Request[JsValue], reads: Reads[A]): Future[Result] =
     request.body.validate[A] match {
       case JsSuccess(result, _) => f(result)
       case JsError(errors)      => jsErrorToResponse(correlationId, errors)
@@ -37,7 +38,8 @@ trait BaseController {
 
   private def jsErrorToResponse(
     correlationId: String,
-    errors: Seq[(JsPath, Seq[JsonValidationError])]): Future[Result] = {
+    errors: Seq[(JsPath, Seq[JsonValidationError])]
+  ): Future[Result] = {
     val validationErrors =
       errors.flatMap { case (path, err) => err.map(e => (path.toString, e.message)) }.toList
     val result =
@@ -46,14 +48,13 @@ trait BaseController {
     Future.successful(BadRequest(Json.toJson(result)))
   }
 
-  def eitherToResult(
-    response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]): Result =
+  def eitherToResult(response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]): Result =
     response.fold(
       e => new Status(e.statusCode)(Json.toJson(e.errorResponse)),
       r => Ok(Json.toJson(r))
     )
 
-  def getCorrelationId(implicit request: Request[JsValue]) =
+  def getCorrelationId(implicit request: Request[JsValue]): String =
     request.headers.get(HEADER_X_CORRELATION_ID).getOrElse(UUID.randomUUID().toString)
 
 }
