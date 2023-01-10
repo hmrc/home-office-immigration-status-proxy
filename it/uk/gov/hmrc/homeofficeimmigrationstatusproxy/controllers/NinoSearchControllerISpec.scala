@@ -18,7 +18,7 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
 
   lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
-  def ping: WSResponse = wsClient.url(s"$url/ping/ping").get.futureValue
+  def ping: WSResponse = wsClient.url(s"$url/ping/ping").get().futureValue
 
   def publicFundsByNino(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
     wsClient

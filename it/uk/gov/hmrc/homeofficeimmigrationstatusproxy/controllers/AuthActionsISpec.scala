@@ -50,7 +50,7 @@ class AuthActionsISpec extends AuthActionISpecSetup with ScalaFutures {
 
 trait AuthActionISpecSetup extends AppBaseISpec {
 
-  override def fakeApplication: Application = appBuilder.build()
+  override def fakeApplication(): Application = appBuilder.build()
 
   object TestController {
 

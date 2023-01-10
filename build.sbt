@@ -13,22 +13,21 @@ lazy val scoverageSettings = {
   )
 }
 
-addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt test:scalafmt")
-addCommandAlias("scalastyleAll", "all scalastyle test:scalastyle")
+addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt Test/scalafmt IntegrationTest/scalafmt")
+addCommandAlias("scalastyleAll", "all scalastyle Test/scalastyle IntegrationTest/scalastyle")
 
 lazy val root = (project in file("."))
   .settings(
     name := "home-office-immigration-status-proxy",
     organization := "uk.gov.hmrc",
-    scalaVersion := "2.12.16",
+    scalaVersion := "2.13.10",
+    // To resolve a bug with version 2.x.x of the scoverage plugin - https://github.com/sbt/sbt/issues/6997
+    libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always),
     PlayKeys.playDefaultPort := 10211,
-    resolvers += Resolver.jcenterRepo,
     libraryDependencies ++= AppDependencies(),
     publishingSettings,
     scoverageSettings,
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-    Compile / scalafmtOnCompile := true,
-    Test / scalafmtOnCompile := true
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings): _*)
@@ -38,13 +37,12 @@ lazy val root = (project in file("."))
     IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "it").value,
     IntegrationTest / parallelExecution := false,
     IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
-    IntegrationTest / scalafmtOnCompile := true,
     majorVersion := 0
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
 
 scalacOptions ++= Seq(
-  "-P:silencer:pathFilters=views;routes"
+  "-Wconf:src=routes/.*:s"
 )
 
 Global / excludeLintKeys += IntegrationTest / scalafmtOnCompile

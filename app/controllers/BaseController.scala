@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import play.api.mvc._
 import play.api.mvc.Results._
 import models.{StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import connectors.ErrorCodes._
+
 import java.util.UUID
 import wiring.Constants._
 
@@ -33,12 +34,12 @@ trait BaseController {
   )(f: A => Future[Result])(implicit request: Request[JsValue], reads: Reads[A]): Future[Result] =
     request.body.validate[A] match {
       case JsSuccess(result, _) => f(result)
-      case JsError(errors)      => jsErrorToResponse(correlationId, errors)
+      case JsError(errors)      => jsErrorToResponse(correlationId, errors.toSeq)
     }
 
   private def jsErrorToResponse(
     correlationId: String,
-    errors: Seq[(JsPath, Seq[JsonValidationError])]
+    errors: Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
   ): Future[Result] = {
     val validationErrors =
       errors.flatMap { case (path, err) => err.map(e => (path.toString, e.message)) }.toList

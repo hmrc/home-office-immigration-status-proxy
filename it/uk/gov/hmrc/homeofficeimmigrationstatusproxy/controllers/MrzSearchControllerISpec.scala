@@ -18,7 +18,7 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
 
   lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
-  def ping: WSResponse = wsClient.url(s"$url/ping/ping").get.futureValue
+  def ping: WSResponse = wsClient.url(s"$url/ping/ping").get().futureValue
 
   def publicFundsByMrz(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
     wsClient
