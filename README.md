@@ -4,27 +4,36 @@ Backend proxy API to connect the Check Immigration Status web service which chec
 
 ## Running the tests
 
-    sbt test it:test
+```bash
+sbt test IntegrationTest/test
+```
 
 ## Running the tests with coverage
 
-    sbt clean coverageOn test it:test coverageReport
+```bash
+sbt clean coverageOn Test/test IntegrationTest/test coverageReport
+```
 
 ## Running the tests with coverage, scalafmt, scalastyle and dependency checks
 
-    ./run_all_tests
+```bash
+./run_all_tests
+```
 
 ## Running the app locally
 
-    sbt run
-    
-or    
+```bash
+sbt run
+```
 
-    sm --start HOSS
+or
+
+```bash
+sm --start HOSS
+```
 
 It should then be listening on port 10211
 
 ### License
-
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html")

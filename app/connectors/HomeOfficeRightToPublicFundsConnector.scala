@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,10 @@
 package connectors
 
 import java.net.URL
-import com.codahale.metrics.MetricRegistry
 import com.google.inject.Singleton
-import com.kenshoo.play.metrics.Metrics
 
 import javax.inject.Inject
 import play.mvc.Http.HeaderNames
-import uk.gov.hmrc.agent.kenshoo.monitoring.HttpAPIMonitor
 import models.{OAuthToken, StatusCheckByMrzRequest, StatusCheckByNinoRequest, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import wiring.{AppConfig, ProxyHttpClient}
 import uk.gov.hmrc.http._
@@ -36,10 +33,7 @@ import wiring.Constants._
 import java.util.UUID.randomUUID
 
 @Singleton
-class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient, metrics: Metrics)
-    extends HttpAPIMonitor {
-
-  override val kenshooRegistry: MetricRegistry = metrics.defaultRegistry
+class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient) {
 
   def token(xCorrelationId: String, requestId: Option[RequestId])(implicit ec: ExecutionContext): Future[OAuthToken] = {
 
@@ -59,9 +53,8 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
       "client_id"     -> Seq(appConfig.homeOfficeClientId),
       "client_secret" -> Seq(appConfig.homeOfficeClientSecret)
     )
-    monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-Token") {
-      http.POSTForm[OAuthToken](url, form)
-    }
+
+    http.POSTForm[OAuthToken](url, form)
   }
 
   def statusPublicFundsByNino(
@@ -78,10 +71,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/nino"
     ).toString
 
-    monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Nino") {
-      http
-        .POST[StatusCheckByNinoRequest, Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
-    }
+    http.POST[StatusCheckByNinoRequest, Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
   }
 
   def statusPublicFundsByMrz(
@@ -98,13 +88,10 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
       appConfig.rightToPublicFundsPathPrefix + "/status/public-funds/mrz"
     ).toString
 
-    monitor(s"ConsumedAPI-Home-Office-Right-To-Public-Funds-Status-By-Mrz") {
-      http
-        .POST[StatusCheckByMrzRequest, Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
-    }
+    http.POST[StatusCheckByMrzRequest, Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]](url, request)
   }
 
-  private def getHeaderCarrier(xCorrelationId: String, requestId: Option[RequestId], token: OAuthToken) =
+  private def getHeaderCarrier(xCorrelationId: String, requestId: Option[RequestId], token: OAuthToken): HeaderCarrier =
     HeaderCarrier().withExtraHeaders(
       HEADER_X_CORRELATION_ID   -> xCorrelationId,
       HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",

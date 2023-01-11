@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 
 package controllers
 
-import play.api.libs.json.{JsValue, Json}
-import play.api.test.FakeRequest
-import models._
-import play.api.mvc.Results._
-import play.api.http.Status._
-import java.time.LocalDate
-import connectors.ErrorCodes._
 import cats.implicits._
+import connectors.ErrorCodes._
+import models._
+import play.api.http.Status._
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Results._
+import play.api.test.FakeRequest
+
+import java.time.LocalDate
 
 class MrzSearchControllerSpec extends ControllerSpec {
 
@@ -64,6 +65,18 @@ class MrzSearchControllerSpec extends ControllerSpec {
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestMrzCallIsSuccessful(Right(statusCheckResponse))
         await(controller.post(request)) mustEqual withHeaders(Ok(Json.toJson(statusCheckResponse)))
+      }
+
+      "a request is made without a correlationId but is successful" in {
+        tokenCallIsSuccessful
+        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
+        requestMrzCallIsSuccessful(Right(statusCheckResponse))
+        val requestWithoutCorrelationId: FakeRequest[JsValue] =
+          FakeRequest().withBody(requestBody)
+        requestWithoutCorrelationId.headers.headers.find(_._1 == "X-Correlation-Id") must be(None)
+        await(controller.post(requestWithoutCorrelationId)).header.headers
+          .find(_._1 == "X-Correlation-Id") must not be empty
       }
 
     }
