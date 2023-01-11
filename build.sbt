@@ -1,15 +1,14 @@
-import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
+import uk.gov.hmrc.DefaultBuildSettings
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;.*\.Reverse[^.]*""",
-    ScoverageKeys.coverageMinimumStmtTotal := 90.00,
-    ScoverageKeys.coverageFailOnMinimum := false,
-    ScoverageKeys.coverageHighlighting := true,
-    Test / parallelExecution := false
+    ScoverageKeys.coverageMinimumStmtTotal := 100.00,
+    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageHighlighting := true
   )
 }
 
@@ -30,13 +29,12 @@ lazy val root = (project in file("."))
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
   )
   .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(org.scalafmt.sbt.ScalafmtPlugin.scalafmtConfigSettings): _*)
+  .settings(DefaultBuildSettings.integrationTestSettings())
   .settings(
     IntegrationTest / Keys.fork := false,
-    Defaults.itSettings,
     IntegrationTest / unmanagedSourceDirectories += baseDirectory(_ / "it").value,
     IntegrationTest / parallelExecution := false,
-    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
+    IntegrationTest / testGrouping := DefaultBuildSettings.oneForkedJvmPerTest((IntegrationTest / definedTests).value),
     majorVersion := 0
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin)
@@ -44,10 +42,3 @@ lazy val root = (project in file("."))
 scalacOptions ++= Seq(
   "-Wconf:src=routes/.*:s"
 )
-
-Global / excludeLintKeys += IntegrationTest / scalafmtOnCompile
-
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] =
-  tests.map { test =>
-    Group(test.name, Seq(test), SubProcess(ForkOptions().withRunJVMOptions(Vector(s"-Dtest.name=${test.name}"))))
-  }

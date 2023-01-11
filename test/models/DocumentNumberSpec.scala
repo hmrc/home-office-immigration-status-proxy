@@ -16,10 +16,10 @@
 
 package models
 
+import cats.data.Chain
+import cats.data.Validated._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import cats.data.Validated._
-import cats.data.Chain
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
 
 class DocumentNumberSpec extends AnyWordSpecLike with Matchers {

@@ -16,19 +16,19 @@
 
 package connectors
 
-import org.scalatest.concurrent.ScalaFutures
+import cats.implicits._
 import connectors.ErrorCodes._
-import uk.gov.hmrc.domain.Nino
 import models._
+import org.scalatest.Inside.inside
+import org.scalatest.concurrent.ScalaFutures
+import play.api.http.Status._
 import stubs.HomeOfficeRightToPublicFundsStubs
 import support.AppBaseISpec
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId}
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
-import play.api.http.Status._
-import cats.implicits._
-import org.scalatest.Inside.inside
 
 class HomeOfficeRightToPublicFundsConnectorISpec
     extends AppBaseISpec

@@ -16,14 +16,15 @@
 
 package controllers
 
-import play.api.libs.json.{JsValue, Json}
-import play.api.test.FakeRequest
-import models._
-import play.api.mvc.Results._
-import play.api.http.Status._
-import java.time.LocalDate
-import uk.gov.hmrc.domain.Nino
 import connectors.ErrorCodes._
+import models._
+import play.api.http.Status._
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Results._
+import play.api.test.FakeRequest
+import uk.gov.hmrc.domain.Nino
+
+import java.time.LocalDate
 
 class NinoSearchControllerSpec extends ControllerSpec {
 
@@ -64,6 +65,17 @@ class NinoSearchControllerSpec extends ControllerSpec {
         await(controller.post(request)) mustEqual withHeaders(Ok(Json.toJson(statusCheckResponse)))
       }
 
+      "a request is made without a correlationId but is successful" in {
+        tokenCallIsSuccessful
+        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
+        requestNinoCallIsSuccessful(Right(statusCheckResponse))
+        val requestWithoutCorrelationId: FakeRequest[JsValue] =
+          FakeRequest().withBody(requestBody)
+        requestWithoutCorrelationId.headers.headers.find(_._1 == "X-Correlation-Id") must be(None)
+        await(controller.post(requestWithoutCorrelationId)).header.headers
+          .find(_._1 == "X-Correlation-Id") must not be empty
+      }
     }
 
     "return an error" when {

@@ -18,7 +18,6 @@ package connectors
 
 import java.net.URL
 import com.google.inject.Singleton
-import com.kenshoo.play.metrics.Metrics
 
 import javax.inject.Inject
 import play.mvc.Http.HeaderNames
@@ -34,7 +33,7 @@ import wiring.Constants._
 import java.util.UUID.randomUUID
 
 @Singleton
-class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient, metrics: Metrics) {
+class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: ProxyHttpClient) {
 
   def token(xCorrelationId: String, requestId: Option[RequestId])(implicit ec: ExecutionContext): Future[OAuthToken] = {
 

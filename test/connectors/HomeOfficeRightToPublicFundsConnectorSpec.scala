@@ -16,7 +16,6 @@
 
 package connectors
 
-import com.kenshoo.play.metrics.Metrics
 import org.mockito.Mockito.mock
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.matchers.should.Matchers
@@ -28,12 +27,11 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
 
   private lazy val mockAppConfig: AppConfig        = mock(classOf[AppConfig])
   private lazy val mockHttpClient: ProxyHttpClient = mock(classOf[ProxyHttpClient])
-  lazy val metrics: Metrics                        = mock(classOf[Metrics])
 
   trait Setup {
     val uuid = "123f4567-g89c-42c3-b456-557742330000"
     val connector: HomeOfficeRightToPublicFundsConnector =
-      new HomeOfficeRightToPublicFundsConnector(mockAppConfig, mockHttpClient, metrics) {
+      new HomeOfficeRightToPublicFundsConnector(mockAppConfig, mockHttpClient) {
         override def generateNewUUID: String = uuid
       }
   }

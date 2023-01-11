@@ -16,21 +16,20 @@
 
 package controllers
 
+import connectors.ErrorCodes._
+import controllers.BaseController
+import models.{StatusCheckError, StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse, StatusCheckResult}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import models.{StatusCheckError, StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse, StatusCheckResult}
 import play.api.http.Status._
-import play.api.mvc._
-import play.api.mvc.Results._
-import java.time.LocalDate
 import play.api.libs.json.{Format, Json, Reads}
-import scala.concurrent.Future
-import connectors.ErrorCodes._
+import play.api.mvc.Results._
+import play.api.mvc._
 import play.api.test.FakeRequest
-import controllers.BaseController
 
+import java.time.LocalDate
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Awaitable}
+import scala.concurrent.{Await, Awaitable, Future}
 import scala.language.postfixOps
 
 class BaseControllerSpec extends AnyWordSpecLike with Matchers {

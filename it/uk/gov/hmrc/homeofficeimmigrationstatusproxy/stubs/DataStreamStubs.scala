@@ -17,9 +17,9 @@
 package stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import support.WireMockSupport
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
+import support.WireMockSupport
 
 trait DataStreamStubs extends Eventually {
   me: WireMockSupport =>
