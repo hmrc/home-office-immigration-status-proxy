@@ -20,6 +20,7 @@ lazy val root = (project in file("."))
     name := "home-office-immigration-status-proxy",
     organization := "uk.gov.hmrc",
     scalaVersion := "2.13.10",
+    addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full),
     // To resolve a bug with version 2.x.x of the scoverage plugin - https://github.com/sbt/sbt/issues/6997
     libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always),
     PlayKeys.playDefaultPort := 10211,

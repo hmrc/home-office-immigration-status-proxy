@@ -28,5 +28,5 @@ class FakeAuthAction @Inject() (implicit materializer: Materializer) extends Aut
   override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] =
     block(request)
 
-  override protected def executionContext: ExecutionContext = ???
+  override protected def executionContext: ExecutionContext = ExecutionContext.global
 }

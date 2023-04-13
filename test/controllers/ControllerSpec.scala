@@ -31,10 +31,14 @@ import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.Result
+import play.api.test.Helpers.stubControllerComponents
 import play.api.test.Injecting
 import play.mvc.Http.HeaderNames
+import uk.gov.hmrc.internalauth.client.BackendAuthComponents
+import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
 import wiring.AppConfig
 
+import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Awaitable, Future}
 import scala.language.postfixOps
@@ -44,6 +48,7 @@ trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .overrides(
       bind[AuthAction].to[FakeAuthAction],
+      bind[BackendAuthComponents].toInstance(backendAuthComponents),
       bind[HomeOfficeRightToPublicFundsConnector].toInstance(mockConnector)
     )
     .build()
@@ -53,7 +58,12 @@ trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
     reset(mockConnector)
   }
 
-  val mockConnector                     = mock(classOf[HomeOfficeRightToPublicFundsConnector])
+  val mockConnector: HomeOfficeRightToPublicFundsConnector = mock(classOf[HomeOfficeRightToPublicFundsConnector])
+
+  val mockStubBehaviour: StubBehaviour  = mock(classOf[StubBehaviour])
+  val backendAuthComponents: BackendAuthComponents =
+    BackendAuthComponentsStub(mockStubBehaviour)(stubControllerComponents(), global)
+
   val timeoutDuration: FiniteDuration   = 5 seconds
   implicit val timeout: Timeout         = Timeout(timeoutDuration)
   def await[T](future: Awaitable[T]): T = Await.result(future, timeoutDuration)
