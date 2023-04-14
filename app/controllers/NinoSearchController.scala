@@ -24,7 +24,7 @@ import play.api.http.MimeTypes
 import play.api.libs.json._
 import play.api.mvc._
 import play.mvc.Http.HeaderNames
-import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource, ResourceLocation, ResourceType}
+import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import wiring.Constants._
 
@@ -60,9 +60,9 @@ class NinoSearchController @Inject() (
   }
 
   private def permission(service: String) = Predicate.Permission(
-    resource = Resource(
-      resourceType = ResourceType("home-office-immigration-status-proxy"),
-      resourceLocation = ResourceLocation(s"status/public-funds/nino/$service")
+    resource = Resource.from(
+      "home-office-immigration-status-proxy",
+      s"status/public-funds/nino/$service"
     ),
     action = IAAction("WRITE")
   )
