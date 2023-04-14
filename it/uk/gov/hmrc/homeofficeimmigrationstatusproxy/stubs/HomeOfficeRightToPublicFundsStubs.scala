@@ -102,6 +102,7 @@ trait HomeOfficeRightToPublicFundsStubs {
       |    ]
       |  }
       |}""".stripMargin
+
   val responseBodyWithStatusObject = StatusCheckResponse(
     correlationId = "some-correlation-id",
     result = StatusCheckResult(
@@ -293,9 +294,10 @@ trait HomeOfficeRightToPublicFundsStubs {
       case RequestType.Nino => givenStatusPublicFundsByNinoStub(httpResponseCode, requestBody, responseBody)
     }
 
-  def givenStatusPublicFundsByNinoStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
+  def givenStatusPublicFundsByNinoStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping = {
+
     stubFor(
-      post(urlEqualTo(s"/v1/status/public-funds/nino"))
+      post(urlEqualTo("/v1/status/public-funds/nino"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
         .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
@@ -308,6 +310,7 @@ trait HomeOfficeRightToPublicFundsStubs {
             .withBody(responseBody)
         )
     )
+  }
 
   def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     stubFor(
