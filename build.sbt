@@ -1,17 +1,6 @@
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.DefaultBuildSettings
 
-lazy val scoverageSettings = {
-  import scoverage.ScoverageKeys
-  Seq(
-    // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := """uk\.gov\.hmrc\.BuildInfo;.*\.Routes;.*\.RoutesPrefix;.*Filters?;MicroserviceAuditConnector;Module;GraphiteStartUp;.*\.Reverse[^.]*""",
-    ScoverageKeys.coverageMinimumStmtTotal := 100.00,
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true
-  )
-}
-
 addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt Test/scalafmt IntegrationTest/scalafmt")
 addCommandAlias("scalastyleAll", "all scalastyle Test/scalastyle IntegrationTest/scalastyle")
 
@@ -26,9 +15,9 @@ lazy val root = (project in file("."))
     PlayKeys.playDefaultPort := 10211,
     libraryDependencies ++= AppDependencies(),
     publishingSettings,
-    scoverageSettings,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
   )
+  .settings(CodeCoverageSettings.settings: _*)
   .configs(IntegrationTest)
   .settings(DefaultBuildSettings.integrationTestSettings())
   .settings(

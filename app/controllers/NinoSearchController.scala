@@ -33,10 +33,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NinoSearchController @Inject() (
-                                       rightToPublicFundsConnector: HomeOfficeRightToPublicFundsConnector,
-                                       authAction: AuthAction,
-                                       internalAuthAction: BackendAuthComponents,
-                                       cc: ControllerComponents
+  rightToPublicFundsConnector: HomeOfficeRightToPublicFundsConnector,
+  authAction: AuthAction,
+  internalAuthAction: BackendAuthComponents,
+  cc: ControllerComponents
 )(implicit val configuration: Configuration, ec: ExecutionContext)
     extends BackendController(cc)
     with BaseController {
@@ -48,15 +48,14 @@ class NinoSearchController @Inject() (
       for {
         token <- rightToPublicFundsConnector.token(correlationId, hc.requestId)
         either <- rightToPublicFundsConnector
-          .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, hc.requestId, token)
+                    .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, hc.requestId, token)
         result = eitherToResult(either)
       } yield result.withHeaders(HEADER_X_CORRELATION_ID -> correlationId, HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
     }
   }
 
-  def post: Action[JsValue] = authAction.async(parse.tolerantJson){
-    implicit request =>
-      processRequest
+  def post: Action[JsValue] = authAction.async(parse.tolerantJson) { implicit request =>
+    processRequest
   }
 
   private def permission(service: String) = Predicate.Permission(
@@ -67,9 +66,10 @@ class NinoSearchController @Inject() (
     action = IAAction("WRITE")
   )
 
-  def postByService(service: String): Action[JsValue] = internalAuthAction.authorizedAction(permission(service)).async(parse.tolerantJson) {
-    implicit request: Request[JsValue] =>
-      processRequest
-  }
+  def postByService(service: String): Action[JsValue] =
+    internalAuthAction.authorizedAction(permission(service)).async(parse.tolerantJson) {
+      implicit request: Request[JsValue] =>
+        processRequest
+    }
 
 }

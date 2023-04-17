@@ -60,7 +60,7 @@ trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
 
   val mockConnector: HomeOfficeRightToPublicFundsConnector = mock(classOf[HomeOfficeRightToPublicFundsConnector])
 
-  val mockStubBehaviour: StubBehaviour  = mock(classOf[StubBehaviour])
+  val mockStubBehaviour: StubBehaviour = mock(classOf[StubBehaviour])
   val backendAuthComponents: BackendAuthComponents =
     BackendAuthComponentsStub(mockStubBehaviour)(stubControllerComponents(), global)
 
