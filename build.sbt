@@ -1,4 +1,3 @@
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.DefaultBuildSettings
 
 addCommandAlias("scalafmtAll", "all scalafmtSbt scalafmt Test/scalafmt IntegrationTest/scalafmt")
@@ -14,7 +13,6 @@ lazy val root = (project in file("."))
     libraryDependencySchemes ++= Seq("org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always),
     PlayKeys.playDefaultPort := 10211,
     libraryDependencies ++= AppDependencies(),
-    publishingSettings,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources"
   )
   .settings(CodeCoverageSettings.settings: _*)
@@ -27,7 +25,7 @@ lazy val root = (project in file("."))
     IntegrationTest / testGrouping := DefaultBuildSettings.oneForkedJvmPerTest((IntegrationTest / definedTests).value),
     majorVersion := 0
   )
-  .enablePlugins(PlayScala, SbtDistributablesPlugin)
+  .enablePlugins(PlayScala, SbtDistributablesPlugin, BuildInfoPlugin)
 
 scalacOptions ++= Seq(
   "-Wconf:src=routes/.*:s"
