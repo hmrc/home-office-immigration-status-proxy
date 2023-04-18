@@ -39,7 +39,7 @@ sbt run
 or
 
 ```bash
-sm --start HOSS
+sm2 --start HOME_OFFICE_IMMIGRATION_STATUS_ALL
 ```
 
 It should then be listening on port 10211
