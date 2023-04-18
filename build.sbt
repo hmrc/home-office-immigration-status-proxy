@@ -26,6 +26,7 @@ lazy val root = (project in file("."))
     majorVersion := 0
   )
   .enablePlugins(PlayScala, SbtDistributablesPlugin, BuildInfoPlugin)
+  .disablePlugins(JUnitXmlReportPlugin)
 
 scalacOptions ++= Seq(
   "-Wconf:src=routes/.*:s"
