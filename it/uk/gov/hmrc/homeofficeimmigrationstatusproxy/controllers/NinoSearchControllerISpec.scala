@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.ErrorCodes._
-import org.scalatest.{BeforeAndAfterEach, Suite}
+import org.scalatest.Suite
 import org.scalatestplus.play.ServerProvider
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, Json}
