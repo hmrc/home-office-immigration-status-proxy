@@ -16,30 +16,32 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
+import connectors.HomeOfficeRightToPublicFundsConnector
+import controllers.BaseController
+import models.StatusCheckByNinoRequest
+import play.api.Configuration
 import play.api.http.MimeTypes
 import play.api.libs.json._
 import play.api.mvc._
-import play.api.Configuration
 import play.mvc.Http.HeaderNames
-import connectors.HomeOfficeRightToPublicFundsConnector
-import models.StatusCheckByNinoRequest
+import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import wiring.Constants._
-import controllers.BaseController
 
-import scala.concurrent.ExecutionContext
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NinoSearchController @Inject() (
   rightToPublicFundsConnector: HomeOfficeRightToPublicFundsConnector,
   authAction: AuthAction,
+  internalAuthAction: BackendAuthComponents,
   cc: ControllerComponents
 )(implicit val configuration: Configuration, ec: ExecutionContext)
     extends BackendController(cc)
     with BaseController {
 
-  def post: Action[JsValue] = authAction.async(parse.tolerantJson) { implicit request =>
+  private def processRequest(implicit request: Request[JsValue]): Future[Result] = {
     val correlationId = getCorrelationId
 
     withValidParameters[StatusCheckByNinoRequest](correlationId) { statusCheckByNinoRequest =>
@@ -50,7 +52,24 @@ class NinoSearchController @Inject() (
         result = eitherToResult(either)
       } yield result.withHeaders(HEADER_X_CORRELATION_ID -> correlationId, HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
     }
-
   }
+
+  def post: Action[JsValue] = authAction.async(parse.tolerantJson) { implicit request =>
+    processRequest
+  }
+
+  private def permission(service: String) = Predicate.Permission(
+    resource = Resource.from(
+      "home-office-immigration-status-proxy",
+      s"status/public-funds/nino/$service"
+    ),
+    action = IAAction("WRITE")
+  )
+
+  def postByService(service: String): Action[JsValue] =
+    internalAuthAction.authorizedAction(permission(service)).async(parse.tolerantJson) {
+      implicit request: Request[JsValue] =>
+        processRequest
+    }
 
 }

@@ -1,4 +1,5 @@
 # microservice specific routes
 
 POST        /status/public-funds/nino                    @controllers.NinoSearchController.post
+POST        /status/public-funds/nino/:service           @controllers.NinoSearchController.postByService(service: String)
 POST        /status/public-funds/mrz                     @controllers.MrzSearchController.post

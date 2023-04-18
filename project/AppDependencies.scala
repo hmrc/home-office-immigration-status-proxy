@@ -6,11 +6,12 @@ object AppDependencies {
   private val bootstrapPlayVersion = "7.12.0"
 
   private val compile = Seq(
-    "uk.gov.hmrc"                  %% "bootstrap-backend-play-28" % bootstrapPlayVersion,
-    "com.kenshoo"                  %% "metrics-play"              % "2.7.3_0.8.2",
-    "uk.gov.hmrc"                  %% "domain"                    % "8.1.0-play-28",
-    "org.typelevel"                %% "cats-core"                 % "2.9.0",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.14.1",
+    "uk.gov.hmrc"                  %% "bootstrap-backend-play-28"    % bootstrapPlayVersion,
+    "com.kenshoo"                  %% "metrics-play"                 % "2.7.3_0.8.2",
+    "uk.gov.hmrc"                  %% "domain"                       % "8.1.0-play-28",
+    "uk.gov.hmrc"                  %% "internal-auth-client-play-28" % "1.4.0",
+    "org.typelevel"                %% "cats-core"                    % "2.9.0",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"         % "2.14.1",
     ws
   )
 
