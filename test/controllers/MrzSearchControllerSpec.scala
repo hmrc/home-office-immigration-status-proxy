@@ -28,7 +28,7 @@ import java.time.LocalDate
 
 class MrzSearchControllerSpec extends ControllerSpec {
 
-  val controller = inject[MrzSearchController]
+  val controller: MrzSearchController = inject[MrzSearchController]
 
   val req: StatusCheckByMrzRequest = (
     DocumentNumber("1234567890"),

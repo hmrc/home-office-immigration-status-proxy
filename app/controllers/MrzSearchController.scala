@@ -16,18 +16,18 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
+import connectors.HomeOfficeRightToPublicFundsConnector
+import controllers.BaseController
+import models.StatusCheckByMrzRequest
+import play.api.Configuration
 import play.api.http.MimeTypes
 import play.api.libs.json._
 import play.api.mvc._
-import play.api.Configuration
 import play.mvc.Http.HeaderNames
-import connectors.HomeOfficeRightToPublicFundsConnector
-import models.StatusCheckByMrzRequest
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import controllers.BaseController
 import wiring.Constants._
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton

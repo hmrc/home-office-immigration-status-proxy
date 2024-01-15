@@ -16,13 +16,14 @@
 
 package connectors
 
-import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import play.api.http.Status._
-import play.api.Logging
-import scala.util.{Failure, Success, Try}
+import connectors.ErrorCodes.{ERR_HOME_OFFICE_RESPONSE, ERR_UNKNOWN}
 import models.{StatusCheckError, StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
-import connectors.ErrorCodes._
+import play.api.Logging
+import play.api.http.Status._
+import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import wiring.Constants._
+
+import scala.util.{Failure, Success, Try}
 
 object StatusCheckResponseHttpParser extends Logging {
 
@@ -55,13 +56,13 @@ object StatusCheckResponseHttpParser extends Logging {
       }
   }
 
-  def jsonParsingError(correlationId: Option[String]): StatusCheckErrorResponseWithStatus =
+  private def jsonParsingError(correlationId: Option[String]): StatusCheckErrorResponseWithStatus =
     StatusCheckErrorResponseWithStatus(
       INTERNAL_SERVER_ERROR,
       StatusCheckErrorResponse(correlationId, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
     )
 
-  def unknownError(status: Int, correlationId: Option[String]): StatusCheckErrorResponseWithStatus =
+  private def unknownError(status: Int, correlationId: Option[String]): StatusCheckErrorResponseWithStatus =
     StatusCheckErrorResponseWithStatus(status, StatusCheckErrorResponse(correlationId, StatusCheckError(ERR_UNKNOWN)))
 
 }

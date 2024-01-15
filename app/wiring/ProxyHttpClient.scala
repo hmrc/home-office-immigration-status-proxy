@@ -16,13 +16,14 @@
 
 package wiring
 
-import akka.actor.ActorSystem
-import javax.inject.{Inject, Singleton}
+import org.apache.pekko.actor.ActorSystem
 import play.api.Configuration
 import play.api.libs.ws.{WSClient, WSProxyServer}
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 import uk.gov.hmrc.play.http.ws.{WSProxy, WSProxyConfiguration}
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class ProxyHttpClient @Inject() (

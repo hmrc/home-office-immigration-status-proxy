@@ -41,11 +41,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
   lazy val connector: HomeOfficeRightToPublicFundsConnector =
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
-  val dummyCorrelationId          = "some-correlation-id"
-  val dummyRequestId              = Some(RequestId("request-id"))
-  val dummyOAuthToken: OAuthToken = OAuthToken("FOO0123456789", "SomeTokenType")
+  val dummyCorrelationId              = "some-correlation-id"
+  val dummyRequestId: Some[RequestId] = Some(RequestId("request-id"))
+  val dummyOAuthToken: OAuthToken     = OAuthToken("FOO0123456789", "SomeTokenType")
 
-  val request = DateOfBirth(LocalDate.parse("2001-01-31"))
+  val request: StatusCheckByNinoRequest = DateOfBirth(LocalDate.parse("2001-01-31"))
     .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A")))
     .toOption
     .get

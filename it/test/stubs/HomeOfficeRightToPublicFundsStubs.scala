@@ -103,7 +103,7 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  }
       |}""".stripMargin
 
-  val responseBodyWithStatusObject = StatusCheckResponse(
+  val responseBodyWithStatusObject: StatusCheckResponse = StatusCheckResponse(
     correlationId = "some-correlation-id",
     result = StatusCheckResult(
       dateOfBirth = LocalDate.parse("2001-01-31"),
@@ -121,12 +121,12 @@ trait HomeOfficeRightToPublicFundsStubs {
     )
   )
 
-  def getValidRequest(requestType: RequestType) = requestType match {
+  def getValidRequest(requestType: RequestType): String = requestType match {
     case RequestType.Nino => validNinoRequestBody
     case RequestType.Mrz  => validMrzRequestBody
   }
 
-  def getRequestWithRange(requestType: RequestType) = requestType match {
+  def getRequestWithRange(requestType: RequestType): String = requestType match {
     case RequestType.Nino => requestBodyWithRange
     case RequestType.Mrz  => mrzRequestBodyWithRange
   }

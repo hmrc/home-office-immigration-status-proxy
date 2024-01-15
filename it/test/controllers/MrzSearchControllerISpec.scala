@@ -22,6 +22,7 @@ import org.scalatestplus.play.ServerProvider
 import play.api.libs.json.JsObject
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.AUTHORIZATION
+import play.api.http.Status._
 import stubs.HomeOfficeRightToPublicFundsStubs
 import support.{JsonMatchers, ServerBaseISpec}
 
@@ -49,14 +50,14 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
     "POST /v1/status/public-funds/mrz" should {
 
       "respond with 200 if request is valid" in {
-        ping.status.shouldBe(200)
+        ping.status.shouldBe(OK)
 
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Mrz)
         givenAuthorisedForStride
 
         val result = publicFundsByMrz(validMrzRequestBody)
-        result.status shouldBe 200
+        result.status shouldBe OK
         result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "result",
@@ -75,7 +76,7 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
       }
 
       "respond with 404 if the service failed to find an identity based on the values provided" in {
-        ping.status.shouldBe(200)
+        ping.status.shouldBe(OK)
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
@@ -92,7 +93,7 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
-        ping.status.shouldBe(200)
+        ping.status.shouldBe(OK)
 
         givenAuthorisedForStride
 
@@ -108,7 +109,7 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
       }
 
       "respond with 400 if one of the input parameters passed in has failed external validation" in {
-        ping.status.shouldBe(200)
+        ping.status.shouldBe(OK)
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
@@ -130,7 +131,7 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
       }
 
       "respond with 400 if request payload is invalid json" in {
-        ping.status.shouldBe(200)
+        ping.status.shouldBe(OK)
 
         givenOAuthTokenGranted()
         givenAuthorisedForStride
@@ -143,7 +144,7 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
       }
 
       "respond with 400 even if the service error undefined" in {
-        ping.status.shouldBe(200)
+        ping.status.shouldBe(OK)
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(400, RequestType.Mrz)
@@ -158,7 +159,7 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
       }
 
       "respond with 404 even if the service error undefined" in {
-        ping.status.shouldBe(200)
+        ping.status.shouldBe(OK)
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(404, RequestType.Mrz)
@@ -173,7 +174,7 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
       }
 
       "respond with 409 even if the service error undefined" in {
-        ping.status.shouldBe(200)
+        ping.status.shouldBe(OK)
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(409, RequestType.Mrz)

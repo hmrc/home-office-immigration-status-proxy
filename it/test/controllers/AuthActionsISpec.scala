@@ -76,7 +76,7 @@ trait AuthActionISpecSetup extends AppBaseISpec {
         .withHeaders(AUTHORIZATION -> "Bearer 123")
         .withSession(SessionKeys.authToken -> "Bearer XYZ")
 
-    val sut = app.injector.instanceOf[AuthAction]
+    val sut: AuthAction = app.injector.instanceOf[AuthAction]
 
     def withAuthorisedWithStride: Future[Result] = sut(Ok("foo"))(request)
 

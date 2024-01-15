@@ -4,24 +4,24 @@ Backend proxy API to connect the Check Immigration Status web service which chec
 
 ## Endpoints
 
-| Method | Endpoint                  | Note                                                                              |
-| ------ |---------------------------|-----------------------------------------------------------------------------------|
-| POST | /status/public-funds/nino | Protected by stride authentication, requires a STRIDE "privileged" application   |
-| POST | /status/public-funds/nino/:service | Protected by internal-auth, requires service to be configured and a token provided |
-| POST | /status/public-funds/mrz | Protected by stride authentication, requires a STRIDE "privileged" application |
+| Method | Endpoint                           | Note                                                                               |
+|--------|------------------------------------|------------------------------------------------------------------------------------|
+| POST   | /status/public-funds/nino          | Protected by stride authentication, requires a STRIDE "privileged" application     |
+| POST   | /status/public-funds/nino/:service | Protected by internal-auth, requires service to be configured and a token provided |
+| POST   | /status/public-funds/mrz           | Protected by stride authentication, requires a STRIDE "privileged" application     |
 
 ## Running the tests
 
-**Note**: The integration tests `sbt it:test` require that you are running `sm2 --start INTERNAL_AUTH` in order to generate a token to use to authenticate with as the client.
+**Note**: The integration tests `sbt it/test` require that you are running `sm2 --start INTERNAL_AUTH` in order to generate a token to use to authenticate with as the client.
 
 ```bash
-sbt test IntegrationTest/test
+sbt test it/test
 ```
 
 ## Running the tests with coverage
 
 ```bash
-sbt clean coverageOn Test/test IntegrationTest/test coverageReport
+sbt clean coverageOn test it/test coverageReport
 ```
 
 ## Running the tests with coverage, scalafmt, scalastyle and dependency checks
