@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
   lazy val connector: HomeOfficeRightToPublicFundsConnector =
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
-  val dummyCorrelationId          = "some-correlation-id"
-  val dummyRequestId              = Some(RequestId("request-id"))
-  val dummyOAuthToken: OAuthToken = OAuthToken("FOO0123456789", "SomeTokenType")
+  val dummyCorrelationId              = "some-correlation-id"
+  val dummyRequestId: Some[RequestId] = Some(RequestId("request-id"))
+  val dummyOAuthToken: OAuthToken     = OAuthToken("FOO0123456789", "SomeTokenType")
 
-  val request = DateOfBirth(LocalDate.parse("2001-01-31"))
+  val request: StatusCheckByNinoRequest = DateOfBirth(LocalDate.parse("2001-01-31"))
     .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A")))
     .toOption
     .get

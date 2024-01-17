@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import play.api.http.Status.UNAUTHORIZED
 import support.WireMockSupport
 
 trait AuthStubs {
@@ -27,7 +28,7 @@ trait AuthStubs {
       post(urlEqualTo("/auth/authorise"))
         .willReturn(
           aResponse()
-            .withStatus(401)
+            .withStatus(UNAUTHORIZED)
             .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")
         )
     )

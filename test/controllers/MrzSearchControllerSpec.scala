@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.time.LocalDate
 
 class MrzSearchControllerSpec extends ControllerSpec {
 
-  val controller = inject[MrzSearchController]
+  val controller: MrzSearchController = inject[MrzSearchController]
 
   val req: StatusCheckByMrzRequest = (
     DocumentNumber("1234567890"),

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package support
+package models
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Seconds, Span}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Application
+import cats.data.ValidatedNec
 
-abstract class ServerBaseISpec extends BaseISpec with GuiceOneServerPerSuite with TestApplication with ScalaFutures {
+final case class ErrorMessage(message: String) extends AnyVal
 
-  override implicit lazy val app: Application = appBuilder.build()
-
-  implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = Span(4, Seconds), interval = Span(1, Seconds))
-
+object ErrorMessage {
+  type ValidationResult[A] = ValidatedNec[ErrorMessage, A]
 }

@@ -7,10 +7,6 @@
 
     <logger name="uk.gov" level="INFO"/>
 
-    <!--  /wiring/MicroserviceMonitoringFilter.scala  -->
-    <logger name="wiring" level="INFO"/>
-
-
     <root level="ERROR">
         <appender-ref ref="STDOUT"/>
     </root>

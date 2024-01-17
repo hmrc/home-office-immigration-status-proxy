@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package models
+package support
 
-import cats.data.ValidatedNec
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.Application
 
-final case class ErrorMessage(message: String) extends AnyVal
+abstract class AppBaseISpec extends BaseISpec with GuiceOneAppPerSuite with TestApplication {
 
-object ErrorMessage {
-  type ValidationResult[A] = ValidatedNec[ErrorMessage, A]
+  override implicit lazy val app: Application = appBuilder.build()
+
 }

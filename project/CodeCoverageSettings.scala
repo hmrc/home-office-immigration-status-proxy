@@ -21,7 +21,7 @@ object CodeCoverageSettings {
     "wiring.*"
   )
 
-  val settings: Seq[Setting[_]] = Seq(
+  val settings: Seq[Setting[?]] = Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
     ScoverageKeys.coverageMinimumStmtTotal := 99,
     ScoverageKeys.coverageFailOnMinimum := true,

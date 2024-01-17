@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ trait HomeOfficeRightToPublicFundsStubs {
       |  }
       |}""".stripMargin
 
-  val responseBodyWithStatusObject = StatusCheckResponse(
+  val responseBodyWithStatusObject: StatusCheckResponse = StatusCheckResponse(
     correlationId = "some-correlation-id",
     result = StatusCheckResult(
       dateOfBirth = LocalDate.parse("2001-01-31"),
@@ -121,12 +121,12 @@ trait HomeOfficeRightToPublicFundsStubs {
     )
   )
 
-  def getValidRequest(requestType: RequestType) = requestType match {
+  def getValidRequest(requestType: RequestType): String = requestType match {
     case RequestType.Nino => validNinoRequestBody
     case RequestType.Mrz  => validMrzRequestBody
   }
 
-  def getRequestWithRange(requestType: RequestType) = requestType match {
+  def getRequestWithRange(requestType: RequestType): String = requestType match {
     case RequestType.Nino => requestBodyWithRange
     case RequestType.Mrz  => mrzRequestBodyWithRange
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,25 @@ import scala.reflect.ClassTag
 
 trait JsonMatchers {
 
-  def haveProperty[T: Reads](name: String, matcher: Matcher[T] = null)(implicit
+  def haveProperty[T: Reads](name: String, matcher: Matcher[T] = None.orNull)(implicit
     classTag: ClassTag[T]
   ): Matcher[JsObject] =
     (obj: JsObject) =>
       (obj \ name).asOpt[T] match {
         case Some(value) =>
-          if (matcher != null) matcher(value) match {
-            case x =>
-              x.copy(
-                rawNegatedFailureMessage = s"At `$name` ${x.rawNegatedFailureMessage}",
-                rawMidSentenceNegatedFailureMessage = s"at `$name` ${x.rawMidSentenceNegatedFailureMessage}",
-                rawFailureMessage = s"at `$name` ${x.rawFailureMessage}",
-                rawMidSentenceFailureMessage = s"at `$name` ${x.rawMidSentenceFailureMessage}"
-              )
+          if (matcher != None.orNull) {
+            matcher(value) match {
+              case x =>
+                x.copy(
+                  rawNegatedFailureMessage = s"At `$name` ${x.rawNegatedFailureMessage}",
+                  rawMidSentenceNegatedFailureMessage = s"at `$name` ${x.rawMidSentenceNegatedFailureMessage}",
+                  rawFailureMessage = s"at `$name` ${x.rawFailureMessage}",
+                  rawMidSentenceFailureMessage = s"at `$name` ${x.rawMidSentenceFailureMessage}"
+                )
+            }
+          } else {
+            MatchResult(matches = true, "", s"JSON have property `$name`")
           }
-          else MatchResult(matches = true, "", s"JSON have property `$name`")
         case _ =>
           MatchResult(
             matches = false,
@@ -49,17 +52,19 @@ trait JsonMatchers {
           )
       }
 
-  def havePropertyArrayOf[T: Reads](name: String, matcher: Matcher[T] = null)(implicit
+  def havePropertyArrayOf[T: Reads](name: String, matcher: Matcher[T] = None.orNull)(implicit
     classTag: ClassTag[T]
   ): Matcher[JsObject] =
     (obj: JsObject) =>
       (obj \ name).asOpt[JsArray] match {
         case Some(array) =>
-          if (matcher != null)
+          if (matcher != None.orNull) {
             array.value
               .map(_.as[T])
               .foldLeft(MatchResult(matches = true, "", ""))((a: MatchResult, v: T) => if (a.matches) matcher(v) else a)
-          else MatchResult(matches = true, "", s"JSON have property `$name`")
+          } else {
+            MatchResult(matches = true, "", s"JSON have property `$name`")
+          }
         case _ =>
           MatchResult(
             matches = false,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ trait AuthActionISpecSetup extends AppBaseISpec {
         .withHeaders(AUTHORIZATION -> "Bearer 123")
         .withSession(SessionKeys.authToken -> "Bearer XYZ")
 
-    val sut = app.injector.instanceOf[AuthAction]
+    val sut: AuthAction = app.injector.instanceOf[AuthAction]
 
     def withAuthorisedWithStride: Future[Result] = sut(Ok("foo"))(request)
 

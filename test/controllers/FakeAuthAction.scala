@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package controllers
 
-import akka.stream.Materializer
-import com.google.inject.Inject
+import org.apache.pekko.stream.Materializer
 import play.api.mvc._
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class FakeAuthAction @Inject() (implicit materializer: Materializer) extends AuthAction {
