@@ -22,7 +22,7 @@ import org.scalatestplus.play.ServerProvider
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.AUTHORIZATION
+import play.api.test.Helpers.{AUTHORIZATION, await, defaultAwaitTimeout}
 import stubs.HomeOfficeRightToPublicFundsStubs
 import support.{JsonMatchers, ServerBaseISpec}
 
@@ -35,7 +35,7 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
 
   lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
-  def ping: WSResponse = wsClient.url(s"$url/ping/ping").get().futureValue
+  def ping: WSResponse = await(wsClient.url(s"$url/ping/ping").get())
 
   private val internalAuthBaseUrl: String = "http://localhost:8470"
   private val clientAuthToken: String     = UUID.randomUUID().toString
@@ -46,47 +46,53 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
     payload: String,
     correlationId: String = "some-correlation-id"
   ): WSResponse =
-    wsClient
-      .url(s"$url/v1/status/public-funds/nino/$service")
-      .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> clientAuthToken)
-      .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
-      .post(payload)
-      .futureValue
+    await(
+      wsClient
+        .url(s"$url/v1/status/public-funds/nino/$service")
+        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> clientAuthToken)
+        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
+        .post(payload)
+    )
 
   def publicFundsByNino(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
-    wsClient
-      .url(s"$url/v1/status/public-funds/nino")
-      .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> "Bearer 123")
-      .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
-      .post(payload)
-      .futureValue
+    await(
+      wsClient
+        .url(s"$url/v1/status/public-funds/nino")
+        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> "Bearer 123")
+        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
+        .post(payload)
+    )
 
   private def createClientAuthToken(): Unit = {
-    val response = wsClient
-      .url(s"$internalAuthBaseUrl/test-only/token")
-      .post(
-        Json.obj(
-          "token"     -> clientAuthToken,
-          "principal" -> "test",
-          "permissions" -> Seq(
-            Json.obj(
-              "resourceType"     -> "home-office-immigration-status-proxy",
-              "resourceLocation" -> s"status/public-funds/nino/$clientService",
-              "actions"          -> List("WRITE")
+    val response = await(
+      wsClient
+        .url(s"$internalAuthBaseUrl/test-only/token")
+        .post(
+          Json.obj(
+            "token"     -> clientAuthToken,
+            "principal" -> "test",
+            "permissions" -> Seq(
+              Json.obj(
+                "resourceType"     -> "home-office-immigration-status-proxy",
+                "resourceLocation" -> s"status/public-funds/nino/$clientService",
+                "actions"          -> List("WRITE")
+              )
             )
           )
         )
-      )
-      .futureValue
+    )
+
     response.status shouldBe CREATED
   }
 
   private def authTokenIsValid(token: String): Boolean = {
-    val response = wsClient
-      .url(s"$internalAuthBaseUrl/test-only/token")
-      .withHttpHeaders("Authorization" -> token)
-      .get()
-      .futureValue
+    val response = await(
+      wsClient
+        .url(s"$internalAuthBaseUrl/test-only/token")
+        .withHttpHeaders("Authorization" -> token)
+        .get()
+    )
+
     response.status == OK
   }
 

@@ -1,16 +1,16 @@
 import uk.gov.hmrc.DefaultBuildSettings
 
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.14"
 ThisBuild / majorVersion := 0
 
 lazy val microservice = (project in file("."))
   .settings(
     name := "home-office-immigration-status-proxy",
-    organization := "uk.gov.hmrc",
     PlayKeys.playDefaultPort := 10211,
     libraryDependencies ++= AppDependencies(),
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     scalacOptions ++= Seq(
+      "-feature",
       "-Wconf:src=routes/.*:s"
     )
   )

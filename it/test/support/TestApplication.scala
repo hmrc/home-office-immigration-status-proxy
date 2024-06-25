@@ -32,11 +32,10 @@ trait TestApplication {
         "microservice.services.home-office-right-to-public-funds.pathPrefix" -> "/v1",
         "microservice.services.auth.port"                                    -> wireMockPort,
         "microservice.services.auth.host"                                    -> wireMockHost,
-        "metrics.enabled"                                                    -> true,
-        "auditing.enabled"                                                   -> true,
+        "metrics.enabled"                                                    -> false,
+        "auditing.enabled"                                                   -> false,
         "auditing.consumer.baseUri.host"                                     -> wireMockHost,
-        "auditing.consumer.baseUri.port"                                     -> wireMockPort,
-        "play.http.router"                                                   -> "testOnlyDoNotUseInAppConf.Routes"
+        "auditing.consumer.baseUri.port"                                     -> wireMockPort
       )
 
 }

@@ -22,22 +22,14 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
-import stubs.{AuthStubs, DataStreamStubs}
+import stubs.AuthStubs
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-abstract class BaseISpec
-    extends AnyWordSpecLike
-    with Matchers
-    with OptionValues
-    with WireMockSupport
-    with AuthStubs
-    with DataStreamStubs {
+
+abstract class BaseISpec extends AnyWordSpecLike with Matchers with OptionValues with WireMockSupport with AuthStubs {
 
   def app: Application
   protected def appBuilder: GuiceApplicationBuilder
-
-  override def commonStubs(): Unit =
-    givenAuditConnector()
 
   implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier =
     HeaderCarrierConverter.fromRequestAndSession(request.withHeaders(request.headers), request.session)
