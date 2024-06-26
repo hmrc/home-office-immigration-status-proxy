@@ -21,7 +21,7 @@ import org.scalatest.Suite
 import org.scalatestplus.play.ServerProvider
 import play.api.libs.json.JsObject
 import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.AUTHORIZATION
+import play.api.test.Helpers.{AUTHORIZATION, await, defaultAwaitTimeout}
 import play.api.http.Status._
 import stubs.HomeOfficeRightToPublicFundsStubs
 import support.{JsonMatchers, ServerBaseISpec}
@@ -35,15 +35,16 @@ class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPub
 
   lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
-  def ping: WSResponse = wsClient.url(s"$url/ping/ping").get().futureValue
+  def ping: WSResponse = await(wsClient.url(s"$url/ping/ping").get())
 
   def publicFundsByMrz(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
-    wsClient
-      .url(s"$url/v1/status/public-funds/mrz")
-      .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> "Bearer 123")
-      .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
-      .post(payload)
-      .futureValue
+    await(
+      wsClient
+        .url(s"$url/v1/status/public-funds/mrz")
+        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> "Bearer 123")
+        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
+        .post(payload)
+    )
 
   "MrzSearchController" when {
 
