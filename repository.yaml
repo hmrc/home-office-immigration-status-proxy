@@ -6,3 +6,4 @@ leakDetectionExemptions:
       - '/conf/client.jks'
 test-repositories:
   - home-office-immigration-status-acceptance-tests
+  - home-office-immigration-status-perf-tests
