@@ -16,17 +16,18 @@
 
 package connectors
 
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.{mock, when}
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.http.RequestId
-import wiring.{AppConfig, ProxyHttpClient}
+import uk.gov.hmrc.http.client.HttpClientV2
+import wiring.AppConfig
 
 class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Matchers {
 
-  private lazy val mockAppConfig: AppConfig        = mock(classOf[AppConfig])
-  private lazy val mockHttpClient: ProxyHttpClient = mock(classOf[ProxyHttpClient])
+  private lazy val mockAppConfig: AppConfig     = mock(classOf[AppConfig])
+  private lazy val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2])
 
   trait Setup {
     val uuid = "123f4567-g89c-42c3-b456-557742330000"
@@ -54,4 +55,92 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       connector.correlationId(None) mustBe uuid
     }
   }
+
+  ".buildURL" should {
+
+    "throw an exception when invalid URL" in new Setup {
+      val prefix = "/"
+      val middle = "/"
+      val path   = "test"
+
+      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
+      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
+
+      intercept[IllegalArgumentException](connector.buildURL(path)) mustBe a[IllegalArgumentException]
+    }
+
+    "return the correct URL, when base has no suffix" in new Setup {
+      val prefix = "http://localhost:1234"
+      val middle = "/prefix"
+      val path   = "/test"
+      val url    = "http://localhost:1234/prefix/test"
+
+      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
+      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
+
+      connector.buildURL(path).toString mustBe url
+    }
+
+    "return the correct URL, when base has suffix" in new Setup {
+      val prefix = "http://localhost:1234/"
+      val middle = "/prefix"
+      val path   = "/test"
+      val url    = "http://localhost:1234/prefix/test"
+
+      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
+      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
+
+      connector.buildURL(path).toString mustBe url
+    }
+
+    "return the correct URL, when middle has no prefix" in new Setup {
+      val prefix = "http://localhost:1234/"
+      val middle = "prefix"
+      val path   = "/test"
+      val url    = "http://localhost:1234/prefix/test"
+
+      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
+      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
+
+      connector.buildURL(path).toString mustBe url
+    }
+
+    "return the correct URL, when middle has prefix" in new Setup {
+      val prefix = "http://localhost:1234/"
+      val middle = "/prefix"
+      val path   = "/test"
+      val url    = "http://localhost:1234/prefix/test"
+
+      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
+      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
+
+      connector.buildURL(path).toString mustBe url
+    }
+
+    "return the correct URL, when path has no prefix" in new Setup {
+      val prefix = "http://localhost:1234/"
+      val middle = "/prefix"
+      val path   = "test"
+      val url    = "http://localhost:1234/prefix/test"
+
+      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
+      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
+
+      connector.buildURL(path).toString mustBe url
+    }
+
+    "return the correct URL, when path has prefix" in new Setup {
+      val prefix = "http://localhost:1234/"
+      val middle = "/prefix"
+      val path   = "/test"
+      val url    = "http://localhost:1234/prefix/test"
+
+      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
+      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
+
+      connector.buildURL(path).toString mustBe url
+    }
+
+  }
+
 }
