@@ -71,7 +71,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     "raise exception if token denied" in {
       givenOAuthTokenDenied()
       val result = intercept[RuntimeException](connector.token(dummyCorrelationId, dummyRequestId).futureValue)
-      result.getMessage should include("Upstream4xxResponse")
+      result.getMessage should include("UpstreamErrorResponse")
     }
   }
 

@@ -1,6 +1,7 @@
 # Home Office Settled Status Proxy
 
-Backend proxy API to connect the Check Immigration Status web service which checks a customer's immigration status and rights to public funds to a Home Office API.
+Backend proxy API to connect the Check Immigration Status web service which checks a customer's immigration status and
+rights to public funds to a Home Office API.
 
 ## Endpoints
 
@@ -12,7 +13,8 @@ Backend proxy API to connect the Check Immigration Status web service which chec
 
 ## Running the tests
 
-**Note**: The integration tests `sbt it/test` require that you are running `sm2 --start INTERNAL_AUTH` in order to generate a token to use to authenticate with as the client.
+**Note**: The integration tests `sbt it/test` require that you are running `sm2 --start INTERNAL_AUTH` in order to
+generate a token to use to authenticate with as the client.
 
 ```bash
 sbt test it/test
@@ -24,7 +26,7 @@ sbt test it/test
 sbt clean coverageOn test it/test coverageReport
 ```
 
-## Running the tests with coverage, scalafmt, scalastyle and dependency checks
+## Running the tests with coverage, scalafmt and dependency checks
 
 ```bash
 ./run_all_tests
@@ -46,4 +48,5 @@ It should then be listening on port 10211
 
 ### License
 
-This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html")
+This code is open source software licensed under
+the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html")
