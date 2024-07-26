@@ -27,6 +27,7 @@ import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import play.api.test.Helpers.AUTHORIZATION
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.internalauth.client._
 
 import java.time.LocalDate
@@ -142,6 +143,20 @@ class NinoSearchControllerSpec extends ControllerSpec {
         intercept[Exception](await(controller.postByService("service-a")(requestWithToken)))
       }
 
+      Seq(
+        UpstreamErrorResponse("Unauthorized", UNAUTHORIZED),
+        UpstreamErrorResponse("Forbidden", FORBIDDEN)
+      ).foreach { response =>
+        s"internalAuthAction.authorizedAction fails and returns ${response.statusCode}" in {
+
+          when(mockStubBehaviour.stubAuth[Unit](mEq(Some(expectedPredicate)), any()))
+            .thenReturn(Future.failed(response))
+
+          val requestWithToken = request.withHeaders(AUTHORIZATION -> "token")
+
+          intercept[Exception](await(controller.postByService("service-a")(requestWithToken)))
+        }
+      }
     }
 
     "return 200" when {
