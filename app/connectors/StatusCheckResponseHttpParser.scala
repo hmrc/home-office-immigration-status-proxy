@@ -41,7 +41,7 @@ object StatusCheckResponseHttpParser extends Logging {
             case Success(res) =>
               Right(res)
             case Failure(e) =>
-              logger.error(s"[StatusCheckResponseHttpParser] [read] Invalid json returned in response", e)
+              logger.error(s"[StatusCheckResponseHttpParser][read] Invalid json returned in response", e)
               val correlationId = response.header(HEADER_X_CORRELATION_ID)
               Left(jsonParsingError(correlationId))
           }
