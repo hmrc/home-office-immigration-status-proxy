@@ -16,13 +16,13 @@
 
 package connectors
 
-import connectors.ErrorCodes._
-import connectors.StatusCheckResponseHttpParser._
+import connectors.ErrorCodes.*
+import connectors.StatusCheckResponseHttpParser.StatusCheckResponseReads
 import models.{StatusCheckError, StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse, StatusCheckResult}
 import org.scalatest.Inside.inside
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 

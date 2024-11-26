@@ -51,7 +51,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
       val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
       val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         Right(statusCheckResponse)
-      TestController.eitherToResult(either) shouldEqual Ok(Json.toJson(statusCheckResponse))
+      TestController.eitherToResult(either) shouldBe Ok(Json.toJson(statusCheckResponse))
     }
 
     "return NotFound when it's a left with a 404 status" in {
@@ -59,7 +59,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
         StatusCheckErrorResponseWithStatus(NOT_FOUND, StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
       val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         Left(response)
-      TestController.eitherToResult(either) shouldEqual NotFound(Json.toJson(response.errorResponse))
+      TestController.eitherToResult(either) shouldBe NotFound(Json.toJson(response.errorResponse))
     }
 
     "return BadRequest when it's a left with a 400 status" in {
@@ -67,7 +67,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
         StatusCheckErrorResponseWithStatus(BAD_REQUEST, StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
       val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         Left(response)
-      TestController.eitherToResult(either) shouldEqual BadRequest(Json.toJson(response.errorResponse))
+      TestController.eitherToResult(either) shouldBe BadRequest(Json.toJson(response.errorResponse))
     }
 
     "return InternalServerError when it's a left with a 500 status" in {
@@ -78,7 +78,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
         )
       val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         Left(response)
-      TestController.eitherToResult(either) shouldEqual InternalServerError(Json.toJson(response.errorResponse))
+      TestController.eitherToResult(either) shouldBe InternalServerError(Json.toJson(response.errorResponse))
     }
 
   }
@@ -96,7 +96,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
         val result =
           TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
-        await(result) shouldEqual BadRequest(Json.toJson(expectedResult))
+        await(result) shouldBe BadRequest(Json.toJson(expectedResult))
       }
 
       "a field is invalid" in {
@@ -110,7 +110,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
         val result =
           TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
-        await(result) shouldEqual BadRequest(Json.toJson(expectedResult))
+        await(result) shouldBe BadRequest(Json.toJson(expectedResult))
       }
     }
 
@@ -122,7 +122,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
       val result =
         TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
-      await(result) shouldEqual Ok("Great success")
+      await(result) shouldBe Ok("Great success")
     }
   }
 

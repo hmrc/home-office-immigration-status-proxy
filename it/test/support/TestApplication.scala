@@ -19,8 +19,7 @@ package support
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 
-trait TestApplication {
-  _: BaseISpec =>
+trait TestApplication { baseSpec: BaseISpec =>
 
   override implicit lazy val app: Application = appBuilder.build()
 

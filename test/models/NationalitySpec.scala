@@ -21,25 +21,26 @@ import cats.data.Validated._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
+import models.Nationality._
 
 class NationalitySpec extends AnyWordSpecLike with Matchers {
 
   "apply" should {
     "return a failed validation" when {
       "the string is empty" in {
-        Nationality("") shouldEqual Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("") shouldBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
       "the string is shorter than 3 chars" in {
-        Nationality("AB") shouldEqual Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("AB") shouldBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
       "the string is longer than 3 chars" in {
-        Nationality("ABVD") shouldEqual Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("ABVD") shouldBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
     }
     "return a successful validation" when {
       "the string is 3 chars" in {
-        Nationality("ABC") shouldBe a[Valid[_]]
-        Nationality("ABC").map(_.nationality shouldEqual "ABC")
+        Nationality("ABC") shouldBe a[Valid[?]]
+        Nationality("ABC").map(_.nationality shouldBe "ABC")
       }
     }
   }
@@ -55,14 +56,14 @@ class NationalitySpec extends AnyWordSpecLike with Matchers {
     "return a JsSuccess" when {
       "the apply returns a success" in {
         val jsString = JsString("ABC")
-        jsString.validate[Nationality] shouldBe a[JsSuccess[_]]
+        jsString.validate[Nationality] shouldBe a[JsSuccess[?]]
       }
     }
   }
 
   "writes" should {
     "return a JsString" in {
-      Nationality("ABC").map(doc => Json.toJson(doc) shouldEqual JsString("ABC"))
+      Nationality("ABC").map(doc => Json.toJson(doc) shouldBe JsString("ABC"))
     }
   }
 

@@ -17,23 +17,26 @@
 package connectors
 
 import com.google.inject.Singleton
-import connectors.StatusCheckResponseHttpParser._
+import connectors.StatusCheckResponseHttpParser.*
 import models.{OAuthToken, StatusCheckByMrzRequest, StatusCheckByNinoRequest, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
+import play.api.Logging
 import play.api.libs.json.Json
-import play.mvc.Http.HeaderNames
-import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http._
+import play.api.libs.ws.{writeableOf_JsValue, writeableOf_urlEncodedForm}
+import uk.gov.hmrc.http.*
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import wiring.AppConfig
-import wiring.Constants._
+import wiring.Constants.*
 
-import java.net.{URI, URL}
+import java.net.URL
 import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: HttpClientV2) {
+class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: HttpClientV2)(implicit
+  ec: ExecutionContext
+) extends Logging {
 
   def buildURL(path: String): URL = {
     val pathPrefix = if (appConfig.rightToPublicFundsBaseUrl.endsWith("/")) {
@@ -51,13 +54,13 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
     } else {
       "/" + path
     }
-    val uri = new URI(pathPrefix + pathMiddle + pathRest)
-    uri.toURL
+    val finalUrl = pathPrefix + pathMiddle + pathRest
+    url"$finalUrl"
   }
 
-  def token(xCorrelationId: String, requestId: Option[RequestId])(implicit ec: ExecutionContext): Future[OAuthToken] = {
+  def token(xCorrelationId: String, requestId: Option[RequestId]): Future[OAuthToken] = {
 
-    implicit val hc: HeaderCarrier =
+    val hc: HeaderCarrier =
       HeaderCarrier().withExtraHeaders(
         HEADER_X_CORRELATION_ID -> xCorrelationId,
         "CorrelationId"         -> correlationId(requestId)
@@ -71,7 +74,11 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
       "client_secret" -> Seq(appConfig.homeOfficeClientSecret)
     )
 
-    http.post(url).withBody(form).withProxy.execute[OAuthToken]
+    http
+      .post(url)(hc)
+      .withBody(form)
+      .withProxy
+      .execute[OAuthToken]
   }
 
   def statusPublicFundsByNino(
@@ -79,14 +86,14 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
     xCorrelationId: String,
     requestId: Option[RequestId],
     token: OAuthToken
-  )(implicit ec: ExecutionContext): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
+  ): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
 
-    implicit val hc: HeaderCarrier = getHeaderCarrier(xCorrelationId, requestId, token)
+    val hc: HeaderCarrier = getHeaderCarrier(xCorrelationId, requestId, token)
 
     val url = buildURL("/status/public-funds/nino")
 
     http
-      .post(url)
+      .post(url)(hc)
       .withBody(Json.toJson(request))
       .withProxy
       .execute[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]
@@ -97,14 +104,14 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
     xCorrelationId: String,
     requestId: Option[RequestId],
     token: OAuthToken
-  )(implicit ec: ExecutionContext): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
+  ): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] = {
 
-    implicit val hc: HeaderCarrier = getHeaderCarrier(xCorrelationId, requestId, token)
+    val hc: HeaderCarrier = getHeaderCarrier(xCorrelationId, requestId, token)
 
     val url = buildURL("/status/public-funds/mrz")
 
     http
-      .post(url)
+      .post(url)(hc)
       .withBody(Json.toJson(request))
       .withProxy
       .execute[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]
@@ -113,7 +120,7 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
   private def getHeaderCarrier(xCorrelationId: String, requestId: Option[RequestId], token: OAuthToken): HeaderCarrier =
     HeaderCarrier().withExtraHeaders(
       HEADER_X_CORRELATION_ID   -> xCorrelationId,
-      HeaderNames.AUTHORIZATION -> s"${token.token_type} ${token.access_token}",
+      HeaderNames.authorisation -> s"${token.token_type} ${token.access_token}",
       "CorrelationId"           -> correlationId(requestId)
     )
 

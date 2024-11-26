@@ -73,26 +73,26 @@ trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
   val correlationId                     = "CorrelationId123"
 
   def tokenCallFails: OngoingStubbing[Future[OAuthToken]] =
-    when(mockConnector.token(any(), any())(any()))
+    when(mockConnector.token(any(), any()))
       .thenReturn(Future.failed(new Exception("Oh no - token")))
   def tokenCallIsSuccessful: OngoingStubbing[Future[OAuthToken]] =
-    when(mockConnector.token(any(), any())(any()))
+    when(mockConnector.token(any(), any()))
       .thenReturn(Future.successful(OAuthToken("String", "String")))
   def requestMrzCallFails: OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
-    when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any())(any()))
+    when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))
   def requestMrzCallIsSuccessful(
     response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]
   ): OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
-    when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any())(any()))
+    when(mockConnector.statusPublicFundsByMrz(any(), any(), any(), any()))
       .thenReturn(Future.successful(response))
   def requestNinoCallFails: OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
-    when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any())(any()))
+    when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))
   def requestNinoCallIsSuccessful(
     response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]
   ): OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
-    when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any())(any()))
+    when(mockConnector.statusPublicFundsByNino(any(), any(), any(), any()))
       .thenReturn(Future.successful(response))
 
   def withHeaders(result: Result): Result =
