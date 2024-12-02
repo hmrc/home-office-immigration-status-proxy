@@ -1,6 +1,6 @@
 import uk.gov.hmrc.DefaultBuildSettings
 
-ThisBuild / scalaVersion := "2.13.14"
+ThisBuild / scalaVersion := "3.5.1"
 ThisBuild / majorVersion := 0
 
 lazy val microservice = (project in file("."))
@@ -8,13 +8,12 @@ lazy val microservice = (project in file("."))
     name := "home-office-immigration-status-proxy",
     PlayKeys.playDefaultPort := 10211,
     libraryDependencies ++= AppDependencies(),
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-    scalacOptions ++= Seq(
+    scalacOptions := Seq(
       "-feature",
       "-Wconf:src=routes/.*:s"
     )
   )
-  .settings(CodeCoverageSettings.settings)
+  .settings(CodeCoverageSettings())
   .enablePlugins(PlayScala, SbtDistributablesPlugin, BuildInfoPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
 

@@ -31,7 +31,7 @@ abstract class BaseISpec extends AnyWordSpecLike with Matchers with OptionValues
   def app: Application
   protected def appBuilder: GuiceApplicationBuilder
 
-  implicit def hc(implicit request: FakeRequest[_]): HeaderCarrier =
+  implicit def hc(implicit request: FakeRequest[?]): HeaderCarrier =
     HeaderCarrierConverter.fromRequestAndSession(request.withHeaders(request.headers), request.session)
 
 }

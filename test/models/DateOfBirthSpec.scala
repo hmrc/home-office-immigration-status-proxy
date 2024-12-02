@@ -21,6 +21,7 @@ import cats.data.Validated._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
+import models.DateOfBirth.*
 
 import java.time.LocalDate
 
@@ -29,18 +30,18 @@ class DateOfBirthSpec extends AnyWordSpecLike with Matchers {
   "apply" should {
     "return a failed validation" when {
       "the date is today" in {
-        DateOfBirth(LocalDate.now) shouldEqual Invalid(Chain(ErrorMessage("Date of birth must be before today")))
+        DateOfBirth(LocalDate.now) shouldBe Invalid(Chain(ErrorMessage("Date of birth must be before today")))
       }
       "the date is after today" in {
-        DateOfBirth(LocalDate.now.plusDays(1)) shouldEqual Invalid(
+        DateOfBirth(LocalDate.now.plusDays(1)) shouldBe Invalid(
           Chain(ErrorMessage("Date of birth must be before today"))
         )
       }
     }
     "return a successful validation" when {
       "the string is 3 chars" in {
-        DateOfBirth(LocalDate.now.minusDays(1)) shouldBe a[Valid[_]]
-        DateOfBirth(LocalDate.now.minusDays(1)).map(_.dob shouldEqual LocalDate.now.minusDays(1))
+        DateOfBirth(LocalDate.now.minusDays(1)) shouldBe a[Valid[?]]
+        DateOfBirth(LocalDate.now.minusDays(1)).map(_.dob shouldBe LocalDate.now.minusDays(1))
       }
     }
   }
@@ -56,7 +57,7 @@ class DateOfBirthSpec extends AnyWordSpecLike with Matchers {
     "return a JsSuccess" when {
       "the apply returns a success" in {
         val jsString = JsString(LocalDate.now.minusDays(1).toString)
-        jsString.validate[DateOfBirth] shouldBe a[JsSuccess[_]]
+        jsString.validate[DateOfBirth] shouldBe a[JsSuccess[?]]
       }
     }
   }
@@ -64,7 +65,7 @@ class DateOfBirthSpec extends AnyWordSpecLike with Matchers {
   "writes" should {
     "return a JsString" in {
       DateOfBirth(LocalDate.now.minusDays(1)).map(doc =>
-        Json.toJson(doc) shouldEqual JsString(LocalDate.now.minusDays(1).toString)
+        Json.toJson(doc) shouldBe JsString(LocalDate.now.minusDays(1).toString)
       )
     }
   }

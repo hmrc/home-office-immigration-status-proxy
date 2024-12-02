@@ -21,52 +21,53 @@ import cats.data.Validated._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
+import models.DocumentNumber.*
 
 class DocumentNumberSpec extends AnyWordSpecLike with Matchers {
 
   "apply" should {
     "return a failed validation" when {
       "the string is empty" in {
-        DocumentNumber("") shouldEqual Invalid(
+        DocumentNumber("") shouldBe Invalid(
           Chain(ErrorMessage("Document number must be between 1 and 30 characters"))
         )
       }
       "the string is shorter than 3 chars" in {
-        DocumentNumber("ABCDEFGHIJABCDEFGHIJABCDEFGHIJ1") shouldEqual Invalid(
+        DocumentNumber("ABCDEFGHIJABCDEFGHIJABCDEFGHIJ1") shouldBe Invalid(
           Chain(ErrorMessage("Document number must be between 1 and 30 characters"))
         )
       }
       "the string contains lower case" in {
-        DocumentNumber("ABC-123-abc") shouldEqual Invalid(
+        DocumentNumber("ABC-123-abc") shouldBe Invalid(
           Chain(ErrorMessage("Document number must only contain upper case alphanumeric characters or hyphens"))
         )
       }
       "the string contains non alpha (or hyphen) chars" in {
-        DocumentNumber("ABC-123-???") shouldEqual Invalid(
+        DocumentNumber("ABC-123-???") shouldBe Invalid(
           Chain(ErrorMessage("Document number must only contain upper case alphanumeric characters or hyphens"))
         )
       }
     }
     "return a successful validation" when {
       "the string is 1 alpha char" in {
-        DocumentNumber("A") shouldBe a[Valid[_]]
-        DocumentNumber("A").map(_.doc shouldEqual "A")
+        DocumentNumber("A") shouldBe a[Valid[?]]
+        DocumentNumber("A").map(_.doc shouldBe "A")
       }
       "the string is 1 num char" in {
-        DocumentNumber("1") shouldBe a[Valid[_]]
-        DocumentNumber("1").map(_.doc shouldEqual "1")
+        DocumentNumber("1") shouldBe a[Valid[?]]
+        DocumentNumber("1").map(_.doc shouldBe "1")
       }
       "the string is 1 hyphen" in {
-        DocumentNumber("-") shouldBe a[Valid[_]]
-        DocumentNumber("-").map(_.doc shouldEqual "-")
+        DocumentNumber("-") shouldBe a[Valid[?]]
+        DocumentNumber("-").map(_.doc shouldBe "-")
       }
       "the string is a mixture" in {
-        DocumentNumber("123-ABC") shouldBe a[Valid[_]]
-        DocumentNumber("123-ABC").map(_.doc shouldEqual "123-ABC")
+        DocumentNumber("123-ABC") shouldBe a[Valid[?]]
+        DocumentNumber("123-ABC").map(_.doc shouldBe "123-ABC")
       }
       "the string is 30 chars" in {
-        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-") shouldBe a[Valid[_]]
-        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-").map(_.doc shouldEqual "ABCDEFGHIJ1234567890ABCDEFGHI-")
+        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-") shouldBe a[Valid[?]]
+        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-").map(_.doc shouldBe "ABCDEFGHIJ1234567890ABCDEFGHI-")
       }
     }
   }
@@ -82,14 +83,14 @@ class DocumentNumberSpec extends AnyWordSpecLike with Matchers {
     "return a JsSuccess" when {
       "the apply returns a success" in {
         val jsString = JsString("12345")
-        jsString.validate[DocumentNumber] shouldBe a[JsSuccess[_]]
+        jsString.validate[DocumentNumber] shouldBe a[JsSuccess[?]]
       }
     }
   }
 
   "writes" should {
     "return a JsString" in {
-      DocumentNumber("ABCDE").map(doc => Json.toJson(doc) shouldEqual JsString("ABCDE"))
+      DocumentNumber("ABCDE").map(doc => Json.toJson(doc) shouldBe JsString("ABCDE"))
     }
   }
 

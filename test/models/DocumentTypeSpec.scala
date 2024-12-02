@@ -21,31 +21,32 @@ import cats.data.Validated._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
+import models.DocumentType.*
 
 class DocumentTypeSpec extends AnyWordSpecLike with Matchers {
 
   "apply" should {
     "return a failed validation" when {
       "the string is not an allowed value" in {
-        DocumentType("ABC") shouldEqual Invalid(Chain(ErrorMessage("Document type must be PASSPORT, NAT, BRC, or BRP")))
+        DocumentType("ABC") shouldBe Invalid(Chain(ErrorMessage("Document type must be PASSPORT, NAT, BRC, or BRP")))
       }
     }
     "return a successful validation" when {
       "type is passport" in {
-        DocumentType("PASSPORT") shouldBe a[Valid[_]]
-        DocumentType("PASSPORT").map(_ shouldEqual DocumentType.Passport)
+        DocumentType("PASSPORT") shouldBe a[Valid[?]]
+        DocumentType("PASSPORT").map(_ shouldBe DocumentType.Passport)
       }
       "type is NAT" in {
-        DocumentType("NAT") shouldBe a[Valid[_]]
-        DocumentType("NAT").map(_ shouldEqual DocumentType.EUNationalID)
+        DocumentType("NAT") shouldBe a[Valid[?]]
+        DocumentType("NAT").map(_ shouldBe DocumentType.EUNationalID)
       }
       "type is BRC" in {
-        DocumentType("BRC") shouldBe a[Valid[_]]
-        DocumentType("BRC").map(_ shouldEqual DocumentType.BRC)
+        DocumentType("BRC") shouldBe a[Valid[?]]
+        DocumentType("BRC").map(_ shouldBe DocumentType.BRC)
       }
       "type is BRP" in {
-        DocumentType("BRP") shouldBe a[Valid[_]]
-        DocumentType("BRP").map(_ shouldEqual DocumentType.BRP)
+        DocumentType("BRP") shouldBe a[Valid[?]]
+        DocumentType("BRP").map(_ shouldBe DocumentType.BRP)
       }
     }
   }
@@ -61,7 +62,7 @@ class DocumentTypeSpec extends AnyWordSpecLike with Matchers {
     "return a JsSuccess" when {
       "the apply returns a success" in {
         val jsString = JsString("PASSPORT")
-        jsString.validate[DocumentType] shouldBe a[JsSuccess[_]]
+        jsString.validate[DocumentType] shouldBe a[JsSuccess[?]]
       }
     }
   }
@@ -70,19 +71,19 @@ class DocumentTypeSpec extends AnyWordSpecLike with Matchers {
     "return a JsString" when {
       "type is passport" in {
         val documentType: DocumentType = DocumentType.Passport
-        Json.toJson(documentType) shouldEqual JsString("PASSPORT")
+        Json.toJson(documentType) shouldBe JsString("PASSPORT")
       }
       "type is EUNationalID" in {
         val documentType: DocumentType = DocumentType.EUNationalID
-        Json.toJson(documentType) shouldEqual JsString("NAT")
+        Json.toJson(documentType) shouldBe JsString("NAT")
       }
       "type is BRC" in {
         val documentType: DocumentType = DocumentType.BRC
-        Json.toJson(documentType) shouldEqual JsString("BRC")
+        Json.toJson(documentType) shouldBe JsString("BRC")
       }
       "type is BRP" in {
         val documentType: DocumentType = DocumentType.BRP
-        Json.toJson(documentType) shouldEqual JsString("BRP")
+        Json.toJson(documentType) shouldBe JsString("BRP")
       }
     }
   }

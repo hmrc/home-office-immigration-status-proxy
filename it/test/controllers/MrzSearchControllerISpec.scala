@@ -25,11 +25,12 @@ import play.api.test.Helpers.{AUTHORIZATION, await, defaultAwaitTimeout}
 import play.api.http.Status._
 import stubs.HomeOfficeRightToPublicFundsStubs
 import support.{JsonMatchers, ServerBaseISpec}
+import play.api.libs.ws.writeableOf_String
 
 import java.util.UUID
 
 class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
-  this: Suite with ServerProvider =>
+  this: Suite & ServerProvider =>
 
   val url = s"http://localhost:$port"
 

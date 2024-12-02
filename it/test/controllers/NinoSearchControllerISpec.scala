@@ -16,20 +16,22 @@
 
 package controllers
 
-import connectors.ErrorCodes._
+import connectors.ErrorCodes.*
 import org.scalatest.Suite
 import org.scalatestplus.play.ServerProvider
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.Helpers.{AUTHORIZATION, await, defaultAwaitTimeout}
 import stubs.HomeOfficeRightToPublicFundsStubs
 import support.{JsonMatchers, ServerBaseISpec}
+import play.api.libs.ws.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_String
 
 import java.util.UUID
 
 class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
-  this: Suite with ServerProvider =>
+  this: Suite & ServerProvider =>
 
   val url = s"http://localhost:$port"
 

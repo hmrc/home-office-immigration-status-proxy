@@ -17,12 +17,13 @@
 package connectors
 
 import org.mockito.Mockito.{mock, when}
-import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.http.RequestId
 import uk.gov.hmrc.http.client.HttpClientV2
 import wiring.AppConfig
+
+import scala.concurrent.ExecutionContext.global
 
 class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Matchers {
 
@@ -32,7 +33,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
   trait Setup {
     val uuid = "123f4567-g89c-42c3-b456-557742330000"
     val connector: HomeOfficeRightToPublicFundsConnector =
-      new HomeOfficeRightToPublicFundsConnector(mockAppConfig, mockHttpClient) {
+      new HomeOfficeRightToPublicFundsConnector(mockAppConfig, mockHttpClient)(global) {
         override def generateNewUUID: String = uuid
       }
   }
@@ -41,18 +42,18 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
     "return new ID pre-appending the requestID when the requestID matches the format(8-4-4-4)" in new Setup {
       val requestId  = "dcba0000-ij12-df34-jk56"
       val uuidLength = 24
-      connector.correlationId(Some(RequestId(requestId))) mustBe s"$requestId-${uuid.substring(uuidLength)}"
+      connector.correlationId(Some(RequestId(requestId))) shouldBe s"$requestId-${uuid.substring(uuidLength)}"
     }
 
     "return new ID when the requestID does not match the format(8-4-4-4)" in new Setup {
       val requestId = "1a2b-ij12-df34-jk56"
-      connector.correlationId(Some(RequestId(requestId))) mustBe uuid
+      connector.correlationId(Some(RequestId(requestId))) shouldBe uuid
     }
   }
 
   "requestID is not present in the headerCarrier should return a new ID" should {
     "return the uuid" in new Setup {
-      connector.correlationId(None) mustBe uuid
+      connector.correlationId(None) shouldBe uuid
     }
   }
 
@@ -66,7 +67,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      intercept[IllegalArgumentException](connector.buildURL(path)) mustBe a[IllegalArgumentException]
+      intercept[IllegalArgumentException](connector.buildURL(path)) shouldBe a[IllegalArgumentException]
     }
 
     "return the correct URL, when base has no suffix" in new Setup {
@@ -78,7 +79,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString mustBe url
+      connector.buildURL(path).toString shouldBe url
     }
 
     "return the correct URL, when base has suffix" in new Setup {
@@ -90,7 +91,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString mustBe url
+      connector.buildURL(path).toString shouldBe url
     }
 
     "return the correct URL, when middle has no prefix" in new Setup {
@@ -102,7 +103,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString mustBe url
+      connector.buildURL(path).toString shouldBe url
     }
 
     "return the correct URL, when middle has prefix" in new Setup {
@@ -114,7 +115,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString mustBe url
+      connector.buildURL(path).toString shouldBe url
     }
 
     "return the correct URL, when path has no prefix" in new Setup {
@@ -126,7 +127,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString mustBe url
+      connector.buildURL(path).toString shouldBe url
     }
 
     "return the correct URL, when path has prefix" in new Setup {
@@ -138,7 +139,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString mustBe url
+      connector.buildURL(path).toString shouldBe url
     }
 
   }
