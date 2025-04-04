@@ -1,6 +1,4 @@
 repoVisibility: public_0C3F0CE3E6E6448FAD341E7BFA50FCD333E06A20CFF05FCACE61154DDBBADF71
-leakDetectionExemptions:
-  - ruleId: 'filename_private_key_11'
 test-repositories:
   - home-office-immigration-status-acceptance-tests
   - home-office-immigration-status-perf-tests
