@@ -1,4 +1,8 @@
+digital-service: Check Immigration Status - CIS  (HOSS 2)
+description: Backend proxy API to connect the Check Immigration Status web service which checks a customer's immigration status and rights to public funds to a Home Office API.
 repoVisibility: public_0C3F0CE3E6E6448FAD341E7BFA50FCD333E06A20CFF05FCACE61154DDBBADF71
+type: Service
+service-type: Backend
 test-repositories:
-  - home-office-immigration-status-acceptance-tests
   - home-office-immigration-status-perf-tests
+  - home-office-immigration-status-acceptance-tests
