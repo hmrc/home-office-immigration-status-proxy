@@ -29,13 +29,13 @@ import scala.util.{Failure, Success, Try}
 object StatusCheckResponseHttpParser extends Logging {
 
   implicit object StatusCheckResponseReads
-    extends HttpReads[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] {
+      extends HttpReads[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] {
 
     override def read(
-                       method: String,
-                       url: String,
-                       response: HttpResponse
-                     ): Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+      method: String,
+      url: String,
+      response: HttpResponse
+    ): Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
       response.status match {
         case OK =>
           Try(response.json.as[StatusCheckResponse]) match {
