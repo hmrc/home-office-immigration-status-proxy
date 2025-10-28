@@ -18,22 +18,25 @@ package controllers
 
 import connectors.ErrorCodes.ERR_REQUEST_INVALID
 import models.{StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
-import play.api.libs.json._
-import play.api.mvc.Results._
-import play.api.mvc._
-import wiring.Constants._
+import play.api.Logging
+import play.api.libs.json.*
+import play.api.mvc.Results.*
+import play.api.mvc.*
+import wiring.Constants.*
 
 import java.util.UUID
 import scala.concurrent.Future
 
-trait BaseController {
+trait BaseController extends Logging {
 
   def withValidParameters[A](
     correlationId: String
   )(f: A => Future[Result])(implicit request: Request[JsValue], reads: Reads[A]): Future[Result] =
     request.body.validate[A] match {
       case JsSuccess(result, _) => f(result)
-      case JsError(errors)      => jsErrorToResponse(correlationId, errors.toSeq)
+      case JsError(errors) =>
+        logger.error(s"[BaseController][withValidParameters] User entered invalid request parameters")
+        jsErrorToResponse(correlationId, errors.toSeq)
     }
 
   private def jsErrorToResponse(
