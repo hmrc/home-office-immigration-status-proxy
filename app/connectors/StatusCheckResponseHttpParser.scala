@@ -19,9 +19,10 @@ package connectors
 import connectors.ErrorCodes.{ERR_HOME_OFFICE_RESPONSE, ERR_UNKNOWN}
 import models.{StatusCheckError, StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import play.api.Logging
-import play.api.http.Status._
+import play.api.http.Status.*
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import wiring.Constants._
+import wiring.Constants.*
 
 import scala.util.{Failure, Success, Try}
 
@@ -48,8 +49,14 @@ object StatusCheckResponseHttpParser extends Logging {
         case _ =>
           Try(response.json.as[StatusCheckErrorResponse]) match {
             case Success(errorResponse) =>
+              logger.error(
+                s"[StatusCheckResponseHttpParser][read] Home office returned ${response.status} error ${Json.toJson(errorResponse.error)}"
+              )
               Left(StatusCheckErrorResponseWithStatus(response.status, errorResponse))
             case Failure(_) =>
+              logger.error(
+                s"[StatusCheckResponseHttpParser][read] Unable to parse the error response returned by Home office. Status: $response.status"
+              )
               val correlationId = response.header(HEADER_X_CORRELATION_ID)
               Left(unknownError(response.status, correlationId))
           }
