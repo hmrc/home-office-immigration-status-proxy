@@ -85,6 +85,7 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
     )
 
     response.status shouldBe CREATED
+    ()
   }
 
   private def authTokenIsValid(token: String): Boolean = {
