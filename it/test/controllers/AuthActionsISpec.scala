@@ -18,16 +18,16 @@ package controllers
 
 import org.scalatest.concurrent.ScalaFutures
 import play.api.Application
-import play.api.mvc.Results._
+import play.api.mvc.Results.*
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentAsString, status, _}
-import support.AppBaseISpec
+import play.api.test.Helpers.{contentAsString, status, *}
+import support.{AppBaseISpec, BaseISpec}
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 
 import scala.concurrent.Future
 
-class AuthActionsISpec extends AuthActionISpecSetup with ScalaFutures {
+class AuthActionsISpec extends AuthActionISpecSetup {
 
   "withAuthorisedWithStrideGroup" should {
 

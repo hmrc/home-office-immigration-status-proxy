@@ -17,6 +17,7 @@
 package support
 
 import org.scalatest.OptionValues
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.Application
@@ -26,12 +27,19 @@ import stubs.AuthStubs
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
-abstract class BaseISpec extends AnyWordSpecLike with Matchers with OptionValues with WireMockSupport with AuthStubs {
+abstract class BaseISpec
+  extends AnyWordSpecLike
+  with Matchers
+  with OptionValues
+  with WireMockSupport
+  with AuthStubs
+  with JsonMatchers
+  with ScalaFutures
+  with IntegrationPatience {
 
   def app: Application
   protected def appBuilder: GuiceApplicationBuilder
 
   implicit def hc(implicit request: FakeRequest[?]): HeaderCarrier =
     HeaderCarrierConverter.fromRequestAndSession(request.withHeaders(request.headers), request.session)
-
 }

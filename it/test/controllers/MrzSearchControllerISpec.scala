@@ -29,7 +29,7 @@ import play.api.libs.ws.writeableOf_String
 
 import java.util.UUID
 
-class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
+class MrzSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs {
   this: Suite & ServerProvider =>
 
   val url = s"http://localhost:$port"

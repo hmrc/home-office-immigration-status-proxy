@@ -32,8 +32,7 @@ import scala.concurrent.ExecutionContext
 
 class HomeOfficeRightToPublicFundsConnectorISpec
     extends AppBaseISpec
-    with HomeOfficeRightToPublicFundsStubs
-    with ScalaFutures {
+    with HomeOfficeRightToPublicFundsStubs {
 
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
