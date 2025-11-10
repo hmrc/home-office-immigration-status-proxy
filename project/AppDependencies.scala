@@ -4,7 +4,7 @@ import scala.collection.immutable.Seq
 
 object AppDependencies {
 
-  private val bootstrapPlayVersion = "10.3.0"
+  private val bootstrapPlayVersion = "10.4.0"
 
   private val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-30"    % bootstrapPlayVersion,

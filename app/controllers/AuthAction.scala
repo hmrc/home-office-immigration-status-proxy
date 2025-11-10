@@ -40,7 +40,7 @@ class AuthActionImpl @Inject() (
       HeaderCarrierConverter.fromRequest(request)
 
     authorised(AuthProviders(PrivilegedApplication))(block(request))
-      .recover { case e: AuthorisationException =>
+      .recover { case _: AuthorisationException =>
         Forbidden("PrivilegedApplication required.")
       }
   }
