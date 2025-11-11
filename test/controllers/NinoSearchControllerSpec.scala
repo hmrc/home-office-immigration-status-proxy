@@ -16,22 +16,16 @@
 
 package controllers
 
-import connectors.ErrorCodes._
-import models._
-import org.mockito.ArgumentMatchers.{eq => mEq}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import play.api.http.Status._
+import connectors.ErrorCodes.*
+import models.*
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Results._
+import play.api.mvc.Results.*
 import play.api.test.FakeRequest
-import play.api.test.Helpers.AUTHORIZATION
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.UpstreamErrorResponse
-import uk.gov.hmrc.internalauth.client._
+import uk.gov.hmrc.internalauth.client.*
 
 import java.time.LocalDate
-import scala.concurrent.Future
 
 class NinoSearchControllerSpec extends ControllerSpec {
 
@@ -47,67 +41,48 @@ class NinoSearchControllerSpec extends ControllerSpec {
 
   "post" should {
 
-//    "fail" when {
-//
-//      "connector.token fails" in {
-//        tokenCallFails
-//        intercept[Exception](await(controller.post(request)))
-//      }
-//
-//      "connector.token is successful but connector.statusPublicFundsByNino fails" in {
-//        tokenCallIsSuccessful
-//        requestNinoCallFails
-//        intercept[Exception](await(controller.post(request)))
-//      }
-//
-//    }
+    "return 200" when {
 
-//    "return 200" when {
-//
-//      "the connector calls are successful and the validation passes" in {
-//        tokenCallIsSuccessful
-//        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
-//        val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
-//        requestNinoCallIsSuccessful(Right(statusCheckResponse))
-//        await(controller.post(request)) mustEqual withHeaders(Ok(Json.toJson(statusCheckResponse)))
-//      }
-//
-//      "a request is made without a correlationId but is successful" in {
-//        tokenCallIsSuccessful
-//        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
-//        val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
-//        requestNinoCallIsSuccessful(Right(statusCheckResponse))
-//        val requestWithoutCorrelationId: FakeRequest[JsValue] =
-//          FakeRequest().withBody(requestBody)
-//        requestWithoutCorrelationId.headers.headers.find(_._1 == "X-Correlation-Id") must be(None)
-//        await(controller.post(requestWithoutCorrelationId)).header.headers
-//          .find(_._1 == "X-Correlation-Id") must not be empty
-//      }
-//    }
-//
-//    "return an error" when {
-//
-//      "the validation passes but the connector returns an internal error status" in {
-//        tokenCallIsSuccessful
-//        val errorResponse =
-//          StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
-//        val errorResponseWithStatus =
-//          StatusCheckErrorResponseWithStatus(INTERNAL_SERVER_ERROR, errorResponse)
-//        requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
-//        await(controller.post(request)) mustEqual withHeaders(InternalServerError(Json.toJson(errorResponse)))
-//      }
-//
-//      "the validation passes but the connector returns a bad request status" in {
-//        tokenCallIsSuccessful
-//        val errorResponse =
-//          StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
-//        val errorResponseWithStatus =
-//          StatusCheckErrorResponseWithStatus(BAD_REQUEST, errorResponse)
-//        requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
-//        await(controller.post(request)) mustEqual withHeaders(BadRequest(Json.toJson(errorResponse)))
-//      }
-//
-//    }
+      "the connector calls are successful and the validation passes" in {
+        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
+        requestNinoCallIsSuccessful(Right(statusCheckResponse))
+        await(controller.post(request)) mustEqual withHeaders(Ok(Json.toJson(statusCheckResponse)))
+      }
+
+      "a request is made without a correlationId but is successful" in {
+        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
+        requestNinoCallIsSuccessful(Right(statusCheckResponse))
+        val requestWithoutCorrelationId: FakeRequest[JsValue] =
+          FakeRequest().withBody(requestBody)
+        requestWithoutCorrelationId.headers.headers.find(_._1 == "X-Correlation-Id") must be(None)
+        await(controller.post(requestWithoutCorrelationId)).header.headers
+          .find(_._1 == "X-Correlation-Id") must not be empty
+      }
+    }
+
+    "return an error" when {
+
+      "the validation passes but the connector returns an internal error status" in {
+        val errorResponse =
+          StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
+        val errorResponseWithStatus =
+          StatusCheckErrorResponseWithStatus(INTERNAL_SERVER_ERROR, errorResponse)
+        requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
+        await(controller.post(request)) mustEqual withHeaders(InternalServerError(Json.toJson(errorResponse)))
+      }
+
+      "the validation passes but the connector returns a bad request status" in {
+        val errorResponse =
+          StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
+        val errorResponseWithStatus =
+          StatusCheckErrorResponseWithStatus(BAD_REQUEST, errorResponse)
+        requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
+        await(controller.post(request)) mustEqual withHeaders(BadRequest(Json.toJson(errorResponse)))
+      }
+
+    }
 
   }
 
