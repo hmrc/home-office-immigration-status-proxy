@@ -3,6 +3,9 @@
 Backend proxy API to connect the Check Immigration Status web service which checks a customer's immigration status and
 rights to public funds to a Home Office API.
 
+## Note on terminology
+The Machine Readable Zone (MRZ) is a standardized section located at the bottom of a passport's identity page, designed for machine reading using Optical Character Recognition (OCR) technology. The MRZ contains essential personal information about the passport holder in a compressed, predefined format
+
 ## Endpoints
 
 | Method | Endpoint                           | Note                                                                               |
