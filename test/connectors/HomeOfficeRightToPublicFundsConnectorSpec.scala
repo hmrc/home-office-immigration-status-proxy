@@ -27,6 +27,8 @@ import scala.concurrent.ExecutionContext.global
 
 class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Matchers {
 
+  import HomeOfficeRightToPublicFundsConnector.*
+
   private lazy val mockAppConfig: AppConfig     = mock(classOf[AppConfig])
   private lazy val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2])
 
@@ -57,7 +59,7 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
     }
   }
 
-  ".buildURL" should {
+  "buildURL" should {
 
     "throw an exception when invalid URL" in new Setup {
       val prefix = "/"
@@ -67,7 +69,9 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      intercept[IllegalArgumentException](connector.buildURL(path)) shouldBe a[IllegalArgumentException]
+      intercept[IllegalArgumentException](
+        buildURL(path, mockAppConfig.rightToPublicFundsBaseUrl, mockAppConfig.rightToPublicFundsPathPrefix)
+      ) shouldBe a[IllegalArgumentException]
     }
 
     "return the correct URL, when base has no suffix" in new Setup {
@@ -79,7 +83,11 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString shouldBe url
+      buildURL(
+        path,
+        mockAppConfig.rightToPublicFundsBaseUrl,
+        mockAppConfig.rightToPublicFundsPathPrefix
+      ).toString shouldBe url
     }
 
     "return the correct URL, when base has suffix" in new Setup {
@@ -91,7 +99,11 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString shouldBe url
+      buildURL(
+        path,
+        mockAppConfig.rightToPublicFundsBaseUrl,
+        mockAppConfig.rightToPublicFundsPathPrefix
+      ).toString shouldBe url
     }
 
     "return the correct URL, when middle has no prefix" in new Setup {
@@ -103,7 +115,11 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString shouldBe url
+      buildURL(
+        path,
+        mockAppConfig.rightToPublicFundsBaseUrl,
+        mockAppConfig.rightToPublicFundsPathPrefix
+      ).toString shouldBe url
     }
 
     "return the correct URL, when middle has prefix" in new Setup {
@@ -115,7 +131,11 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString shouldBe url
+      buildURL(
+        path,
+        mockAppConfig.rightToPublicFundsBaseUrl,
+        mockAppConfig.rightToPublicFundsPathPrefix
+      ).toString shouldBe url
     }
 
     "return the correct URL, when path has no prefix" in new Setup {
@@ -127,7 +147,11 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString shouldBe url
+      buildURL(
+        path,
+        mockAppConfig.rightToPublicFundsBaseUrl,
+        mockAppConfig.rightToPublicFundsPathPrefix
+      ).toString shouldBe url
     }
 
     "return the correct URL, when path has prefix" in new Setup {
@@ -139,7 +163,11 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
       when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
 
-      connector.buildURL(path).toString shouldBe url
+      buildURL(
+        path,
+        mockAppConfig.rightToPublicFundsBaseUrl,
+        mockAppConfig.rightToPublicFundsPathPrefix
+      ).toString shouldBe url
     }
 
   }

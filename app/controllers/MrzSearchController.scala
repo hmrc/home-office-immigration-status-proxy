@@ -21,11 +21,11 @@ import controllers.BaseController
 import models.StatusCheckByMrzRequest
 import play.api.Configuration
 import play.api.http.MimeTypes
-import play.api.libs.json._
-import play.api.mvc._
+import play.api.libs.json.*
+import play.api.mvc.*
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import wiring.Constants._
+import wiring.Constants.*
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -41,16 +41,12 @@ class MrzSearchController @Inject() (
 
   def post: Action[JsValue] = authAction.async(parse.tolerantJson) { implicit request =>
     val correlationId = getCorrelationId
-
     withValidParameters[StatusCheckByMrzRequest](correlationId) { statusCheckByMrzRequest =>
       for {
-        token <- rightToPublicFundsConnector.token(correlationId, hc.requestId)
         either <- rightToPublicFundsConnector
-                    .statusPublicFundsByMrz(statusCheckByMrzRequest, correlationId, hc.requestId, token)
+                    .statusPublicFundsByMrz(statusCheckByMrzRequest, correlationId, hc.requestId)
         result = eitherToResult(either)
       } yield result.withHeaders(HEADER_X_CORRELATION_ID -> correlationId, HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
     }
-
   }
-
 }
