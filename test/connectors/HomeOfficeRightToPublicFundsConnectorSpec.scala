@@ -60,114 +60,58 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
   }
 
   "buildURL" should {
-
     "throw an exception when invalid URL" in new Setup {
-      val prefix = "/"
-      val middle = "/"
-      val path   = "test"
-
-      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
-      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
-
       intercept[IllegalArgumentException](
-        buildURL(path, mockAppConfig.rightToPublicFundsBaseUrl, mockAppConfig.rightToPublicFundsPathPrefix)
+        buildURL("test", "/", "/")
       ) shouldBe a[IllegalArgumentException]
     }
 
     "return the correct URL, when base has no suffix" in new Setup {
-      val prefix = "http://localhost:1234"
-      val middle = "/prefix"
-      val path   = "/test"
-      val url    = "http://localhost:1234/prefix/test"
-
-      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
-      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
-
       buildURL(
-        path,
-        mockAppConfig.rightToPublicFundsBaseUrl,
-        mockAppConfig.rightToPublicFundsPathPrefix
-      ).toString shouldBe url
+        "/test",
+        "http://localhost:1234",
+        "/prefix"
+      ).toString shouldBe "http://localhost:1234/prefix/test"
     }
 
     "return the correct URL, when base has suffix" in new Setup {
-      val prefix = "http://localhost:1234/"
-      val middle = "/prefix"
-      val path   = "/test"
-      val url    = "http://localhost:1234/prefix/test"
-
-      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
-      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
-
       buildURL(
-        path,
-        mockAppConfig.rightToPublicFundsBaseUrl,
-        mockAppConfig.rightToPublicFundsPathPrefix
-      ).toString shouldBe url
+        "/test",
+        "http://localhost:1234/",
+        "/prefix"
+      ).toString shouldBe "http://localhost:1234/prefix/test"
     }
 
     "return the correct URL, when middle has no prefix" in new Setup {
-      val prefix = "http://localhost:1234/"
-      val middle = "prefix"
-      val path   = "/test"
-      val url    = "http://localhost:1234/prefix/test"
-
-      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
-      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
-
       buildURL(
-        path,
-        mockAppConfig.rightToPublicFundsBaseUrl,
-        mockAppConfig.rightToPublicFundsPathPrefix
-      ).toString shouldBe url
+        "/test",
+        "http://localhost:1234/",
+        "prefix"
+      ).toString shouldBe "http://localhost:1234/prefix/test"
     }
 
     "return the correct URL, when middle has prefix" in new Setup {
-      val prefix = "http://localhost:1234/"
-      val middle = "/prefix"
-      val path   = "/test"
-      val url    = "http://localhost:1234/prefix/test"
-
-      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
-      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
-
       buildURL(
-        path,
-        mockAppConfig.rightToPublicFundsBaseUrl,
-        mockAppConfig.rightToPublicFundsPathPrefix
-      ).toString shouldBe url
+        "/test",
+        "http://localhost:1234/",
+        "/prefix"
+      ).toString shouldBe "http://localhost:1234/prefix/test"
     }
 
     "return the correct URL, when path has no prefix" in new Setup {
-      val prefix = "http://localhost:1234/"
-      val middle = "/prefix"
-      val path   = "test"
-      val url    = "http://localhost:1234/prefix/test"
-
-      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
-      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
-
       buildURL(
-        path,
-        mockAppConfig.rightToPublicFundsBaseUrl,
-        mockAppConfig.rightToPublicFundsPathPrefix
-      ).toString shouldBe url
+        "test",
+        "http://localhost:1234/",
+        "/prefix"
+      ).toString shouldBe "http://localhost:1234/prefix/test"
     }
 
     "return the correct URL, when path has prefix" in new Setup {
-      val prefix = "http://localhost:1234/"
-      val middle = "/prefix"
-      val path   = "/test"
-      val url    = "http://localhost:1234/prefix/test"
-
-      when(mockAppConfig.rightToPublicFundsBaseUrl).thenReturn(prefix)
-      when(mockAppConfig.rightToPublicFundsPathPrefix).thenReturn(middle)
-
       buildURL(
-        path,
-        mockAppConfig.rightToPublicFundsBaseUrl,
-        mockAppConfig.rightToPublicFundsPathPrefix
-      ).toString shouldBe url
+        "/test",
+        "http://localhost:1234/",
+        "/prefix"
+      ).toString shouldBe "http://localhost:1234/prefix/test"
     }
 
   }

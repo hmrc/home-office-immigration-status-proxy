@@ -34,16 +34,17 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 object HomeOfficeRightToPublicFundsConnector {
-  def buildURL(path: String, baseUrl: String, pathPrefix: String): URL = {
-    val pathPrefix = if (baseUrl.endsWith("/")) {
-      baseUrl
+
+  def buildURL(path: String, prefix: String, middle: String): URL = {
+    val pathPrefix = if (prefix.endsWith("/")) {
+      prefix
     } else {
-      baseUrl + "/"
+      prefix + "/"
     }
-    val pathMiddle = if (pathPrefix.startsWith("/")) {
-      pathPrefix.substring(1)
+    val pathMiddle = if (middle.startsWith("/")) {
+      middle.substring(1)
     } else {
-      pathPrefix
+      middle
     }
     val pathRest = if (path.startsWith("/")) {
       path
