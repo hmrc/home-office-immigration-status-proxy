@@ -24,6 +24,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import wiring.AppConfig
 
 import scala.concurrent.ExecutionContext.global
+import scala.language.postfixOps
 
 class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Matchers {
 
