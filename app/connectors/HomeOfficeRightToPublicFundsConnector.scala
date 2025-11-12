@@ -33,29 +33,6 @@ import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-object HomeOfficeRightToPublicFundsConnector {
-
-  def buildURL(path: String, prefix: String, middle: String): URL = {
-    val pathPrefix = if (prefix.endsWith("/")) {
-      prefix
-    } else {
-      prefix + "/"
-    }
-    val pathMiddle = if (middle.startsWith("/")) {
-      middle.substring(1)
-    } else {
-      middle
-    }
-    val pathRest = if (path.startsWith("/")) {
-      path
-    } else {
-      "/" + path
-    }
-    val finalUrl = pathPrefix + pathMiddle + pathRest
-    url"$finalUrl"
-  }
-}
-
 @Singleton
 class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: HttpClientV2)(implicit
   ec: ExecutionContext
@@ -131,10 +108,33 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
       HeaderNames.authorisation -> s"${token.token_type} ${token.access_token}",
       "CorrelationId"           -> correlationId(requestId)
     )
+}
 
-  private[connectors] def generateNewUUID: String = randomUUID.toString
+object HomeOfficeRightToPublicFundsConnector {
 
-  private[connectors] def correlationId(requestId: Option[RequestId]): String = {
+  def buildURL(path: String, prefix: String, middle: String): URL = {
+    val pathPrefix = if (prefix.endsWith("/")) {
+      prefix
+    } else {
+      prefix + "/"
+    }
+    val pathMiddle = if (middle.startsWith("/")) {
+      middle.substring(1)
+    } else {
+      middle
+    }
+    val pathRest = if (path.startsWith("/")) {
+      path
+    } else {
+      "/" + path
+    }
+    val finalUrl = pathPrefix + pathMiddle + pathRest
+    url"$finalUrl"
+  }
+
+  def generateNewUUID: String = randomUUID.toString
+
+  def correlationId(requestId: Option[RequestId]): String = {
     val uuidLength = 24
     val CorrelationIdPattern =
       """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
