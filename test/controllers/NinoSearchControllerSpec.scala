@@ -30,7 +30,9 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.internalauth.client.*
 
 import java.time.LocalDate
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Try}
 
 class NinoSearchControllerSpec extends ControllerSpec {
 
@@ -45,6 +47,14 @@ class NinoSearchControllerSpec extends ControllerSpec {
     FakeRequest().withBody(requestBody).withHeaders("X-Correlation-Id" -> correlationId)
 
   "post" should {
+    "fail" when {
+      "retrieve of token fails" in {
+        val ex = new Exception("Token missing")
+        when(mockConnector.statusPublicFundsByNino(any(), any(), any())(any()))
+          .thenReturn(Future.failed(ex))
+        Try(await(controller.post(request))) mustBe Failure(ex)
+      }
+    }
 
     "return 200" when {
 

@@ -19,12 +19,16 @@ package controllers
 import cats.implicits.*
 import connectors.ErrorCodes.*
 import models.*
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results.*
 import play.api.test.FakeRequest
 
 import java.time.LocalDate
+import scala.concurrent.Future
+import scala.util.{Failure, Try}
 
 class MrzSearchControllerSpec extends ControllerSpec {
 
@@ -41,6 +45,15 @@ class MrzSearchControllerSpec extends ControllerSpec {
     val requestBody = Json.toJson(req)
     val request: FakeRequest[JsValue] =
       FakeRequest().withBody(requestBody).withHeaders("X-Correlation-Id" -> correlationId)
+
+    "fail" when {
+      "retrieve of token fails" in {
+        val ex = new Exception("Token missing")
+        when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
+          .thenReturn(Future.failed(ex))
+        Try(await(controller.post(request))) mustBe Failure(ex)
+      }
+    }
 
     "return 200" when {
 
