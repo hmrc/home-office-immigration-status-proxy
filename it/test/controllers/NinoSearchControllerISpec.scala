@@ -65,7 +65,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 200 if request is valid" in {
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Nino)
-        givenAuthorisedForStride
+        wireMockStubForStride
         val result = doPostWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe OK
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -90,7 +90,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 404 if the service failed to find an identity based on the values provided" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
-        givenAuthorisedForStride
+        wireMockStubForStride
 
         val result = doPostWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe NOT_FOUND
@@ -104,7 +104,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
-        givenAuthorisedForStride
+        wireMockStubForStride
         val correlationId = UUID.randomUUID().toString
         val result        = doPostWithoutClientService("{}", correlationId)
         playStatus(result) shouldBe BAD_REQUEST
@@ -118,7 +118,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 400 if one of the input parameters passed in has failed internal validation" in {
-        givenAuthorisedForStride
+        wireMockStubForStride
         val result = doPostWithoutClientService(invalidNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -137,7 +137,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 400 if one of the input parameters passed in has failed external validation" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
-        givenAuthorisedForStride
+        wireMockStubForStride
         val result = doPostWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -155,7 +155,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
       "respond with 400 if request payload is invalid json" in {
         givenOAuthTokenGranted()
-        givenAuthorisedForStride
+        wireMockStubForStride
         val result = doPostWithoutClientService("[]")
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -167,7 +167,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 400 even if the service error undefined" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(BAD_REQUEST, RequestType.Nino)
-        givenAuthorisedForStride
+        wireMockStubForStride
 
         val result = doPostWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
@@ -180,7 +180,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 404 even if the service error undefined" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(NOT_FOUND, RequestType.Nino)
-        givenAuthorisedForStride
+        wireMockStubForStride
 
         val result = doPostWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe NOT_FOUND
@@ -193,7 +193,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 409 even if the service error undefined" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(CONFLICT, RequestType.Nino)
-        givenAuthorisedForStride
+        wireMockStubForStride
         val result = doPostWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe CONFLICT
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -205,7 +205,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
     "POST /v1/status/public-funds/nino/:service" should {
       "respond with 200 if request is valid" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Nino)
         val result = doPostWithClientService(validNinoRequestBody)
@@ -229,7 +229,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 404 if the service failed to find an identity based on the values provided" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
         val result = doPostWithClientService(validNinoRequestBody)
@@ -244,7 +244,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
 
         val correlationId = UUID.randomUUID().toString
 
@@ -260,7 +260,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 400 if one of the input parameters passed in has failed internal validation" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
 
         val result = doPostWithClientService(invalidNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
@@ -279,7 +279,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 400 if one of the input parameters passed in has failed external validation" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
@@ -301,7 +301,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 400 if request payload is invalid json" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
 
         givenOAuthTokenGranted()
         val result = doPostWithClientService("[]")
@@ -313,7 +313,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 400 even if the service error undefined" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(BAD_REQUEST, RequestType.Nino)
@@ -326,7 +326,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 404 even if the service error undefined" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(NOT_FOUND, RequestType.Nino)
@@ -339,7 +339,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 409 even if the service error undefined" in {
-        givenInternalAuthSuccessful()
+        wireMockStubForInternalAuthSuccessful()
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(CONFLICT, RequestType.Nino)

@@ -24,7 +24,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.Application
-import play.api.http.Status.UNAUTHORIZED
+import play.api.http.Status.{BAD_REQUEST, CONFLICT, NOT_FOUND, OK, UNAUTHORIZED}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.mvc.Http.HeaderNames
@@ -42,10 +42,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
   with ScalaFutures
   with IntegrationPatience {
   me: WireMockSupport =>
-
-  protected implicit def hc(implicit request: FakeRequest[?]): HeaderCarrier =
-    HeaderCarrierConverter.fromRequestAndSession(request.withHeaders(request.headers), request.session)
-
+  
   protected lazy val app: Application = appBuilder.build()
 
   private def appBuilder: GuiceApplicationBuilder =
@@ -59,9 +56,9 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         "auditing.consumer.baseUri.port" -> wireMockServer.port()
       )
 
-  protected val validTokenForm = """grant_type=client_credentials&client_id=hmrc&client_secret=TBC"""
+  private val validTokenForm = """grant_type=client_credentials&client_id=hmrc&client_secret=TBC"""
 
-  protected val requestBodyWithRange: String =
+  private val ninoRequestBodyWithRange: String =
     """{
       |  "dateOfBirth": "2001-01-31",
       |  "familyName": "Jane",
@@ -73,7 +70,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
       |  }
       |}""".stripMargin
 
-  protected val mrzRequestBodyWithRange: String =
+  private val mrzRequestBodyWithRange: String =
     """{
       |  "dateOfBirth": "2001-01-31",
       |  "documentNumber": "1234567890",
@@ -109,7 +106,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
       |  "nationality": "USA"
       |}""".stripMargin
 
-  protected val responseBodyWithStatus: String =
+  private val responseBodyWithStatus: String =
     """{
       |  "correlationId": "some-correlation-id",
       |  "result": {
@@ -146,21 +143,28 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
     )
   )
 
-  protected def getValidRequest(requestType: RequestType): String = requestType match {
+  protected sealed trait RequestType
+
+  protected object RequestType {
+    case object Mrz extends RequestType
+    case object Nino extends RequestType
+  }
+
+  private def getValidRequest(requestType: RequestType): String = requestType match {
     case RequestType.Nino => validNinoRequestBody
     case RequestType.Mrz => validMrzRequestBody
   }
 
-  protected def getRequestWithRange(requestType: RequestType): String = requestType match {
-    case RequestType.Nino => requestBodyWithRange
+  private def getRequestWithRange(requestType: RequestType): String = requestType match {
+    case RequestType.Nino => ninoRequestBodyWithRange
     case RequestType.Mrz => mrzRequestBodyWithRange
   }
 
   protected def givenStatusCheckResultNoRangeExample(requestType: RequestType): StubMapping =
-    givenSearchStub(requestType, 200, getValidRequest(requestType), responseBodyWithStatus)
+    givenSearchStub(requestType, OK, getValidRequest(requestType), responseBodyWithStatus)
 
   protected def givenStatusCheckResultWithRangeExample(requestType: RequestType): StubMapping =
-    givenSearchStub(requestType, 200, getRequestWithRange(requestType), responseBodyWithStatus)
+    givenSearchStub(requestType, OK, getRequestWithRange(requestType), responseBodyWithStatus)
 
   protected def givenStatusCheckErrorWhenMissingInputField(requestType: RequestType): StubMapping = {
 
@@ -172,7 +176,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         |  }
         |}""".stripMargin
 
-    givenSearchStub(requestType, 400, getValidRequest(requestType), errorResponseBody)
+    givenSearchStub(requestType, BAD_REQUEST, getValidRequest(requestType), errorResponseBody)
   }
 
   protected def givenStatusCheckErrorWhenStatusNotFound(requestType: RequestType): StubMapping = {
@@ -185,7 +189,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         |  }
         |}""".stripMargin
 
-    givenSearchStub(requestType, 404, getValidRequest(requestType), errorResponseBody)
+    givenSearchStub(requestType, NOT_FOUND, getValidRequest(requestType), errorResponseBody)
   }
 
   protected def givenStatusCheckErrorUndefined(status: Int, requestType: RequestType): StubMapping = {
@@ -210,12 +214,11 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         |  }
         |}""".stripMargin
 
-    givenSearchStub(requestType, 409, getValidRequest(requestType), errorResponseBody)
+    givenSearchStub(requestType, CONFLICT, getValidRequest(requestType), errorResponseBody)
 
   }
 
   protected def givenStatusCheckErrorWhenDOBInvalid(requestType: RequestType): StubMapping = {
-
     val errorResponseBody: String =
       """{
         |  "correlationId": "some-correlation-id",
@@ -230,39 +233,46 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         |  }
         |}""".stripMargin
 
-    givenSearchStub(requestType, 400, getValidRequest(requestType), errorResponseBody)
-
+    givenSearchStub(requestType, BAD_REQUEST, getValidRequest(requestType), errorResponseBody)
   }
 
   protected def givenOAuthTokenGranted(): StubMapping = {
-
     val oAuthTokenResponse: String =
       """{
         |   "access_token": "FOO0123456789",
         |   "refresh_token": "not-used",
         |   "token_type": "SomeTokenType"
         |}""".stripMargin
-
-    givenStatusPublicFundsTokenStub(200, validTokenForm, oAuthTokenResponse)
-
+    wireMockStubForToken(OK, validTokenForm, oAuthTokenResponse)
   }
 
   protected def givenOAuthTokenGrantedWithoutRefresh(): StubMapping = {
-
     val oAuthTokenResponse: String =
       """{
         |   "access_token": "FOO0123456789",
         |   "token_type": "SomeTokenType"
         |}""".stripMargin
-
-    givenStatusPublicFundsTokenStub(200, validTokenForm, oAuthTokenResponse)
-
+    wireMockStubForToken(OK, validTokenForm, oAuthTokenResponse)
   }
 
-  protected def givenOAuthTokenDenied(): StubMapping =
-    givenStatusPublicFundsTokenStub(401, validTokenForm, "")
+  protected def givenOAuthTokenDenied(): StubMapping = wireMockStubForToken(401, validTokenForm, "")
 
-  protected def givenInternalAuthSuccessful(): StubMapping = wireMockServer.stubFor(
+
+ 
+
+  def givenSearchStub(
+                       requestType: RequestType,
+                       httpResponseCode: Int,
+                       requestBody: String,
+                       responseBody: String
+                     ): StubMapping =
+    requestType match {
+      case RequestType.Mrz => wireMockStubForMrz(httpResponseCode, requestBody, responseBody)
+      case RequestType.Nino => wireMockStubForNino(httpResponseCode, requestBody, responseBody)
+    }
+
+  protected def wireMockStubForInternalAuthSuccessful(): StubMapping = 
+    wireMockServer.stubFor(
     post(urlEqualTo("/internal-auth/auth"))
       .willReturn(
         okJson(
@@ -273,7 +283,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
       )
   )
 
-  protected def givenStatusPublicFundsTokenStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
+  private def wireMockStubForToken(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/token"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -287,26 +297,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  sealed trait RequestType
-
-  object RequestType {
-    case object Mrz extends RequestType
-
-    case object Nino extends RequestType
-  }
-
-  def givenSearchStub(
-                       requestType: RequestType,
-                       httpResponseCode: Int,
-                       requestBody: String,
-                       responseBody: String
-                     ): StubMapping =
-    requestType match {
-      case RequestType.Mrz => givenStatusPublicFundsByMrzStub(httpResponseCode, requestBody, responseBody)
-      case RequestType.Nino => givenStatusPublicFundsByNinoStub(httpResponseCode, requestBody, responseBody)
-    }
-
-  protected def givenStatusPublicFundsByNinoStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
+  protected def wireMockStubForNino(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo("/v1/status/public-funds/nino"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -322,7 +313,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  protected def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
+  protected def wireMockStubForMrz(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/mrz"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -338,7 +329,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  protected def givenAuthorisedForStride: StubMapping = {
+  protected def wireMockStubForStride: StubMapping = {
     wireMockServer.stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)
@@ -362,7 +353,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         .willReturn(
           aResponse()
             .withBody("{}")
-            .withStatus(200)
+            .withStatus(OK)
         )
     )
 
