@@ -24,7 +24,6 @@ import javax.inject.Inject
 @ImplementedBy(classOf[AppConfigImpl])
 trait AppConfig {
 
-  val rightToPublicFundsPathPrefix: String
   val rightToPublicFundsBaseUrl: String
 
   val homeOfficeClientId: String
@@ -35,9 +34,6 @@ trait AppConfig {
 }
 
 class AppConfigImpl @Inject() (config: ServicesConfig) extends AppConfig {
-
-  val rightToPublicFundsPathPrefix: String =
-    config.getConfString("home-office-right-to-public-funds.pathPrefix", "")
 
   val rightToPublicFundsBaseUrl: String =
     config.baseUrl("home-office-right-to-public-funds")
