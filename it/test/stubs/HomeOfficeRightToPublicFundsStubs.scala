@@ -34,15 +34,16 @@ trait HomeOfficeRightToPublicFundsStubs extends BaseISpec {
   def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.home-office-right-to-public-funds.port"       -> wireMockServer.port(),
+        "microservice.services.home-office-right-to-public-funds.port" -> wireMockServer.port(),
+        "microservice.services.internal-auth.port"                     -> wireMockServer.port(),
         //  "microservice.services.home-office-right-to-public-funds.host"       -> wireMockServer.port(),
         //        "microservice.services.home-office-right-to-public-funds.pathPrefix" -> "/v1",
-        "microservice.services.auth.port"                                    -> wireMockServer.port(),
+        "microservice.services.auth.port" -> wireMockServer.port(),
         //   "microservice.services.auth.host"                                    -> wireMockHost,
-        "metrics.enabled"                                                    -> false,
-        "auditing.enabled"                                                   -> false,
+        "metrics.enabled"  -> false,
+        "auditing.enabled" -> false,
         //        "auditing.consumer.baseUri.host"                                     -> wireMockHost,
-        "auditing.consumer.baseUri.port"                                     -> wireMockServer.port()
+        "auditing.consumer.baseUri.port" -> wireMockServer.port()
       )
 
   val validTokenForm = """grant_type=client_credentials&client_id=hmrc&client_secret=TBC"""
@@ -281,10 +282,21 @@ trait HomeOfficeRightToPublicFundsStubs extends BaseISpec {
   def givenOAuthTokenDenied(): StubMapping =
     givenStatusPublicFundsTokenStub(401, validTokenForm, "")
 
+  def givenInternalAuthSuccessful(): StubMapping = wireMockServer.stubFor(
+    post(urlEqualTo("/internal-auth/auth"))
+      .willReturn(
+        okJson(
+          """{
+                "retrievals": []
+              }"""
+        )
+      )
+  )
+
   def givenStatusPublicFundsTokenStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/token"))
-      //  .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
+        //  .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/x-www-form-urlencoded"))
         .withRequestBody(equalTo(requestBody))
         .willReturn(
@@ -331,7 +343,7 @@ trait HomeOfficeRightToPublicFundsStubs extends BaseISpec {
   def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/mrz"))
-      //  .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
+        //  .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
         .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
         .withRequestBody(equalToJson(requestBody, true, true))
