@@ -109,13 +109,6 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
       |  "nationality": "USA"
       |}""".stripMargin
 
-  protected val invalidMrzRequestBody: String =
-    """{
-      |  "dateOfBirth": "2001-01-31",
-      |  "documentNumber": "Jane",
-      |  "documentType": "Doe"
-      |}""".stripMargin
-
   protected val responseBodyWithStatus: String =
     """{
       |  "correlationId": "some-correlation-id",
@@ -180,32 +173,6 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         |}""".stripMargin
 
     givenSearchStub(requestType, 400, getValidRequest(requestType), errorResponseBody)
-  }
-
-  protected def givenStatusCheckErrorWhenInvalidJson(requestType: RequestType): StubMapping = {
-
-    val errorResponseBody: String =
-      """{
-        |  "correlationId": "some-correlation-id",
-        |  "error": {
-        |    "errCode": "ERR_REQUEST_INVALID"
-        |  }
-        |}""".stripMargin
-
-    givenSearchStub(requestType, 400, "[]", errorResponseBody)
-  }
-
-  protected def givenStatusCheckErrorWhenEmptyInput(requestType: RequestType): StubMapping = {
-
-    val errorResponseBody: String =
-      """{
-        |  "correlationId": "some-correlation-id",
-        |  "error": {
-        |    "errCode": "ERR_REQUEST_INVALID"
-        |  }
-        |}""".stripMargin
-
-    givenSearchStub(requestType, 400, "{}", errorResponseBody)
   }
 
   protected def givenStatusCheckErrorWhenStatusNotFound(requestType: RequestType): StubMapping = {
@@ -370,18 +337,6 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
             .withBody(responseBody)
         )
     )
-
-  protected def givenRequestIsNotAuthorised(mdtpDetail: String): HomeOfficeRightToPublicFundsBaseISpec = {
-    wireMockServer.stubFor(
-      post(urlEqualTo("/auth/authorise"))
-        .willReturn(
-          aResponse()
-            .withStatus(UNAUTHORIZED)
-            .withHeader("WWW-Authenticate", s"""MDTP detail="$mdtpDetail"""")
-        )
-    )
-    this
-  }
 
   protected def givenAuthorisedForStride: StubMapping = {
     wireMockServer.stubFor(
