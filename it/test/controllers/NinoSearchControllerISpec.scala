@@ -115,9 +115,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsStubs with G
     route(appn, request).get
   }
 
-  override def beforeEach(): Unit =
-  super.beforeEach()
-  //  if (!authTokenIsValid(clientAuthToken)) createClientAuthToken()
+  override def beforeEach(): Unit = super.beforeEach()
 
   "NinoSearchController" when {
 
@@ -287,6 +285,8 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsStubs with G
               )
           ))
       }
+
+
 
       "respond with 404 if the service failed to find an identity based on the values provided" in {
         givenInternalAuthSuccessful()

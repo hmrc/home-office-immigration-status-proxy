@@ -41,7 +41,6 @@ class MrzSearchController @Inject() (
 
   def post: Action[JsValue] = authAction.async(parse.tolerantJson) { implicit request =>
     val correlationId = getCorrelationId
-    println("\n\n************************ HEREERERER")
     withValidParameters[StatusCheckByMrzRequest](correlationId) { statusCheckByMrzRequest =>
       for {
         either <- rightToPublicFundsConnector

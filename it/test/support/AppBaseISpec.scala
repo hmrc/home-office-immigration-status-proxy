@@ -19,7 +19,7 @@ package support
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 
-abstract class AppBaseISpec extends BaseISpec with GuiceOneAppPerSuite  {
+abstract class AppBaseISpec extends BaseISpec with GuiceOneAppPerSuite with WireMockSupport {
 
   override implicit lazy val appn: Application = appBuilder.build()
 

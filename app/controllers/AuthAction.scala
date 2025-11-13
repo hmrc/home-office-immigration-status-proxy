@@ -17,13 +17,14 @@
 package controllers
 
 import com.google.inject.{ImplementedBy, Inject}
+import play.api.Environment
+import play.api.mvc.*
 import play.api.mvc.Results.Forbidden
-import play.api.mvc._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.auth.core.AuthProvider.PrivilegedApplication
-import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import play.api.Environment
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class AuthActionImpl @Inject() (
@@ -35,18 +36,12 @@ class AuthActionImpl @Inject() (
     with AuthorisedFunctions {
 
   override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-    println("\n\n******************************* A1" + request.body)
     implicit val hc: HeaderCarrier =
       HeaderCarrierConverter.fromRequest(request)
-    
+
     authorised(AuthProviders(PrivilegedApplication))(block(request))
-      .recover { case e: AuthorisationException =>
-        println("\nIIIIII:" + e)
+      .recover { case _: AuthorisationException =>
         Forbidden("PrivilegedApplication required.")
-      }
-      .map { x =>
-        println("\nHERE:" + x)
-        x
       }
   }
 
