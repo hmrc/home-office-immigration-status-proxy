@@ -48,7 +48,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
 
   protected lazy val appn: Application = appBuilder.build()
 
-  protected def appBuilder: GuiceApplicationBuilder =
+  private def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.home-office-right-to-public-funds.port" -> wireMockServer.port(),
@@ -309,8 +309,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
   protected def givenStatusPublicFundsTokenStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/token"))
-        // TODO: 172 - uncomment
-        //  .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
+        .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/x-www-form-urlencoded"))
         .withRequestBody(equalTo(requestBody))
         .willReturn(
@@ -359,7 +358,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
   protected def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/mrz"))
-        //  .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
+        .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
         .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
         .withRequestBody(equalToJson(requestBody, true, true))

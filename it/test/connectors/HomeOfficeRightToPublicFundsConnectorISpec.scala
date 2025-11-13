@@ -191,156 +191,155 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
 
   }
 
-// TODO: 172 - uncomment
-//  "statusPublicFundsByMrz" should {
-//
-//    "return valid oauth token without refresh token" in {
-//      givenOAuthTokenGrantedWithoutRefresh()
-//      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
-//      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
-//
-//      val mrzRequest: StatusCheckByMrzRequest = (
-//        DocumentNumber("1234567890"),
-//        DateOfBirth(LocalDate.parse("2001-01-31")),
-//        Nationality("USA")
-//      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
-//        .toOption
-//        .get
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      result.toOption.get shouldBe responseBodyWithStatusObject
-//    }
-//
-//    "raise exception if token denied (401)" in {
-//      givenOAuthTokenDenied()
-//      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
-//      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
-//
-//      val mrzRequest: StatusCheckByMrzRequest = (
-//        DocumentNumber("1234567890"),
-//        DateOfBirth(LocalDate.parse("2001-01-31")),
-//        Nationality("USA")
-//      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
-//        .toOption
-//        .get
-//
-//      val result: Try[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
-//        Try(connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue)
-//
-//      result.isFailure shouldBe true
-//      val exceptionThrown: Throwable = result.failed.get
-//      exceptionThrown.getMessage shouldBe exceptionTokenDenied
-//    }
-//
-//    "return status when range provided" in {
-//      givenOAuthTokenGranted()
-//      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
-//      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
-//
-//      val mrzRequest: StatusCheckByMrzRequest = (
-//        DocumentNumber("1234567890"),
-//        DateOfBirth(LocalDate.parse("2001-01-31")),
-//        Nationality("USA")
-//      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
-//        .toOption
-//        .get
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      result.toOption.get shouldBe responseBodyWithStatusObject
-//    }
-//
-//    "return status when no range provided" in {
-//      givenOAuthTokenGranted()
-//      givenStatusCheckResultNoRangeExample(RequestType.Mrz)
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      result.toOption.get shouldBe responseBodyWithStatusObject
-//    }
-//
-//    "return check error when 400 response ERR_REQUEST_INVALID" in {
-//      givenOAuthTokenGranted()
-//      givenStatusCheckErrorWhenMissingInputField(RequestType.Mrz)
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      inside(result) { case Left(error) =>
-//        error.statusCode                  shouldBe BAD_REQUEST
-//        error.errorResponse.error.errCode shouldBe ERR_REQUEST_INVALID
-//      }
-//    }
-//
-//    "return check error when 404 response ERR_NOT_FOUND" in {
-//      givenOAuthTokenGranted()
-//      givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      inside(result) { case Left(error) =>
-//        error.statusCode                  shouldBe NOT_FOUND
-//        error.errorResponse.error.errCode shouldBe ERR_NOT_FOUND
-//      }
-//    }
-//
-//    "return check error when 409 response ERR_CONFLICT" in {
-//      givenOAuthTokenGranted()
-//      givenStatusCheckErrorWhenConflict(RequestType.Mrz)
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      inside(result) { case Left(error) =>
-//        error.statusCode                  shouldBe CONFLICT
-//        error.errorResponse.error.errCode shouldBe ERR_CONFLICT
-//      }
-//    }
-//
-//    "return check error when 400 response ERR_VALIDATION" in {
-//      givenOAuthTokenGranted()
-//      givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      inside(result) { case Left(error) =>
-//        error.statusCode                  shouldBe BAD_REQUEST
-//        error.errorResponse.error.errCode shouldBe ERR_VALIDATION
-//      }
-//    }
-//
-//    "return unknown error if other 4xx response" in {
-//      givenOAuthTokenGranted()
-//      givenStatusPublicFundsByMrzStub(TOO_MANY_REQUESTS, validMrzRequestBody, "")
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      inside(result) { case Left(error) =>
-//        error.statusCode                  shouldBe TOO_MANY_REQUESTS
-//        error.errorResponse.error.errCode shouldBe ERR_UNKNOWN
-//      }
-//    }
-//
-//    "return unknown error if 5xx response" in {
-//      givenOAuthTokenGranted()
-//      givenStatusPublicFundsByMrzStub(INTERNAL_SERVER_ERROR, validMrzRequestBody, "")
-//
-//      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-//        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-//
-//      inside(result) { case Left(error) =>
-//        error.statusCode                  shouldBe INTERNAL_SERVER_ERROR
-//        error.errorResponse.error.errCode shouldBe ERR_UNKNOWN
-//      }
-//    }
-//
-//  }
+  "statusPublicFundsByMrz" should {
+
+    "return valid oauth token without refresh token" in {
+      givenOAuthTokenGrantedWithoutRefresh()
+      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
+
+      val mrzRequest: StatusCheckByMrzRequest = (
+        DocumentNumber("1234567890"),
+        DateOfBirth(LocalDate.parse("2001-01-31")),
+        Nationality("USA")
+      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
+        .toOption
+        .get
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      result.toOption.get shouldBe responseBodyWithStatusObject
+    }
+
+    "raise exception if token denied (401)" in {
+      givenOAuthTokenDenied()
+      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
+
+      val mrzRequest: StatusCheckByMrzRequest = (
+        DocumentNumber("1234567890"),
+        DateOfBirth(LocalDate.parse("2001-01-31")),
+        Nationality("USA")
+      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
+        .toOption
+        .get
+
+      val result: Try[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
+        Try(connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue)
+
+      result.isFailure shouldBe true
+      val exceptionThrown: Throwable = result.failed.get
+      exceptionThrown.getMessage shouldBe exceptionTokenDenied
+    }
+
+    "return status when range provided" in {
+      givenOAuthTokenGranted()
+      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
+
+      val mrzRequest: StatusCheckByMrzRequest = (
+        DocumentNumber("1234567890"),
+        DateOfBirth(LocalDate.parse("2001-01-31")),
+        Nationality("USA")
+      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
+        .toOption
+        .get
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      result.toOption.get shouldBe responseBodyWithStatusObject
+    }
+
+    "return status when no range provided" in {
+      givenOAuthTokenGranted()
+      givenStatusCheckResultNoRangeExample(RequestType.Mrz)
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      result.toOption.get shouldBe responseBodyWithStatusObject
+    }
+
+    "return check error when 400 response ERR_REQUEST_INVALID" in {
+      givenOAuthTokenGranted()
+      givenStatusCheckErrorWhenMissingInputField(RequestType.Mrz)
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      inside(result) { case Left(error) =>
+        error.statusCode                  shouldBe BAD_REQUEST
+        error.errorResponse.error.errCode shouldBe ERR_REQUEST_INVALID
+      }
+    }
+
+    "return check error when 404 response ERR_NOT_FOUND" in {
+      givenOAuthTokenGranted()
+      givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      inside(result) { case Left(error) =>
+        error.statusCode                  shouldBe NOT_FOUND
+        error.errorResponse.error.errCode shouldBe ERR_NOT_FOUND
+      }
+    }
+
+    "return check error when 409 response ERR_CONFLICT" in {
+      givenOAuthTokenGranted()
+      givenStatusCheckErrorWhenConflict(RequestType.Mrz)
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      inside(result) { case Left(error) =>
+        error.statusCode                  shouldBe CONFLICT
+        error.errorResponse.error.errCode shouldBe ERR_CONFLICT
+      }
+    }
+
+    "return check error when 400 response ERR_VALIDATION" in {
+      givenOAuthTokenGranted()
+      givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      inside(result) { case Left(error) =>
+        error.statusCode                  shouldBe BAD_REQUEST
+        error.errorResponse.error.errCode shouldBe ERR_VALIDATION
+      }
+    }
+
+    "return unknown error if other 4xx response" in {
+      givenOAuthTokenGranted()
+      givenStatusPublicFundsByMrzStub(TOO_MANY_REQUESTS, validMrzRequestBody, "")
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      inside(result) { case Left(error) =>
+        error.statusCode                  shouldBe TOO_MANY_REQUESTS
+        error.errorResponse.error.errCode shouldBe ERR_UNKNOWN
+      }
+    }
+
+    "return unknown error if 5xx response" in {
+      givenOAuthTokenGranted()
+      givenStatusPublicFundsByMrzStub(INTERNAL_SERVER_ERROR, validMrzRequestBody, "")
+
+      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
+
+      inside(result) { case Left(error) =>
+        error.statusCode                  shouldBe INTERNAL_SERVER_ERROR
+        error.errorResponse.error.errCode shouldBe ERR_UNKNOWN
+      }
+    }
+
+  }
 
 }
