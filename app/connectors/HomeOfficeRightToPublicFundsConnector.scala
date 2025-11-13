@@ -18,8 +18,8 @@ package connectors
 
 import com.google.inject.Singleton
 import connectors.StatusCheckResponseHttpParser.*
+import helpers.CorrelationIdHelper.*
 import models.{OAuthToken, StatusCheckByMrzRequest, StatusCheckByNinoRequest, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
-import play.api.Logging
 import play.api.libs.json.Json
 import play.api.libs.ws.{writeableOf_JsValue, writeableOf_urlEncodedForm}
 import uk.gov.hmrc.http.*
@@ -29,16 +29,13 @@ import wiring.AppConfig
 import wiring.Constants.*
 
 import java.net.URL
-import java.util.UUID.randomUUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, http: HttpClientV2)(implicit
   ec: ExecutionContext
-) extends Logging {
-
-  import HomeOfficeRightToPublicFundsConnector.*
+) {
 
   private def retrieveAuthToken(xCorrelationId: String, requestId: Option[RequestId]): Future[OAuthToken] = {
     val hc: HeaderCarrier =
@@ -102,23 +99,4 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
       HeaderNames.authorisation -> s"${token.token_type} ${token.access_token}",
       "CorrelationId"           -> correlationId(requestId)
     )
-}
-
-object HomeOfficeRightToPublicFundsConnector {
-
-  def generateNewUUID: String = randomUUID.toString
-
-  def correlationId(requestId: Option[RequestId]): String = {
-    val uuidLength = 24
-    val CorrelationIdPattern =
-      """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
-    requestId match {
-      case Some(requestId) =>
-        requestId.value match {
-          case CorrelationIdPattern(prefix) => prefix + "-" + generateNewUUID.substring(uuidLength)
-          case _                            => generateNewUUID
-        }
-      case _ => generateNewUUID
-    }
-  }
 }

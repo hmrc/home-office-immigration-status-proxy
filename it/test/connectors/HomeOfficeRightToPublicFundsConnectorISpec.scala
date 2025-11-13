@@ -33,7 +33,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
   private implicit val hc: HeaderCarrier    = HeaderCarrier()
 
   private lazy val connector: HomeOfficeRightToPublicFundsConnector =
-    appn.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
+    app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
   private val dummyCorrelationId              = "some-correlation-id"
   private val dummyRequestId: Some[RequestId] = Some(RequestId("request-id"))

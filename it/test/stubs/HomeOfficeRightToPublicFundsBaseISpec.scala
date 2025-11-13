@@ -46,7 +46,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
   protected implicit def hc(implicit request: FakeRequest[?]): HeaderCarrier =
     HeaderCarrierConverter.fromRequestAndSession(request.withHeaders(request.headers), request.session)
 
-  protected lazy val appn: Application = appBuilder.build()
+  protected lazy val app: Application = appBuilder.build()
 
   private def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()

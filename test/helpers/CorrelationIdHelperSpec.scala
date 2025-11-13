@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-package connectors
+package helpers
 
-import org.mockito.Mockito.mock
+import helpers.CorrelationIdHelper.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import uk.gov.hmrc.http.RequestId
-import uk.gov.hmrc.http.client.HttpClientV2
-import wiring.AppConfig
 
-import scala.language.postfixOps
-
-class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Matchers {
-
-  import HomeOfficeRightToPublicFundsConnector.*
-
-  private lazy val mockAppConfig: AppConfig     = mock(classOf[AppConfig])
-  private lazy val mockHttpClient: HttpClientV2 = mock(classOf[HttpClientV2])
-
+class CorrelationIdHelperSpec extends AnyWordSpecLike with Matchers {
   "correlationId" should {
     "return new ID pre-appending the requestID when the requestID matches the format(8-4-4-4)" in {
       val requestId = "dcba0000-ij12-df34-jk56"
@@ -50,5 +40,4 @@ class HomeOfficeRightToPublicFundsConnectorSpec extends AnyWordSpecLike with Mat
       result.length() shouldBe 36
     }
   }
-
 }

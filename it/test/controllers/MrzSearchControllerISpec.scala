@@ -27,7 +27,7 @@ import stubs.HomeOfficeRightToPublicFundsBaseISpec
 import java.util.UUID
 import scala.concurrent.Future
 
-class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec with GuiceOneAppPerSuite {
+class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
   private val url = "/v1/status/public-funds/mrz"
 
   private def doPost(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
@@ -39,7 +39,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec wit
     val request = FakeRequest(POST, url)
       .withHeaders(hdrs*)
       .withJsonBody(Json.parse(payload))
-    route(appn, request).get
+    route(app, request).get
   }
 
   "MrzSearchController" when {
