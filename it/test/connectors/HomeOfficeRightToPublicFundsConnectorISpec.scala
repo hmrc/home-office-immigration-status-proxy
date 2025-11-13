@@ -165,7 +165,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
 
     "return unknown error if other 4xx response" in {
       givenOAuthTokenGranted()
-      wireMockStubForNino(TOO_MANY_REQUESTS, validNinoRequestBody, "")
+      givenStatusPublicFundsByNinoStub(TOO_MANY_REQUESTS, validNinoRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
@@ -178,7 +178,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
 
     "return unknown error if 5xx response" in {
       givenOAuthTokenGranted()
-      wireMockStubForNino(INTERNAL_SERVER_ERROR, validNinoRequestBody, "")
+      givenStatusPublicFundsByNinoStub(INTERNAL_SERVER_ERROR, validNinoRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
@@ -316,7 +316,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
 
     "return unknown error if other 4xx response" in {
       givenOAuthTokenGranted()
-      wireMockStubForMrz(TOO_MANY_REQUESTS, validMrzRequestBody, "")
+      givenStatusPublicFundsByMrzStub(TOO_MANY_REQUESTS, validMrzRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
@@ -329,7 +329,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
 
     "return unknown error if 5xx response" in {
       givenOAuthTokenGranted()
-      wireMockStubForMrz(INTERNAL_SERVER_ERROR, validMrzRequestBody, "")
+      givenStatusPublicFundsByMrzStub(INTERNAL_SERVER_ERROR, validMrzRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue

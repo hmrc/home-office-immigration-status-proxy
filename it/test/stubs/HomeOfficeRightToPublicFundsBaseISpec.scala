@@ -267,11 +267,11 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
                        responseBody: String
                      ): StubMapping =
     requestType match {
-      case RequestType.Mrz => wireMockStubForMrz(httpResponseCode, requestBody, responseBody)
-      case RequestType.Nino => wireMockStubForNino(httpResponseCode, requestBody, responseBody)
+      case RequestType.Mrz => givenStatusPublicFundsByMrzStub(httpResponseCode, requestBody, responseBody)
+      case RequestType.Nino => givenStatusPublicFundsByNinoStub(httpResponseCode, requestBody, responseBody)
     }
 
-  protected def wireMockStubForInternalAuthSuccessful(): StubMapping = 
+  protected def givenAuthorisedForInternalAuth(): StubMapping = 
     wireMockServer.stubFor(
     post(urlEqualTo("/internal-auth/auth"))
       .willReturn(
@@ -297,7 +297,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  protected def wireMockStubForNino(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
+  protected def givenStatusPublicFundsByNinoStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo("/v1/status/public-funds/nino"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -313,7 +313,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  protected def wireMockStubForMrz(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
+  protected def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/mrz"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -329,7 +329,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  protected def wireMockStubForStride: StubMapping = {
+  protected def givenAuthorisedForStride: StubMapping = {
     wireMockServer.stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)

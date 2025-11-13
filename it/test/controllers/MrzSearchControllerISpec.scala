@@ -48,7 +48,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       "respond with 200 if request is valid" in {
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Mrz)
-        wireMockStubForStride
+        givenAuthorisedForStride
         val result = doPost(validMrzRequestBody)
         playStatus(result) shouldBe OK
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -72,7 +72,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       "respond with 404 if the service failed to find an identity based on the values provided" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
-        wireMockStubForStride
+        givenAuthorisedForStride
         val result = doPost(validMrzRequestBody)
         playStatus(result) shouldBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -84,7 +84,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
-        wireMockStubForStride
+        givenAuthorisedForStride
         val correlationId = UUID.randomUUID().toString
         val result        = doPost("{}", correlationId)
         playStatus(result) shouldBe BAD_REQUEST
@@ -99,7 +99,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       "respond with 400 if one of the input parameters passed in has failed external validation" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
-        wireMockStubForStride
+        givenAuthorisedForStride
         val result = doPost(validMrzRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -118,7 +118,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
 
       "respond with 400 if request payload is invalid json" in {
         givenOAuthTokenGranted()
-        wireMockStubForStride
+        givenAuthorisedForStride
         val result = doPost("[]")
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -130,7 +130,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       "respond with 400 even if the service error undefined" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(400, RequestType.Mrz)
-        wireMockStubForStride
+        givenAuthorisedForStride
         val result = doPost(validMrzRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -141,7 +141,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       "respond with 404 even if the service error undefined" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(404, RequestType.Mrz)
-        wireMockStubForStride
+        givenAuthorisedForStride
         val result = doPost(validMrzRequestBody)
         playStatus(result) shouldBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
@@ -152,7 +152,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       "respond with 409 even if the service error undefined" in {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(409, RequestType.Mrz)
-        wireMockStubForStride
+        givenAuthorisedForStride
         val result = doPost(validMrzRequestBody)
         playStatus(result) shouldBe CONFLICT
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
