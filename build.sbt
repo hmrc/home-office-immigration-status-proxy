@@ -15,8 +15,7 @@ val commonSettings: Seq[String] = Seq(
   "-Wconf:msg=unused import&src=conf/.*:s",
   "-Wconf:msg=unused import&src=views/.*:s",
   "-Wconf:msg=Flag.*repeatedly:s",
-  "-Wunused:unsafe-warn-patvars",
-  "-Wunused:nowarn"
+  "-Wunused:unsafe-warn-patvars"
 )
 
 lazy val microservice = (project in file("."))
