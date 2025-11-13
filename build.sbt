@@ -9,13 +9,14 @@ val commonSettings: Seq[String] = Seq(
   "-deprecation",
   "-language:noAutoTupling",
   "-Wvalue-discard",
-//  "-Werror",
+  "-Werror",
   "-Wconf:src=routes/.*:s",
   "-Wconf:src=views/.*txt.*:s",
   "-Wconf:msg=unused import&src=conf/.*:s",
   "-Wconf:msg=unused import&src=views/.*:s",
   "-Wconf:msg=Flag.*repeatedly:s",
-  "-Wunused:unsafe-warn-patvars"
+  "-Wunused:unsafe-warn-patvars",
+  "-Wunused:nowarn"
 )
 
 lazy val microservice = (project in file("."))

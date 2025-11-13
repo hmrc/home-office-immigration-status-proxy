@@ -16,22 +16,19 @@
 
 package connectors
 
-import cats.implicits._
-import connectors.ErrorCodes._
-import models._
+import cats.implicits.*
+import connectors.ErrorCodes.*
+import models.*
 import org.scalatest.Inside.inside
-import org.scalatest.concurrent.ScalaFutures
-import play.api.http.Status._
-import stubs.HomeOfficeRightToPublicFundsStubs
-import support.AppBaseISpec
+import play.api.http.Status.*
+import stubs.HomeOfficeRightToPublicFundsBaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId}
 
 import java.time.LocalDate
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublicFundsStubs {
+class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
   private implicit val hc: HeaderCarrier    = HeaderCarrier()
 
@@ -194,6 +191,7 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
 
   }
 
+// TODO: 172 - uncomment
 //  "statusPublicFundsByMrz" should {
 //
 //    "return valid oauth token without refresh token" in {

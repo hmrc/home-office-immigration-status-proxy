@@ -22,72 +22,16 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{FORBIDDEN, GET, OK, contentAsString, defaultAwaitTimeout, redirectLocation, route, writeableOf_AnyContentAsEmpty, status as playStatus, *}
-import stubs.HomeOfficeRightToPublicFundsStubs
+import play.api.test.Helpers.{status as playStatus, *}
+import stubs.HomeOfficeRightToPublicFundsBaseISpec
 
 import java.util.UUID
 import scala.concurrent.Future
 
-class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsStubs with GuiceOneAppPerSuite {
+class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec with GuiceOneAppPerSuite {
   private val clientService: String = "service-a"
   private val url                   = "/v1/status/public-funds/nino"
   private val urlWithClientService  = s"/v1/status/public-funds/nino/$clientService"
-
-//  def publicFundsByNinoForService(
-//    service: String,
-//    payload: String,
-//    correlationId: String = "some-correlation-id"
-//  ): WSResponse =
-//    await(
-//      wsClient
-//        .url(s"$url/v1/status/public-funds/nino/$service")
-//        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> clientAuthToken)
-//        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
-//        .post(payload)
-//    )
-//
-//  def publicFundsByNino(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
-//    await(
-//      wsClient
-//        .url(s"$url/v1/status/public-funds/nino")
-//        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> "Bearer 123")
-//        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
-//        .post(payload)
-//    )
-
-//  private def createClientAuthToken(): Unit = {
-//    val response = await(
-//      wsClient
-//        .url(s"$internalAuthBaseUrl/test-only/token")
-//        .post(
-//          Json.obj(
-//            "token"     -> clientAuthToken,
-//            "principal" -> "test",
-//            "permissions" -> Seq(
-//              Json.obj(
-//                "resourceType"     -> "home-office-immigration-status-proxy",
-//                "resourceLocation" -> s"status/public-funds/nino/$clientService",
-//                "actions"          -> List("WRITE")
-//              )
-//            )
-//          )
-//        )
-//    )
-//
-//    response.status shouldBe CREATED
-//    ()
-//  }
-//
-//  private def authTokenIsValid(token: String): Boolean = {
-//    val response = await(
-//      wsClient
-//        .url(s"$internalAuthBaseUrl/test-only/token")
-//        .withHttpHeaders("Authorization" -> token)
-//        .get()
-//    )
-//
-//    response.status == OK
-//  }
 
   private def doPost(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
     val hdrs: Seq[Tuple2[String, String]] = Seq(

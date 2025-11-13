@@ -21,13 +21,13 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{FORBIDDEN, GET, OK, contentAsString, defaultAwaitTimeout, redirectLocation, route, status as playStatus, writeableOf_AnyContentAsEmpty, *}
-import stubs.HomeOfficeRightToPublicFundsStubs
+import play.api.test.Helpers.{status as playStatus, *}
+import stubs.HomeOfficeRightToPublicFundsBaseISpec
 
 import java.util.UUID
 import scala.concurrent.Future
 
-class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsStubs with GuiceOneAppPerSuite {
+class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec with GuiceOneAppPerSuite {
   private val url = "/v1/status/public-funds/mrz"
 
   private def doPost(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
