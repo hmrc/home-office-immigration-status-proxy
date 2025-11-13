@@ -40,25 +40,20 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
 
   import HomeOfficeRightToPublicFundsConnector.*
 
-  private def token(xCorrelationId: String, requestId: Option[RequestId]): Future[OAuthToken] = {
+  private def retrieveAuthToken(xCorrelationId: String, requestId: Option[RequestId]): Future[OAuthToken] = {
     val hc: HeaderCarrier =
       HeaderCarrier().withExtraHeaders(
         HEADER_X_CORRELATION_ID -> xCorrelationId,
         "CorrelationId"         -> correlationId(requestId)
       )
 
-    val url = buildURL(
-      "/status/public-funds/token",
-      appConfig.rightToPublicFundsBaseUrl,
-      appConfig.rightToPublicFundsPathPrefix
-    )
-
     val form: Map[String, Seq[String]] = Map(
       "grant_type"    -> Seq("client_credentials"),
       "client_id"     -> Seq(appConfig.homeOfficeClientId),
       "client_secret" -> Seq(appConfig.homeOfficeClientSecret)
     )
-
+    val url: URL =
+      url"${appConfig.rightToPublicFundsBaseUrl}/v1/status/public-funds/token"
     http
       .post(url)(hc)
       .withBody(form)
@@ -71,14 +66,14 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
     xCorrelationId: String,
     requestId: Option[RequestId]
   )(implicit hcc: HeaderCarrier): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
-    token(xCorrelationId, hcc.requestId).flatMap { oAuthToken =>
-      val url = buildURL(
-        "/status/public-funds/nino",
-        appConfig.rightToPublicFundsBaseUrl,
-        appConfig.rightToPublicFundsPathPrefix
-      )
+    retrieveAuthToken(xCorrelationId, hcc.requestId).flatMap { oAuthToken =>
+      val url: URL =
+        url"${appConfig.rightToPublicFundsBaseUrl}/v1/status/public-funds/nino"
+
       http
-        .post(url)(getHeaderCarrier(xCorrelationId, requestId, oAuthToken))
+        .post(url)(
+          getHeaderCarrier(xCorrelationId, requestId, oAuthToken)
+        )
         .withBody(Json.toJson(request))
         .withProxy
         .execute[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]
@@ -89,14 +84,13 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
     xCorrelationId: String,
     requestId: Option[RequestId]
   )(implicit hcc: HeaderCarrier): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
-    token(xCorrelationId, hcc.requestId).flatMap { oAuthToken =>
-      val url = buildURL(
-        "/status/public-funds/mrz",
-        appConfig.rightToPublicFundsBaseUrl,
-        appConfig.rightToPublicFundsPathPrefix
-      )
+    retrieveAuthToken(xCorrelationId, hcc.requestId).flatMap { oAuthToken =>
+      val url: URL =
+        url"${appConfig.rightToPublicFundsBaseUrl}/v1/status/public-funds/mrz"
       http
-        .post(url)(getHeaderCarrier(xCorrelationId, requestId, oAuthToken))
+        .post(url)(
+          getHeaderCarrier(xCorrelationId, requestId, oAuthToken)
+        )
         .withBody(Json.toJson(request))
         .withProxy
         .execute[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]
@@ -111,26 +105,6 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
 }
 
 object HomeOfficeRightToPublicFundsConnector {
-
-  def buildURL(path: String, prefix: String, middle: String): URL = {
-    val pathPrefix = if (prefix.endsWith("/")) {
-      prefix
-    } else {
-      prefix + "/"
-    }
-    val pathMiddle = if (middle.startsWith("/")) {
-      middle.substring(1)
-    } else {
-      middle
-    }
-    val pathRest = if (path.startsWith("/")) {
-      path
-    } else {
-      "/" + path
-    }
-    val finalUrl = pathPrefix + pathMiddle + pathRest
-    url"$finalUrl"
-  }
 
   def generateNewUUID: String = randomUUID.toString
 

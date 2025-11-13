@@ -37,7 +37,7 @@ abstract class BaseISpec
   with ScalaFutures
   with IntegrationPatience {
 
-  def app: Application
+  def appn: Application
   protected def appBuilder: GuiceApplicationBuilder
 
   implicit def hc(implicit request: FakeRequest[?]): HeaderCarrier =

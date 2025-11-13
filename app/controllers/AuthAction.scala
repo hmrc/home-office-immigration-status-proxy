@@ -35,13 +35,18 @@ class AuthActionImpl @Inject() (
     with AuthorisedFunctions {
 
   override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-
+    println("\n\n******************************* A1" + request.body)
     implicit val hc: HeaderCarrier =
       HeaderCarrierConverter.fromRequest(request)
-
+    
     authorised(AuthProviders(PrivilegedApplication))(block(request))
-      .recover { case _: AuthorisationException =>
+      .recover { case e: AuthorisationException =>
+        println("\nIIIIII:" + e)
         Forbidden("PrivilegedApplication required.")
+      }
+      .map { x =>
+        println("\nHERE:" + x)
+        x
       }
   }
 

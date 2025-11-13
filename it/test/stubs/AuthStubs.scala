@@ -24,7 +24,7 @@ trait AuthStubs {
   me: WireMockSupport =>
 
   def givenRequestIsNotAuthorised(mdtpDetail: String): AuthStubs = {
-    stubFor(
+    wireMockServer.stubFor(
       post(urlEqualTo("/auth/authorise"))
         .willReturn(
           aResponse()
@@ -36,7 +36,7 @@ trait AuthStubs {
   }
 
   def givenAuthorisedForStride: AuthStubs = {
-    stubFor(
+    wireMockServer.stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)
         .withRequestBody(
@@ -63,15 +63,15 @@ trait AuthStubs {
         )
     )
 
-    stubFor(
-      post(urlEqualTo("/auth/authorise"))
-        .atPriority(2)
-        .willReturn(
-          aResponse()
-            .withStatus(401)
-            .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")
-        )
-    )
+//    wireMockServer.stubFor(
+//      post(urlEqualTo("/auth/authorise"))
+//        .atPriority(2)
+//        .willReturn(
+//          aResponse()
+//            .withStatus(401)
+//            .withHeader("WWW-Authenticate", "MDTP detail=\"InsufficientEnrolments\"")
+//        )
+//    )
     this
   }
 

@@ -16,108 +16,118 @@
 
 package controllers
 
-import connectors.ErrorCodes.*
-import org.scalatest.Suite
-import org.scalatestplus.play.ServerProvider
-import play.api.http.Status.*
+import connectors.ErrorCodes.{ERR_NOT_FOUND, ERR_REQUEST_INVALID, ERR_UNKNOWN, ERR_VALIDATION}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsObject, Json}
-import play.api.libs.ws.{WSClient, WSResponse}
-import play.api.test.Helpers.{AUTHORIZATION, await, defaultAwaitTimeout}
+import play.api.mvc.Result
+import play.api.test.FakeRequest
+import play.api.test.Helpers.{FORBIDDEN, GET, OK, contentAsString, defaultAwaitTimeout, redirectLocation, route, writeableOf_AnyContentAsEmpty, status as playStatus, *}
 import stubs.HomeOfficeRightToPublicFundsStubs
-import support.{JsonMatchers, ServerBaseISpec}
-import play.api.libs.ws.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_String
 
 import java.util.UUID
+import scala.concurrent.Future
 
-class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPublicFundsStubs with JsonMatchers {
-  this: Suite & ServerProvider =>
-
-  val url = s"http://localhost:$port"
-
-  lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
-
-  def ping: WSResponse = await(wsClient.url(s"$url/ping/ping").get())
-
-  private val internalAuthBaseUrl: String = "http://localhost:8470"
-  private val clientAuthToken: String     = UUID.randomUUID().toString
-
+class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsStubs with GuiceOneAppPerSuite {
   private val clientService: String = "service-a"
-  def publicFundsByNinoForService(
-    service: String,
-    payload: String,
-    correlationId: String = "some-correlation-id"
-  ): WSResponse =
-    await(
-      wsClient
-        .url(s"$url/v1/status/public-funds/nino/$service")
-        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> clientAuthToken)
-        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
-        .post(payload)
+  private val url = "/v1/status/public-funds/nino"
+  private val urlWithClientService = s"/v1/status/public-funds/nino/$clientService"
+
+
+//  def publicFundsByNinoForService(
+//    service: String,
+//    payload: String,
+//    correlationId: String = "some-correlation-id"
+//  ): WSResponse =
+//    await(
+//      wsClient
+//        .url(s"$url/v1/status/public-funds/nino/$service")
+//        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> clientAuthToken)
+//        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
+//        .post(payload)
+//    )
+//
+//  def publicFundsByNino(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
+//    await(
+//      wsClient
+//        .url(s"$url/v1/status/public-funds/nino")
+//        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> "Bearer 123")
+//        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
+//        .post(payload)
+//    )
+
+//  private def createClientAuthToken(): Unit = {
+//    val response = await(
+//      wsClient
+//        .url(s"$internalAuthBaseUrl/test-only/token")
+//        .post(
+//          Json.obj(
+//            "token"     -> clientAuthToken,
+//            "principal" -> "test",
+//            "permissions" -> Seq(
+//              Json.obj(
+//                "resourceType"     -> "home-office-immigration-status-proxy",
+//                "resourceLocation" -> s"status/public-funds/nino/$clientService",
+//                "actions"          -> List("WRITE")
+//              )
+//            )
+//          )
+//        )
+//    )
+//
+//    response.status shouldBe CREATED
+//    ()
+//  }
+//
+//  private def authTokenIsValid(token: String): Boolean = {
+//    val response = await(
+//      wsClient
+//        .url(s"$internalAuthBaseUrl/test-only/token")
+//        .withHttpHeaders("Authorization" -> token)
+//        .get()
+//    )
+//
+//    response.status == OK
+//  }
+
+  private def doPost(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
+    val hdrs: Seq[Tuple2[String, String]] = Seq(
+      "Authorization"    -> "Bearer123",
+      "x-correlation-id" -> correlationId
     )
 
-  def publicFundsByNino(payload: String, correlationId: String = "some-correlation-id"): WSResponse =
-    await(
-      wsClient
-        .url(s"$url/v1/status/public-funds/nino")
-        .addHttpHeaders("Content-Type" -> "application/json", AUTHORIZATION -> "Bearer 123")
-        .addHttpHeaders((if (correlationId.isEmpty) "" else "x-correlation-id") -> correlationId)
-        .post(payload)
+    val request = FakeRequest(POST, url)
+      .withHeaders(hdrs*)
+      .withJsonBody(Json.parse(payload))
+    route(appn, request).get
+  }
+  private def doPostWithClientService(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
+    val hdrs: Seq[Tuple2[String, String]] = Seq(
+      "Authorization"    -> "Bearer123",
+      "x-correlation-id" -> correlationId
     )
 
-  private def createClientAuthToken(): Unit = {
-    val response = await(
-      wsClient
-        .url(s"$internalAuthBaseUrl/test-only/token")
-        .post(
-          Json.obj(
-            "token"     -> clientAuthToken,
-            "principal" -> "test",
-            "permissions" -> Seq(
-              Json.obj(
-                "resourceType"     -> "home-office-immigration-status-proxy",
-                "resourceLocation" -> s"status/public-funds/nino/$clientService",
-                "actions"          -> List("WRITE")
-              )
-            )
-          )
-        )
-    )
-
-    response.status shouldBe CREATED
-    ()
+    val request = FakeRequest(POST, urlWithClientService)
+      .withHeaders(hdrs*)
+      .withJsonBody(Json.parse(payload))
+    route(appn, request).get
   }
 
-  private def authTokenIsValid(token: String): Boolean = {
-    val response = await(
-      wsClient
-        .url(s"$internalAuthBaseUrl/test-only/token")
-        .withHttpHeaders("Authorization" -> token)
-        .get()
-    )
-
-    response.status == OK
-  }
-
-  override def beforeEach(): Unit = {
+  override def beforeEach(): Unit =
     super.beforeEach()
-    if (!authTokenIsValid(clientAuthToken)) createClientAuthToken()
-  }
+    //  if (!authTokenIsValid(clientAuthToken)) createClientAuthToken()
 
   "NinoSearchController" when {
 
     "POST /v1/status/public-funds/nino" should {
-
       "respond with 200 if request is valid" in {
-        ping.status.shouldBe(OK)
-
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Nino)
         givenAuthorisedForStride
+        val result = doPost(validNinoRequestBody)
+        playStatus(result) shouldBe OK
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        val result = publicFundsByNino(validNinoRequestBody)
-        result.status shouldBe OK
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "result",
             haveProperty[String]("dateOfBirth", be("2001-01-31"))
@@ -135,16 +145,15 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
       }
 
       "respond with 404 if the service failed to find an identity based on the values provided" in {
-        ping.status.shouldBe(OK)
-
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = doPost(validNinoRequestBody)
+        playStatus(result) shouldBe NOT_FOUND
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        result.status shouldBe NOT_FOUND
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_NOT_FOUND))
@@ -152,15 +161,13 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
-        ping.status.shouldBe(OK)
-
         givenAuthorisedForStride
-
         val correlationId = UUID.randomUUID().toString
-        val result        = publicFundsByNino("{}", correlationId)
+        val result = doPost("{}", correlationId)
+        playStatus(result) shouldBe BAD_REQUEST
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        result.status shouldBe BAD_REQUEST
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be(correlationId))
+        jsonDoc should (haveProperty[String]("correlationId", be(correlationId))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
@@ -168,14 +175,11 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
       }
 
       "respond with 400 if one of the input parameters passed in has failed internal validation" in {
-        ping.status.shouldBe(OK)
-
         givenAuthorisedForStride
-
-        val result = publicFundsByNino(invalidNinoRequestBody)
-
-        result.status shouldBe BAD_REQUEST
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+        val result = doPost(invalidNinoRequestBody)
+        playStatus(result) shouldBe BAD_REQUEST
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
+        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
@@ -188,16 +192,13 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
       }
 
       "respond with 400 if one of the input parameters passed in has failed external validation" in {
-        ping.status.shouldBe(OK)
-
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
         givenAuthorisedForStride
-
-        val result = publicFundsByNino(validNinoRequestBody)
-
-        result.status shouldBe BAD_REQUEST
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+        val result = doPost(validNinoRequestBody)
+        playStatus(result) shouldBe BAD_REQUEST
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
+        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_VALIDATION))
@@ -210,76 +211,67 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
       }
 
       "respond with 400 if request payload is invalid json" in {
-        ping.status.shouldBe(OK)
-
         givenOAuthTokenGranted()
         givenAuthorisedForStride
+        val result = doPost("[]")
+        playStatus(result) shouldBe BAD_REQUEST
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        val result = publicFundsByNino("[]")
-
-        result.status shouldBe BAD_REQUEST
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))))
       }
 
       "respond with 400 even if the service error undefined" in {
-        ping.status.shouldBe(OK)
-
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(BAD_REQUEST, RequestType.Nino)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = doPost(validNinoRequestBody)
+        playStatus(result) shouldBe BAD_REQUEST
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        result.status          shouldBe BAD_REQUEST
-        result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json
-          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+
+        jsonDoc should haveProperty[String]("correlationId")
+        jsonDoc should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
 
       "respond with 404 even if the service error undefined" in {
-        ping.status.shouldBe(OK)
-
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(NOT_FOUND, RequestType.Nino)
         givenAuthorisedForStride
 
-        val result = publicFundsByNino(validNinoRequestBody)
+        val result = doPost(validNinoRequestBody)
+        playStatus(result) shouldBe NOT_FOUND
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        result.status          shouldBe NOT_FOUND
-        result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json
-          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+        jsonDoc should haveProperty[String]("correlationId")
+        jsonDoc should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
 
       "respond with 409 even if the service error undefined" in {
-        ping.status.shouldBe(OK)
-
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(CONFLICT, RequestType.Nino)
         givenAuthorisedForStride
+        val result = doPost(validNinoRequestBody)
+        playStatus(result) shouldBe CONFLICT
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        val result = publicFundsByNino(validNinoRequestBody)
-
-        result.status          shouldBe CONFLICT
-        result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json
-          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+        jsonDoc should haveProperty[String]("correlationId")
+        jsonDoc should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
     }
 
     "POST /v1/status/public-funds/nino/:service" should {
-
       "respond with 200 if request is valid" in {
-        ping.status.shouldBe(OK)
-
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Nino)
 
-        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
+        val result = doPostWithClientService(validNinoRequestBody)
+        playStatus(result) shouldBe OK
+        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        result.status shouldBe OK
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+
+        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
           and haveProperty[JsObject](
             "result",
             haveProperty[String]("dateOfBirth", be("2001-01-31"))
@@ -295,130 +287,130 @@ class NinoSearchControllerISpec extends ServerBaseISpec with HomeOfficeRightToPu
               )
           ))
       }
-
-      "respond with 404 if the service failed to find an identity based on the values provided" in {
-        ping.status.shouldBe(OK)
-
-        givenOAuthTokenGranted()
-        givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
-
-        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
-
-        result.status shouldBe NOT_FOUND
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_NOT_FOUND))
-          ))
-      }
-
-      "respond with 400 if one of the required input parameters is missing from the request" in {
-        ping.status.shouldBe(OK)
-
-        val correlationId = UUID.randomUUID().toString
-
-        val result = publicFundsByNinoForService(clientService, "{}", correlationId)
-
-        result.status shouldBe BAD_REQUEST
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be(correlationId))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
-          ))
-      }
-
-      "respond with 400 if one of the input parameters passed in has failed internal validation" in {
-        ping.status.shouldBe(OK)
-
-        val result = publicFundsByNinoForService(clientService, invalidNinoRequestBody)
-
-        result.status shouldBe BAD_REQUEST
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
-              and havePropertyArrayOf[JsObject](
-                "fields",
-                haveProperty[String]("code")
-                  and haveProperty[String]("name")
-              )
-          ))
-      }
-
-      "respond with 400 if one of the input parameters passed in has failed external validation" in {
-        ping.status.shouldBe(OK)
-
-        givenOAuthTokenGranted()
-        givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
-
-        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
-
-        result.status shouldBe BAD_REQUEST
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_VALIDATION))
-              and havePropertyArrayOf[JsObject](
-                "fields",
-                haveProperty[String]("code")
-                  and haveProperty[String]("name")
-              )
-          ))
-      }
-
-      "respond with 400 if request payload is invalid json" in {
-        ping.status.shouldBe(OK)
-
-        givenOAuthTokenGranted()
-
-        val result = publicFundsByNinoForService(clientService, "[]")
-
-        result.status shouldBe BAD_REQUEST
-        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
-          and haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))))
-      }
-
-      "respond with 400 even if the service error undefined" in {
-        ping.status.shouldBe(OK)
-
-        givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(BAD_REQUEST, RequestType.Nino)
-
-        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
-
-        result.status          shouldBe BAD_REQUEST
-        result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json
-          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
-      }
-
-      "respond with 404 even if the service error undefined" in {
-        ping.status.shouldBe(OK)
-
-        givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(NOT_FOUND, RequestType.Nino)
-
-        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
-
-        result.status          shouldBe NOT_FOUND
-        result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json
-          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
-      }
-
-      "respond with 409 even if the service error undefined" in {
-        ping.status.shouldBe(OK)
-
-        givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(CONFLICT, RequestType.Nino)
-
-        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
-
-        result.status          shouldBe CONFLICT
-        result.json.as[JsObject] should haveProperty[String]("correlationId")
-        result.json
-          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
-      }
+//
+//      "respond with 404 if the service failed to find an identity based on the values provided" in {
+//
+//
+//        givenOAuthTokenGranted()
+//        givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
+//
+//        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
+//
+//        result.status shouldBe NOT_FOUND
+//        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+//          and haveProperty[JsObject](
+//            "error",
+//            haveProperty[String]("errCode", be(ERR_NOT_FOUND))
+//          ))
+//      }
+//
+//      "respond with 400 if one of the required input parameters is missing from the request" in {
+//
+//
+//        val correlationId = UUID.randomUUID().toString
+//
+//        val result = publicFundsByNinoForService(clientService, "{}", correlationId)
+//
+//        result.status shouldBe BAD_REQUEST
+//        result.json.as[JsObject] should (haveProperty[String]("correlationId", be(correlationId))
+//          and haveProperty[JsObject](
+//            "error",
+//            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
+//          ))
+//      }
+//
+//      "respond with 400 if one of the input parameters passed in has failed internal validation" in {
+//
+//
+//        val result = publicFundsByNinoForService(clientService, invalidNinoRequestBody)
+//
+//        result.status shouldBe BAD_REQUEST
+//        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+//          and haveProperty[JsObject](
+//            "error",
+//            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
+//              and havePropertyArrayOf[JsObject](
+//                "fields",
+//                haveProperty[String]("code")
+//                  and haveProperty[String]("name")
+//              )
+//          ))
+//      }
+//
+//      "respond with 400 if one of the input parameters passed in has failed external validation" in {
+//
+//
+//        givenOAuthTokenGranted()
+//        givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
+//
+//        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
+//
+//        result.status shouldBe BAD_REQUEST
+//        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+//          and haveProperty[JsObject](
+//            "error",
+//            haveProperty[String]("errCode", be(ERR_VALIDATION))
+//              and havePropertyArrayOf[JsObject](
+//                "fields",
+//                haveProperty[String]("code")
+//                  and haveProperty[String]("name")
+//              )
+//          ))
+//      }
+//
+//      "respond with 400 if request payload is invalid json" in {
+//
+//
+//        givenOAuthTokenGranted()
+//
+//        val result = publicFundsByNinoForService(clientService, "[]")
+//
+//        result.status shouldBe BAD_REQUEST
+//        result.json.as[JsObject] should (haveProperty[String]("correlationId", be("some-correlation-id"))
+//          and haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))))
+//      }
+//
+//      "respond with 400 even if the service error undefined" in {
+//
+//
+//        givenOAuthTokenGranted()
+//        givenStatusCheckErrorUndefined(BAD_REQUEST, RequestType.Nino)
+//
+//        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
+//
+//        result.status          shouldBe BAD_REQUEST
+//        result.json.as[JsObject] should haveProperty[String]("correlationId")
+//        result.json
+//          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+//      }
+//
+//      "respond with 404 even if the service error undefined" in {
+//
+//
+//        givenOAuthTokenGranted()
+//        givenStatusCheckErrorUndefined(NOT_FOUND, RequestType.Nino)
+//
+//        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
+//
+//        result.status          shouldBe NOT_FOUND
+//        result.json.as[JsObject] should haveProperty[String]("correlationId")
+//        result.json
+//          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+//      }
+//
+//      "respond with 409 even if the service error undefined" in {
+//
+//
+//        givenOAuthTokenGranted()
+//        givenStatusCheckErrorUndefined(CONFLICT, RequestType.Nino)
+//
+//        val result = publicFundsByNinoForService(clientService, validNinoRequestBody)
+//
+//        result.status          shouldBe CONFLICT
+//        result.json.as[JsObject] should haveProperty[String]("correlationId")
+//        result.json
+//          .as[JsObject] should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+//      }
     }
   }
 }

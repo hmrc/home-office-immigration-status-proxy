@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.HomeOfficeRightToPublicFundsConnector
-import models.{OAuthToken, StatusCheckErrorResponseWithStatus, StatusCheckResponse}
+import models.{StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{mock, reset, when}
 import org.mockito.stubbing.OngoingStubbing
@@ -72,13 +72,6 @@ trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
   lazy val appConfig: AppConfig         = inject[AppConfig]
   val correlationId                     = "CorrelationId123"
 
-//  def tokenCallFails: OngoingStubbing[Future[OAuthToken]] =
-//    when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
-//      .thenReturn(Future.failed(new Exception("Oh no - token")))
-//  def tokenCallIsSuccessful: OngoingStubbing[Future[OAuthToken]] =
-//    when(mockConnector.token(any(), any()))
-//      .thenReturn(Future.successful(OAuthToken("String", "String")))
-      
   def requestMrzCallFails: OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
     when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
       .thenReturn(Future.failed(new Exception("Oh no - connector")))

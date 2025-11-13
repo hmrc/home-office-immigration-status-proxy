@@ -16,16 +16,34 @@
 
 package stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import models.{ImmigrationStatus, StatusCheckResponse, StatusCheckResult}
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.mvc.Http.HeaderNames
-import support.WireMockSupport
+import support.{BaseISpec, WireMockSupport}
 
 import java.time.LocalDate
 
-trait HomeOfficeRightToPublicFundsStubs {
+trait HomeOfficeRightToPublicFundsStubs extends BaseISpec {
   me: WireMockSupport =>
+
+  lazy val appn: Application = appBuilder.build()
+
+  def appBuilder: GuiceApplicationBuilder =
+    new GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.home-office-right-to-public-funds.port"       -> wireMockServer.port(),
+        //  "microservice.services.home-office-right-to-public-funds.host"       -> wireMockServer.port(),
+        //        "microservice.services.home-office-right-to-public-funds.pathPrefix" -> "/v1",
+        "microservice.services.auth.port"                                    -> wireMockServer.port(),
+        //   "microservice.services.auth.host"                                    -> wireMockHost,
+        "metrics.enabled"                                                    -> false,
+        "auditing.enabled"                                                   -> false,
+        //        "auditing.consumer.baseUri.host"                                     -> wireMockHost,
+        "auditing.consumer.baseUri.port"                                     -> wireMockServer.port()
+      )
 
   val validTokenForm = """grant_type=client_credentials&client_id=hmrc&client_secret=TBC"""
 
@@ -264,9 +282,9 @@ trait HomeOfficeRightToPublicFundsStubs {
     givenStatusPublicFundsTokenStub(401, validTokenForm, "")
 
   def givenStatusPublicFundsTokenStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
-    stubFor(
+    wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/token"))
-        .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
+      //  .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/x-www-form-urlencoded"))
         .withRequestBody(equalTo(requestBody))
         .willReturn(
@@ -295,7 +313,7 @@ trait HomeOfficeRightToPublicFundsStubs {
     }
 
   def givenStatusPublicFundsByNinoStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
-    stubFor(
+    wireMockServer.stubFor(
       post(urlEqualTo("/v1/status/public-funds/nino"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
@@ -311,9 +329,9 @@ trait HomeOfficeRightToPublicFundsStubs {
     )
 
   def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
-    stubFor(
+    wireMockServer.stubFor(
       post(urlEqualTo(s"/v1/status/public-funds/mrz"))
-        .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
+      //  .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
         .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
         .withRequestBody(equalToJson(requestBody, true, true))

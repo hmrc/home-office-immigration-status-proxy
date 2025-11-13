@@ -26,15 +26,15 @@ trait TestApplication { baseSpec: BaseISpec =>
   protected override def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
-        "microservice.services.home-office-right-to-public-funds.port"       -> wireMockPort,
-        "microservice.services.home-office-right-to-public-funds.host"       -> wireMockHost,
-        "microservice.services.home-office-right-to-public-funds.pathPrefix" -> "/v1",
-        "microservice.services.auth.port"                                    -> wireMockPort,
-        "microservice.services.auth.host"                                    -> wireMockHost,
+        "microservice.services.home-office-right-to-public-funds.port"       -> wireMockServer.port(),
+      //  "microservice.services.home-office-right-to-public-funds.host"       -> wireMockServer.port(),
+//        "microservice.services.home-office-right-to-public-funds.pathPrefix" -> "/v1",
+        "microservice.services.auth.port"                                    -> wireMockServer.port(),
+     //   "microservice.services.auth.host"                                    -> wireMockHost,
         "metrics.enabled"                                                    -> false,
         "auditing.enabled"                                                   -> false,
-        "auditing.consumer.baseUri.host"                                     -> wireMockHost,
-        "auditing.consumer.baseUri.port"                                     -> wireMockPort
+//        "auditing.consumer.baseUri.host"                                     -> wireMockHost,
+        "auditing.consumer.baseUri.port"                                     -> wireMockServer.port()
       )
 
 }
