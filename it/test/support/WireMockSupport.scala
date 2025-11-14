@@ -17,52 +17,29 @@
 package support
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.*
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
-import java.net.{URI, URL}
-
-case class WireMockBaseUrl(value: URL)
-
-object WireMockSupport {
-  // We have to make the wireMockPort constant per-JVM instead of constant
-  // per-WireMockSupport-instance because config values containing it are
-  // cached in the GGConfig object
-  private lazy val wireMockPort = 17777
-}
 
 trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
   me: Suite =>
 
-  val wireMockPort: Int                                           = WireMockSupport.wireMockPort
-  val wireMockHost: String                                        = "localhost"
-  val wireMockBaseUrlAsString: String                             = s"http://$wireMockHost:$wireMockPort"
-  val wireMockBaseUrl: URL                                        = new URI(wireMockBaseUrlAsString).toURL
-  protected implicit val implicitWireMockBaseUrl: WireMockBaseUrl = WireMockBaseUrl(wireMockBaseUrl)
-
-  protected def basicWireMockConfig(): WireMockConfiguration = wireMockConfig()
-
-  private val wireMockServer = new WireMockServer(basicWireMockConfig().port(wireMockPort))
+  val wireMockServer = new WireMockServer(wireMockConfig().dynamicPort())
 
   override protected def beforeAll(): Unit = {
-    super.beforeAll()
-    WireMock.configureFor(wireMockHost, wireMockPort)
     wireMockServer.start()
+    super.beforeAll()
   }
 
-  override protected def afterAll(): Unit = {
-    wireMockServer.stop()
+  override def afterAll(): Unit = {
     super.afterAll()
+    wireMockServer.stop()
   }
 
-  override protected def beforeEach(): Unit = {
+  override def beforeEach(): Unit = {
+    wireMockServer.resetAll()
     super.beforeEach()
-    WireMock.reset()
   }
 
-  protected def stopWireMockServer(): Unit = wireMockServer.stop()
-
-  protected def startWireMockServer(): Unit = wireMockServer.start()
 }

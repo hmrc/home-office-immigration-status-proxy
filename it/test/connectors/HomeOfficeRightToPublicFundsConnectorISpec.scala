@@ -16,67 +16,46 @@
 
 package connectors
 
-import cats.implicits._
-import connectors.ErrorCodes._
-import models._
+import cats.implicits.*
+import connectors.ErrorCodes.*
+import models.*
 import org.scalatest.Inside.inside
-import org.scalatest.concurrent.ScalaFutures
-import play.api.http.Status._
-import stubs.HomeOfficeRightToPublicFundsStubs
-import support.AppBaseISpec
+import play.api.http.Status.*
+import stubs.HomeOfficeRightToPublicFundsBaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, RequestId}
 
 import java.time.LocalDate
-import scala.concurrent.ExecutionContext
+import scala.util.Try
 
-class HomeOfficeRightToPublicFundsConnectorISpec
-    extends AppBaseISpec
-    with HomeOfficeRightToPublicFundsStubs {
+class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
-  implicit val hc: HeaderCarrier    = HeaderCarrier()
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  private implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  lazy val connector: HomeOfficeRightToPublicFundsConnector =
+  private lazy val connector: HomeOfficeRightToPublicFundsConnector =
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]
 
-  val dummyCorrelationId              = "some-correlation-id"
-  val dummyRequestId: Some[RequestId] = Some(RequestId("request-id"))
-  val dummyOAuthToken: OAuthToken     = OAuthToken("FOO0123456789", "SomeTokenType")
+  private val dummyCorrelationId              = "some-correlation-id"
+  private val dummyRequestId: Some[RequestId] = Some(RequestId("request-id"))
+  private val dummyOAuthToken: OAuthToken     = OAuthToken("FOO0123456789", "SomeTokenType")
 
-  val request: StatusCheckByNinoRequest = DateOfBirth(LocalDate.parse("2001-01-31"))
+  private val request: StatusCheckByNinoRequest = DateOfBirth(LocalDate.parse("2001-01-31"))
     .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A")))
     .toOption
     .get
-  val mrzRequest: StatusCheckByMrzRequest = (
+  private val mrzRequest: StatusCheckByMrzRequest = (
     DocumentNumber("1234567890"),
     DateOfBirth(LocalDate.parse("2001-01-31")),
     Nationality("USA")
   ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat)).toOption.get
 
-  "token" should {
-    "return valid oauth token" in {
-      givenOAuthTokenGranted()
-      val result: OAuthToken = connector.token(dummyCorrelationId, dummyRequestId).futureValue
-      result.access_token shouldBe "FOO0123456789"
-    }
-
-    "return valid oauth token without refresh token" in {
-      givenOAuthTokenGrantedWithoutRefresh()
-      val result: OAuthToken = connector.token(dummyCorrelationId, dummyRequestId).futureValue
-      result.access_token shouldBe "FOO0123456789"
-    }
-
-    "raise exception if token denied" in {
-      givenOAuthTokenDenied()
-      val result = intercept[RuntimeException](connector.token(dummyCorrelationId, dummyRequestId).futureValue)
-      result.getMessage should include("UpstreamErrorResponse")
-    }
-  }
+  private def exceptionTokenDenied =
+    "The future returned an exception of type: uk.gov.hmrc.http.UpstreamErrorResponse, " +
+      s"with message: POST of 'http://localhost:${wireMockServer.port()}/v1/status/public-funds/token' returned 401. Response body: ''."
 
   "statusPublicFundsByNino" should {
-
     "return status when range provided" in {
+      givenOAuthTokenGranted()
       givenStatusCheckResultWithRangeExample(RequestType.Nino)
       val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
       val request = DateOfBirth(LocalDate.parse("2001-01-31"))
@@ -85,25 +64,44 @@ class HomeOfficeRightToPublicFundsConnectorISpec
         .get
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       result.toOption.get shouldBe responseBodyWithStatusObject
     }
 
     "return status when no range provided" in {
+      givenOAuthTokenGranted()
       givenStatusCheckResultNoRangeExample(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       result.toOption.get shouldBe responseBodyWithStatusObject
     }
 
+    "raise exception if token denied (401)" in {
+      givenOAuthTokenDenied()
+      givenStatusCheckResultWithRangeExample(RequestType.Nino)
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
+      val request = DateOfBirth(LocalDate.parse("2001-01-31"))
+        .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A"), range))
+        .toOption
+        .get
+
+      val result: Try[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
+        Try(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue)
+
+      result.isFailure shouldBe true
+      val exceptionThrown: Throwable = result.failed.get
+      exceptionThrown.getMessage shouldBe exceptionTokenDenied
+    }
+
     "return check error when 400 response ERR_REQUEST_INVALID" in {
+      givenOAuthTokenGranted()
       givenStatusCheckErrorWhenMissingInputField(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe BAD_REQUEST
@@ -112,10 +110,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return check error when 404 response ERR_NOT_FOUND" in {
+      givenOAuthTokenGranted()
       givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe NOT_FOUND
@@ -124,10 +123,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return check error when 409 response ERR_CONFLICT" in {
+      givenOAuthTokenGranted()
       givenStatusCheckErrorWhenConflict(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe CONFLICT
@@ -136,10 +136,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return check error when 400 response ERR_VALIDATION" in {
+      givenOAuthTokenGranted()
       givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe BAD_REQUEST
@@ -148,10 +149,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return unknown error if other 4xx response" in {
+      givenOAuthTokenGranted()
       givenStatusPublicFundsByNinoStub(TOO_MANY_REQUESTS, validNinoRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe TOO_MANY_REQUESTS
@@ -160,10 +162,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return unknown error if 5xx response" in {
+      givenOAuthTokenGranted()
       givenStatusPublicFundsByNinoStub(INTERNAL_SERVER_ERROR, validNinoRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe INTERNAL_SERVER_ERROR
@@ -174,8 +177,8 @@ class HomeOfficeRightToPublicFundsConnectorISpec
   }
 
   "statusPublicFundsByMrz" should {
-
     "return status when range provided" in {
+      givenOAuthTokenGranted()
       givenStatusCheckResultWithRangeExample(RequestType.Mrz)
       val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
 
@@ -188,25 +191,48 @@ class HomeOfficeRightToPublicFundsConnectorISpec
         .get
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       result.toOption.get shouldBe responseBodyWithStatusObject
     }
 
     "return status when no range provided" in {
+      givenOAuthTokenGranted()
       givenStatusCheckResultNoRangeExample(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       result.toOption.get shouldBe responseBodyWithStatusObject
     }
 
+    "raise exception if token denied (401)" in {
+      givenOAuthTokenDenied()
+      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
+
+      val mrzRequest: StatusCheckByMrzRequest = (
+        DocumentNumber("1234567890"),
+        DateOfBirth(LocalDate.parse("2001-01-31")),
+        Nationality("USA")
+      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
+        .toOption
+        .get
+
+      val result: Try[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
+        Try(connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue)
+
+      result.isFailure shouldBe true
+      val exceptionThrown: Throwable = result.failed.get
+      exceptionThrown.getMessage shouldBe exceptionTokenDenied
+    }
+
     "return check error when 400 response ERR_REQUEST_INVALID" in {
+      givenOAuthTokenGranted()
       givenStatusCheckErrorWhenMissingInputField(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe BAD_REQUEST
@@ -215,10 +241,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return check error when 404 response ERR_NOT_FOUND" in {
+      givenOAuthTokenGranted()
       givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe NOT_FOUND
@@ -227,10 +254,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return check error when 409 response ERR_CONFLICT" in {
+      givenOAuthTokenGranted()
       givenStatusCheckErrorWhenConflict(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe CONFLICT
@@ -239,10 +267,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return check error when 400 response ERR_VALIDATION" in {
+      givenOAuthTokenGranted()
       givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe BAD_REQUEST
@@ -251,10 +280,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return unknown error if other 4xx response" in {
+      givenOAuthTokenGranted()
       givenStatusPublicFundsByMrzStub(TOO_MANY_REQUESTS, validMrzRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe TOO_MANY_REQUESTS
@@ -263,10 +293,11 @@ class HomeOfficeRightToPublicFundsConnectorISpec
     }
 
     "return unknown error if 5xx response" in {
+      givenOAuthTokenGranted()
       givenStatusPublicFundsByMrzStub(INTERNAL_SERVER_ERROR, validMrzRequestBody, "")
 
       val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId, dummyOAuthToken).futureValue
+        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       inside(result) { case Left(error) =>
         error.statusCode                  shouldBe INTERNAL_SERVER_ERROR
