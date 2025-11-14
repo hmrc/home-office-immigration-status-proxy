@@ -25,6 +25,10 @@ import javax.inject.Inject
 trait AppConfig {
 
   val rightToPublicFundsBaseUrl: String
+  
+  val tokenURL: String
+  val ninoURL: String
+  val mrzURL: String
 
   val homeOfficeClientId: String
   val homeOfficeClientSecret: String
@@ -35,8 +39,11 @@ trait AppConfig {
 
 class AppConfigImpl @Inject() (config: ServicesConfig) extends AppConfig {
 
-  val rightToPublicFundsBaseUrl: String =
-    config.baseUrl("home-office-right-to-public-funds")
+  val rightToPublicFundsBaseUrl: String = config.baseUrl("home-office-right-to-public-funds")
+
+  val tokenURL: String = config.getConfString("home-office-right-to-public-funds.url.token", "")
+  val ninoURL: String = config.getConfString("home-office-right-to-public-funds.url.nino", "")
+  val mrzURL: String = config.getConfString("home-office-right-to-public-funds.url.mrz", "")
 
   val homeOfficeClientId: String =
     config.getConfString("home-office-right-to-public-funds.client_id", "")

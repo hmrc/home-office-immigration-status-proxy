@@ -49,8 +49,8 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
       "client_id"     -> Seq(appConfig.homeOfficeClientId),
       "client_secret" -> Seq(appConfig.homeOfficeClientSecret)
     )
-    val url: URL =
-      url"${appConfig.rightToPublicFundsBaseUrl}/v1/status/public-funds/token"
+    val s        = appConfig.rightToPublicFundsBaseUrl + appConfig.tokenURL
+    val url: URL = url"$s"
     http
       .post(url)(hc)
       .withBody(form)
@@ -64,8 +64,8 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
     requestId: Option[RequestId]
   )(implicit hcc: HeaderCarrier): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
     retrieveAuthToken(xCorrelationId, hcc.requestId).flatMap { oAuthToken =>
-      val url: URL =
-        url"${appConfig.rightToPublicFundsBaseUrl}/v1/status/public-funds/nino"
+      val s        = appConfig.rightToPublicFundsBaseUrl + appConfig.ninoURL
+      val url: URL = url"$s"
 
       http
         .post(url)(
@@ -82,8 +82,8 @@ class HomeOfficeRightToPublicFundsConnector @Inject() (appConfig: AppConfig, htt
     requestId: Option[RequestId]
   )(implicit hcc: HeaderCarrier): Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
     retrieveAuthToken(xCorrelationId, hcc.requestId).flatMap { oAuthToken =>
-      val url: URL =
-        url"${appConfig.rightToPublicFundsBaseUrl}/v1/status/public-funds/mrz"
+      val s        = appConfig.rightToPublicFundsBaseUrl + appConfig.mrzURL
+      val url: URL = url"$s"
       http
         .post(url)(
           getHeaderCarrier(xCorrelationId, requestId, oAuthToken)
