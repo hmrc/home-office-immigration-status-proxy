@@ -54,38 +54,6 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
       s"with message: POST of 'http://localhost:${wireMockServer.port()}/v1/status/public-funds/token' returned 401. Response body: ''."
 
   "statusPublicFundsByNino" should {
-    "return valid oauth token without refresh token" in {
-      givenOAuthTokenGrantedWithoutRefresh()
-      givenStatusCheckResultWithRangeExample(RequestType.Nino)
-      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
-      val request = DateOfBirth(LocalDate.parse("2001-01-31"))
-        .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A"), range))
-        .toOption
-        .get
-
-      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
-
-      result.toOption.get shouldBe responseBodyWithStatusObject
-    }
-
-    "raise exception if token denied (401)" in {
-      givenOAuthTokenDenied()
-      givenStatusCheckResultWithRangeExample(RequestType.Nino)
-      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
-      val request = DateOfBirth(LocalDate.parse("2001-01-31"))
-        .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A"), range))
-        .toOption
-        .get
-
-      val result: Try[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
-        Try(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue)
-
-      result.isFailure shouldBe true
-      val exceptionThrown: Throwable = result.failed.get
-      exceptionThrown.getMessage shouldBe exceptionTokenDenied
-    }
-
     "return status when range provided" in {
       givenOAuthTokenGranted()
       givenStatusCheckResultWithRangeExample(RequestType.Nino)
@@ -109,6 +77,23 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
         connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue
 
       result.toOption.get shouldBe responseBodyWithStatusObject
+    }
+
+    "raise exception if token denied (401)" in {
+      givenOAuthTokenDenied()
+      givenStatusCheckResultWithRangeExample(RequestType.Nino)
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
+      val request = DateOfBirth(LocalDate.parse("2001-01-31"))
+        .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A"), range))
+        .toOption
+        .get
+
+      val result: Try[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
+        Try(connector.statusPublicFundsByNino(request, dummyCorrelationId, dummyRequestId).futureValue)
+
+      result.isFailure shouldBe true
+      val exceptionThrown: Throwable = result.failed.get
+      exceptionThrown.getMessage shouldBe exceptionTokenDenied
     }
 
     "return check error when 400 response ERR_REQUEST_INVALID" in {
@@ -192,47 +177,6 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
   }
 
   "statusPublicFundsByMrz" should {
-
-    "return valid oauth token without refresh token" in {
-      givenOAuthTokenGrantedWithoutRefresh()
-      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
-      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
-
-      val mrzRequest: StatusCheckByMrzRequest = (
-        DocumentNumber("1234567890"),
-        DateOfBirth(LocalDate.parse("2001-01-31")),
-        Nationality("USA")
-      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
-        .toOption
-        .get
-
-      val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
-
-      result.toOption.get shouldBe responseBodyWithStatusObject
-    }
-
-    "raise exception if token denied (401)" in {
-      givenOAuthTokenDenied()
-      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
-      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
-
-      val mrzRequest: StatusCheckByMrzRequest = (
-        DocumentNumber("1234567890"),
-        DateOfBirth(LocalDate.parse("2001-01-31")),
-        Nationality("USA")
-      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
-        .toOption
-        .get
-
-      val result: Try[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
-        Try(connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue)
-
-      result.isFailure shouldBe true
-      val exceptionThrown: Throwable = result.failed.get
-      exceptionThrown.getMessage shouldBe exceptionTokenDenied
-    }
-
     "return status when range provided" in {
       givenOAuthTokenGranted()
       givenStatusCheckResultWithRangeExample(RequestType.Mrz)
@@ -260,6 +204,27 @@ class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublic
         connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue
 
       result.toOption.get shouldBe responseBodyWithStatusObject
+    }
+
+    "raise exception if token denied (401)" in {
+      givenOAuthTokenDenied()
+      givenStatusCheckResultWithRangeExample(RequestType.Mrz)
+      val range = Some(StatusCheckRange(Some(LocalDate.parse("2019-07-15")), Some(LocalDate.parse("2019-04-15"))))
+
+      val mrzRequest: StatusCheckByMrzRequest = (
+        DocumentNumber("1234567890"),
+        DateOfBirth(LocalDate.parse("2001-01-31")),
+        Nationality("USA")
+      ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat, range))
+        .toOption
+        .get
+
+      val result: Try[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]] =
+        Try(connector.statusPublicFundsByMrz(mrzRequest, dummyCorrelationId, dummyRequestId).futureValue)
+
+      result.isFailure shouldBe true
+      val exceptionThrown: Throwable = result.failed.get
+      exceptionThrown.getMessage shouldBe exceptionTokenDenied
     }
 
     "return check error when 400 response ERR_REQUEST_INVALID" in {

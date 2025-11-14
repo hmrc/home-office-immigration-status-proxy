@@ -30,7 +30,7 @@ import scala.concurrent.Future
 class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
   private val url = "/v1/status/public-funds/mrz"
 
-  private def doPost(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
+  private def post(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
     val hdrs: Seq[Tuple2[String, String]] = Seq(
       "Authorization"    -> "Bearer123",
       "x-correlation-id" -> correlationId
@@ -49,7 +49,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Mrz)
         givenAuthorisedForStride
-        val result = doPost(validMrzRequestBody)
+        val result = post(validMrzRequestBody)
         playStatus(result) shouldBe OK
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
@@ -73,7 +73,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
         givenAuthorisedForStride
-        val result = doPost(validMrzRequestBody)
+        val result = post(validMrzRequestBody)
         playStatus(result) shouldBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
@@ -86,7 +86,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       "respond with 400 if one of the required input parameters is missing from the request" in {
         givenAuthorisedForStride
         val correlationId = UUID.randomUUID().toString
-        val result        = doPost("{}", correlationId)
+        val result        = post("{}", correlationId)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should (haveProperty[String]("correlationId", be(correlationId))
@@ -100,7 +100,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
         givenAuthorisedForStride
-        val result = doPost(validMrzRequestBody)
+        val result = post(validMrzRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -119,7 +119,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
       "respond with 400 if request payload is invalid json" in {
         givenOAuthTokenGranted()
         givenAuthorisedForStride
-        val result = doPost("[]")
+        val result = post("[]")
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -131,7 +131,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(400, RequestType.Mrz)
         givenAuthorisedForStride
-        val result = doPost(validMrzRequestBody)
+        val result = post(validMrzRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should haveProperty[String]("correlationId")
@@ -142,7 +142,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(404, RequestType.Mrz)
         givenAuthorisedForStride
-        val result = doPost(validMrzRequestBody)
+        val result = post(validMrzRequestBody)
         playStatus(result) shouldBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should haveProperty[String]("correlationId")
@@ -153,7 +153,7 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(409, RequestType.Mrz)
         givenAuthorisedForStride
-        val result = doPost(validMrzRequestBody)
+        val result = post(validMrzRequestBody)
         playStatus(result) shouldBe CONFLICT
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should haveProperty[String]("correlationId")

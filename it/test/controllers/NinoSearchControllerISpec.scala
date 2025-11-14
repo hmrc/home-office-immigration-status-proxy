@@ -31,7 +31,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
   private val urlWithoutClientService = "/v1/status/public-funds/nino"
   private val urlWithClientService    = s"/v1/status/public-funds/nino/service-a"
 
-  private def doPostWithoutClientService(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
+  private def postWithoutClientService(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
     val hdrs: Seq[Tuple2[String, String]] = Seq(
       "Authorization"    -> "Bearer123",
       "x-correlation-id" -> correlationId
@@ -42,7 +42,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       .withJsonBody(Json.parse(payload))
     route(app, request).get
   }
-  private def doPostWithClientService(
+  private def postWithClientService(
     payload: String,
     correlationId: String = "some-correlation-id"
   ): Future[Result] = {
@@ -66,7 +66,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Nino)
         givenAuthorisedForStride
-        val result = doPostWithoutClientService(validNinoRequestBody)
+        val result = postWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe OK
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -92,7 +92,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
         givenAuthorisedForStride
 
-        val result = doPostWithoutClientService(validNinoRequestBody)
+        val result = postWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -106,7 +106,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 400 if one of the required input parameters is missing from the request" in {
         givenAuthorisedForStride
         val correlationId = UUID.randomUUID().toString
-        val result        = doPostWithoutClientService("{}", correlationId)
+        val result        = postWithoutClientService("{}", correlationId)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -119,7 +119,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
       "respond with 400 if one of the input parameters passed in has failed internal validation" in {
         givenAuthorisedForStride
-        val result = doPostWithoutClientService(invalidNinoRequestBody)
+        val result = postWithoutClientService(invalidNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
@@ -138,7 +138,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
         givenAuthorisedForStride
-        val result = doPostWithoutClientService(validNinoRequestBody)
+        val result = postWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
@@ -156,7 +156,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 400 if request payload is invalid json" in {
         givenOAuthTokenGranted()
         givenAuthorisedForStride
-        val result = doPostWithoutClientService("[]")
+        val result = postWithoutClientService("[]")
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -169,7 +169,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenStatusCheckErrorUndefined(BAD_REQUEST, RequestType.Nino)
         givenAuthorisedForStride
 
-        val result = doPostWithoutClientService(validNinoRequestBody)
+        val result = postWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -182,7 +182,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenStatusCheckErrorUndefined(NOT_FOUND, RequestType.Nino)
         givenAuthorisedForStride
 
-        val result = doPostWithoutClientService(validNinoRequestBody)
+        val result = postWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -194,7 +194,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(CONFLICT, RequestType.Nino)
         givenAuthorisedForStride
-        val result = doPostWithoutClientService(validNinoRequestBody)
+        val result = postWithoutClientService(validNinoRequestBody)
         playStatus(result) shouldBe CONFLICT
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -208,7 +208,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenStatusCheckResultNoRangeExample(RequestType.Nino)
-        val result = doPostWithClientService(validNinoRequestBody)
+        val result = postWithClientService(validNinoRequestBody)
         playStatus(result) shouldBe OK
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
@@ -232,7 +232,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenStatusNotFound(RequestType.Nino)
-        val result = doPostWithClientService(validNinoRequestBody)
+        val result = postWithClientService(validNinoRequestBody)
         playStatus(result) shouldBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -248,7 +248,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
         val correlationId = UUID.randomUUID().toString
 
-        val result = doPostWithClientService("{}", correlationId)
+        val result = postWithClientService("{}", correlationId)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -262,7 +262,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       "respond with 400 if one of the input parameters passed in has failed internal validation" in {
         givenAuthorisedForInternalAuth()
 
-        val result = doPostWithClientService(invalidNinoRequestBody)
+        val result = postWithClientService(invalidNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -284,7 +284,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenOAuthTokenGranted()
         givenStatusCheckErrorWhenDOBInvalid(RequestType.Nino)
 
-        val result = doPostWithClientService(validNinoRequestBody)
+        val result = postWithClientService(validNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -304,7 +304,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenAuthorisedForInternalAuth()
 
         givenOAuthTokenGranted()
-        val result = doPostWithClientService("[]")
+        val result = postWithClientService("[]")
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -317,7 +317,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(BAD_REQUEST, RequestType.Nino)
-        val result = doPostWithClientService(validNinoRequestBody)
+        val result = postWithClientService(validNinoRequestBody)
         playStatus(result) shouldBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -330,7 +330,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(NOT_FOUND, RequestType.Nino)
-        val result = doPostWithClientService(validNinoRequestBody)
+        val result = postWithClientService(validNinoRequestBody)
         playStatus(result) shouldBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
@@ -344,7 +344,7 @@ class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
         givenOAuthTokenGranted()
         givenStatusCheckErrorUndefined(CONFLICT, RequestType.Nino)
 
-        val result = doPostWithClientService(validNinoRequestBody)
+        val result = postWithClientService(validNinoRequestBody)
         playStatus(result) shouldBe CONFLICT
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
         jsonDoc should haveProperty[String]("correlationId")
