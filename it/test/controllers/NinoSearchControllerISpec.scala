@@ -29,7 +29,7 @@ import scala.concurrent.Future
 
 class NinoSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
   private val urlWithoutClientService = "/v1/status/public-funds/nino"
-  private val urlWithClientService    = s"/v1/status/public-funds/nino/service-a"
+  private val urlWithClientService    = "/v1/status/public-funds/nino/service-a"
 
   private def postWithoutClientService(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
     val hdrs: Seq[Tuple2[String, String]] = Seq(

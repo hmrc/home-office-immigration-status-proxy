@@ -285,7 +285,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
 
   private def wireMockStubForToken(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
-      post(urlEqualTo(s"/v1/status/public-funds/token"))
+      post(urlEqualTo("/v1/status/public-funds/token"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/x-www-form-urlencoded"))
         .withRequestBody(equalTo(requestBody))
@@ -315,7 +315,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
 
   protected def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
-      post(urlEqualTo(s"/v1/status/public-funds/mrz"))
+      post(urlEqualTo("/v1/status/public-funds/mrz"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
         .withHeader(HeaderNames.CONTENT_TYPE, containing("application/json"))
         .withHeader(HeaderNames.AUTHORIZATION, containing("SomeTokenType FOO0123456789"))
@@ -335,7 +335,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         .atPriority(1)
         .withRequestBody(
           equalToJson(
-            s"""
+            """
                |{
                |  "authorise": [
                |    {
