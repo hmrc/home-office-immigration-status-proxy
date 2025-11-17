@@ -16,9 +16,6 @@ The Machine Readable Zone (MRZ) is a standardized section located at the bottom 
 
 ## Running the tests
 
-**Note**: The integration tests `sbt it/test` require that you are running `sm2 --start INTERNAL_AUTH` in order to
-generate a token to use to authenticate with as the client.
-
 ```bash
 sbt test it/test
 ```
