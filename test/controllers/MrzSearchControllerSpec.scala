@@ -16,15 +16,19 @@
 
 package controllers
 
-import cats.implicits._
-import connectors.ErrorCodes._
-import models._
-import play.api.http.Status._
+import cats.implicits.*
+import connectors.ErrorCodes.*
+import models.*
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Results._
+import play.api.mvc.Results.*
 import play.api.test.FakeRequest
 
 import java.time.LocalDate
+import scala.concurrent.Future
+import scala.util.{Failure, Try}
 
 class MrzSearchControllerSpec extends ControllerSpec {
 
@@ -43,24 +47,17 @@ class MrzSearchControllerSpec extends ControllerSpec {
       FakeRequest().withBody(requestBody).withHeaders("X-Correlation-Id" -> correlationId)
 
     "fail" when {
-
-      "connector.token fails" in {
-        tokenCallFails
-        intercept[Exception](await(controller.post(request)))
+      "retrieve of token fails" in {
+        val ex = new Exception("Token missing")
+        when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
+          .thenReturn(Future.failed(ex))
+        Try(await(controller.post(request))) mustBe Failure(ex)
       }
-
-      "connector.token is successful but connector.statusPublicFundsByMrz fails" in {
-        tokenCallIsSuccessful
-        requestMrzCallFails
-        intercept[Exception](await(controller.post(request)))
-      }
-
     }
 
     "return 200" when {
 
       "the connector calls are successful and the validation passes" in {
-        tokenCallIsSuccessful
         val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestMrzCallIsSuccessful(Right(statusCheckResponse))
@@ -68,7 +65,6 @@ class MrzSearchControllerSpec extends ControllerSpec {
       }
 
       "a request is made without a correlationId but is successful" in {
-        tokenCallIsSuccessful
         val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestMrzCallIsSuccessful(Right(statusCheckResponse))
@@ -84,7 +80,6 @@ class MrzSearchControllerSpec extends ControllerSpec {
     "return an error" when {
 
       "the validation passes but the connector returns an internal error status" in {
-        tokenCallIsSuccessful
         val errorResponse =
           StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
         val errorResponseWithStatus =
@@ -94,7 +89,6 @@ class MrzSearchControllerSpec extends ControllerSpec {
       }
 
       "the validation passes but the connector returns a bad request status" in {
-        tokenCallIsSuccessful
         val errorResponse =
           StatusCheckErrorResponse(None, StatusCheckError(ERR_HOME_OFFICE_RESPONSE))
         val errorResponseWithStatus =

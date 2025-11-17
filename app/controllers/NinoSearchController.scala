@@ -21,12 +21,12 @@ import controllers.BaseController
 import models.StatusCheckByNinoRequest
 import play.api.Configuration
 import play.api.http.MimeTypes
-import play.api.libs.json._
-import play.api.mvc._
+import play.api.libs.json.*
+import play.api.mvc.*
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import wiring.Constants._
+import wiring.Constants.*
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,12 +43,10 @@ class NinoSearchController @Inject() (
 
   private def processRequest(implicit request: Request[JsValue]): Future[Result] = {
     val correlationId = getCorrelationId
-
     withValidParameters[StatusCheckByNinoRequest](correlationId) { statusCheckByNinoRequest =>
       for {
-        token <- rightToPublicFundsConnector.token(correlationId, hc.requestId)
-        either <- rightToPublicFundsConnector
-                    .statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, hc.requestId, token)
+        either <-
+          rightToPublicFundsConnector.statusPublicFundsByNino(statusCheckByNinoRequest, correlationId, hc.requestId)
         result = eitherToResult(either)
       } yield result.withHeaders(HEADER_X_CORRELATION_ID -> correlationId, HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
     }

@@ -3,6 +3,9 @@
 Backend proxy API to connect the Check Immigration Status web service which checks a customer's immigration status and
 rights to public funds to a Home Office API.
 
+## Note on terminology
+The Machine Readable Zone (MRZ) is a standardized section located at the bottom of a passport's identity page, designed for machine reading using Optical Character Recognition (OCR) technology. The MRZ contains essential personal information about the passport holder in a compressed, predefined format
+
 ## Endpoints
 
 | Method | Endpoint                           | Note                                                                               |
@@ -11,10 +14,7 @@ rights to public funds to a Home Office API.
 | POST   | /status/public-funds/nino/:service | Protected by internal-auth, requires service to be configured and a token provided |
 | POST   | /status/public-funds/mrz           | Protected by stride authentication, requires a STRIDE "privileged" application     |
 
-## Running the tests
-
-**Note**: The integration tests `sbt it/test` require that you are running `sm2 --start INTERNAL_AUTH` in order to
-generate a token to use to authenticate with as the client.
+## Running the integration tests
 
 ```bash
 sbt test it/test
