@@ -14,7 +14,7 @@ The Machine Readable Zone (MRZ) is a standardized section located at the bottom 
 | POST   | /status/public-funds/nino/:service | Protected by internal-auth, requires service to be configured and a token provided |
 | POST   | /status/public-funds/mrz           | Protected by stride authentication, requires a STRIDE "privileged" application     |
 
-## Running the tests
+## Running the integration tests
 
 ```bash
 sbt test it/test
