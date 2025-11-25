@@ -30,7 +30,7 @@ import scala.util.Try
 
 class HomeOfficeRightToPublicFundsConnectorISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
-  private implicit val hc: HeaderCarrier    = HeaderCarrier()
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private lazy val connector: HomeOfficeRightToPublicFundsConnector =
     app.injector.instanceOf[HomeOfficeRightToPublicFundsConnector]

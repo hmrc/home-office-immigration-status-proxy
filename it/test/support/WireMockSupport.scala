@@ -21,7 +21,6 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.*
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
-
 trait WireMockSupport extends BeforeAndAfterAll with BeforeAndAfterEach {
   me: Suite =>
 
