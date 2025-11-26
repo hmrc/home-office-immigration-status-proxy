@@ -27,7 +27,7 @@ import stubs.HomeOfficeRightToPublicFundsBaseISpec
 import java.util.UUID
 import scala.concurrent.Future
 
-class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec  {
+class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
   private val url = "/v1/status/public-funds/mrz"
 
   private def post(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {

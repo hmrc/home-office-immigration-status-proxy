@@ -16,34 +16,17 @@
 
 package wiring
 
-import com.google.inject.ImplementedBy
+import com.google.inject.{ImplementedBy, Inject, Singleton}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import javax.inject.Inject
-
-@ImplementedBy(classOf[AppConfigImpl])
-trait AppConfig {
-
-  val rightToPublicFundsBaseUrl: String
-  
-  val tokenURL: String
-  val ninoURL: String
-  val mrzURL: String
-
-  val homeOfficeClientId: String
-  val homeOfficeClientSecret: String
-
-  val authBaseUrl: String
-
-}
-
-class AppConfigImpl @Inject() (config: ServicesConfig) extends AppConfig {
+@Singleton
+class AppConfig @Inject() (config: ServicesConfig) {
 
   val rightToPublicFundsBaseUrl: String = config.baseUrl("home-office-right-to-public-funds")
 
   val tokenURL: String = config.getConfString("home-office-right-to-public-funds.url.token", "")
-  val ninoURL: String = config.getConfString("home-office-right-to-public-funds.url.nino", "")
-  val mrzURL: String = config.getConfString("home-office-right-to-public-funds.url.mrz", "")
+  val ninoURL: String  = config.getConfString("home-office-right-to-public-funds.url.nino", "")
+  val mrzURL: String   = config.getConfString("home-office-right-to-public-funds.url.mrz", "")
 
   val homeOfficeClientId: String =
     config.getConfString("home-office-right-to-public-funds.client_id", "")

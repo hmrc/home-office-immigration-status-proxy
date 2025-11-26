@@ -34,26 +34,27 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import java.time.LocalDate
 
-trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
-  with Matchers
-  with OptionValues
-  with WireMockSupport
-  with JsonMatchers
-  with ScalaFutures
-  with IntegrationPatience {
+trait HomeOfficeRightToPublicFundsBaseISpec
+    extends AnyWordSpecLike
+    with Matchers
+    with OptionValues
+    with WireMockSupport
+    with JsonMatchers
+    with ScalaFutures
+    with IntegrationPatience {
   me: WireMockSupport =>
-  
+
   protected lazy val app: Application = appBuilder.build()
 
   private def appBuilder: GuiceApplicationBuilder =
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.home-office-right-to-public-funds.port" -> wireMockServer.port(),
-        "microservice.services.internal-auth.port" -> wireMockServer.port(),
-        "microservice.services.auth.port" -> wireMockServer.port(),
-        "metrics.enabled" -> false,
-        "auditing.enabled" -> false,
-        "auditing.consumer.baseUri.port" -> wireMockServer.port()
+        "microservice.services.internal-auth.port"                     -> wireMockServer.port(),
+        "microservice.services.auth.port"                              -> wireMockServer.port(),
+        "metrics.enabled"                                              -> false,
+        "auditing.enabled"                                             -> false,
+        "auditing.consumer.baseUri.port"                               -> wireMockServer.port()
       )
 
   private val validTokenForm = """grant_type=client_credentials&client_id=hmrc&client_secret=TBC"""
@@ -152,12 +153,12 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
 
   private def getValidRequest(requestType: RequestType): String = requestType match {
     case RequestType.Nino => validNinoRequestBody
-    case RequestType.Mrz => validMrzRequestBody
+    case RequestType.Mrz  => validMrzRequestBody
   }
 
   private def getRequestWithRange(requestType: RequestType): String = requestType match {
     case RequestType.Nino => ninoRequestBodyWithRange
-    case RequestType.Mrz => mrzRequestBodyWithRange
+    case RequestType.Mrz  => mrzRequestBodyWithRange
   }
 
   protected def givenStatusCheckResultNoRangeExample(requestType: RequestType): StubMapping =
@@ -257,31 +258,28 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
 
   protected def givenOAuthTokenDenied(): StubMapping = wireMockStubForToken(401, validTokenForm, "")
 
-
- 
-
   def givenSearchStub(
-                       requestType: RequestType,
-                       httpResponseCode: Int,
-                       requestBody: String,
-                       responseBody: String
-                     ): StubMapping =
+    requestType: RequestType,
+    httpResponseCode: Int,
+    requestBody: String,
+    responseBody: String
+  ): StubMapping =
     requestType match {
-      case RequestType.Mrz => givenStatusPublicFundsByMrzStub(httpResponseCode, requestBody, responseBody)
+      case RequestType.Mrz  => givenStatusPublicFundsByMrzStub(httpResponseCode, requestBody, responseBody)
       case RequestType.Nino => givenStatusPublicFundsByNinoStub(httpResponseCode, requestBody, responseBody)
     }
 
-  protected def givenAuthorisedForInternalAuth(): StubMapping = 
+  protected def givenAuthorisedForInternalAuth(): StubMapping =
     wireMockServer.stubFor(
-    post(urlEqualTo("/internal-auth/auth"))
-      .willReturn(
-        okJson(
-          """{
+      post(urlEqualTo("/internal-auth/auth"))
+        .willReturn(
+          okJson(
+            """{
                 "retrievals": []
               }"""
+          )
         )
-      )
-  )
+    )
 
   private def wireMockStubForToken(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
     wireMockServer.stubFor(
@@ -297,7 +295,11 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  protected def givenStatusPublicFundsByNinoStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
+  protected def givenStatusPublicFundsByNinoStub(
+    httpResponseCode: Int,
+    requestBody: String,
+    responseBody: String
+  ): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo("/v1/status/public-funds/nino"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -313,7 +315,11 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  protected def givenStatusPublicFundsByMrzStub(httpResponseCode: Int, requestBody: String, responseBody: String): StubMapping =
+  protected def givenStatusPublicFundsByMrzStub(
+    httpResponseCode: Int,
+    requestBody: String,
+    responseBody: String
+  ): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo("/v1/status/public-funds/mrz"))
         .withHeader("X-Correlation-Id", equalTo("some-correlation-id"))
@@ -329,7 +335,7 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  protected def givenAuthorisedForStride: StubMapping = {
+  protected def givenAuthorisedForStride: StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo("/auth/authorise"))
         .atPriority(1)
@@ -357,5 +363,4 @@ trait HomeOfficeRightToPublicFundsBaseISpec  extends AnyWordSpecLike
         )
     )
 
-  }
 }
