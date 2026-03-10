@@ -16,46 +16,47 @@
 
 package models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import base.SpecBase
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import java.time.LocalDate
 import models.ImmigrationStatus.*
 
-class ImmigrationStatusSpec extends AnyWordSpecLike with Matchers {
+class ImmigrationStatusSpec extends SpecBase {
 
-  "ImmigrationStatus" should {
+  "ImmigrationStatus" must {
     "serialize to JSON" when {
       "all fields are defined" in {
         val status = ImmigrationStatus(
-          LocalDate.of(2020, 1, 1),
-          Some(LocalDate.of(2024, 12, 31)),
-          "ProductType1",
-          "Status1",
-          noRecourseToPublicFunds = true
+          LocalDate.parse(statusStartDate),
+          Some(LocalDate.parse(statusEndDate)),
+          productType,
+          immigrationStatus,
+          noRecourseToPublicFunds = noRecourseToPublicFunds
         )
-        Json.toJson(status) shouldBe Json.obj(
-          "statusStartDate"         -> "2020-01-01",
-          "statusEndDate"           -> "2024-12-31",
-          "productType"             -> "ProductType1",
-          "immigrationStatus"       -> "Status1",
-          "noRecourseToPublicFunds" -> true
+
+        Json.toJson(status) mustBe Json.obj(
+          "statusStartDate"         -> statusStartDate,
+          "statusEndDate"           -> statusEndDate,
+          "productType"             -> productType,
+          "immigrationStatus"       -> immigrationStatus,
+          "noRecourseToPublicFunds" -> noRecourseToPublicFunds
         )
       }
 
       "statusEndDate is empty" in {
         val status = ImmigrationStatus(
-          LocalDate.of(2020, 1, 1),
+          LocalDate.parse(statusStartDate),
           None,
-          "ProductType1",
-          "Status1",
-          noRecourseToPublicFunds = true
+          productType,
+          immigrationStatus,
+          noRecourseToPublicFunds = noRecourseToPublicFunds
         )
-        Json.toJson(status) shouldBe Json.obj(
-          "statusStartDate"         -> "2020-01-01",
-          "productType"             -> "ProductType1",
-          "immigrationStatus"       -> "Status1",
-          "noRecourseToPublicFunds" -> true
+
+        Json.toJson(status) mustBe Json.obj(
+          "statusStartDate"         -> statusStartDate,
+          "productType"             -> productType,
+          "immigrationStatus"       -> immigrationStatus,
+          "noRecourseToPublicFunds" -> noRecourseToPublicFunds
         )
       }
     }
@@ -63,37 +64,39 @@ class ImmigrationStatusSpec extends AnyWordSpecLike with Matchers {
     "deserialize from JSON" when {
       "all fields are defined" in {
         val json = Json.obj(
-          "statusStartDate"         -> "2020-01-01",
-          "statusEndDate"           -> "2024-12-31",
-          "productType"             -> "ProductType1",
-          "immigrationStatus"       -> "Status1",
-          "noRecourseToPublicFunds" -> true
+          "statusStartDate"         -> statusStartDate,
+          "statusEndDate"           -> statusEndDate,
+          "productType"             -> productType,
+          "immigrationStatus"       -> immigrationStatus,
+          "noRecourseToPublicFunds" -> noRecourseToPublicFunds
         )
-        json.validate[ImmigrationStatus] shouldBe JsSuccess(
+
+        json.validate[ImmigrationStatus] mustBe JsSuccess(
           ImmigrationStatus(
-            LocalDate.of(2020, 1, 1),
-            Some(LocalDate.of(2024, 12, 31)),
-            "ProductType1",
-            "Status1",
-            noRecourseToPublicFunds = true
+            LocalDate.parse(statusStartDate),
+            Some(LocalDate.parse(statusEndDate)),
+            productType,
+            immigrationStatus,
+            noRecourseToPublicFunds = noRecourseToPublicFunds
           )
         )
       }
 
       "statusEndDate is empty" in {
         val json = Json.obj(
-          "statusStartDate"         -> "2020-01-01",
-          "productType"             -> "ProductType1",
-          "immigrationStatus"       -> "Status1",
-          "noRecourseToPublicFunds" -> true
+          "statusStartDate"         -> statusStartDate,
+          "productType"             -> productType,
+          "immigrationStatus"       -> immigrationStatus,
+          "noRecourseToPublicFunds" -> noRecourseToPublicFunds
         )
-        json.validate[ImmigrationStatus] shouldBe JsSuccess(
+
+        json.validate[ImmigrationStatus] mustBe JsSuccess(
           ImmigrationStatus(
-            LocalDate.of(2020, 1, 1),
+            LocalDate.parse(statusStartDate),
             None,
-            "ProductType1",
-            "Status1",
-            noRecourseToPublicFunds = true
+            productType,
+            immigrationStatus,
+            noRecourseToPublicFunds = noRecourseToPublicFunds
           )
         )
       }
@@ -106,7 +109,8 @@ class ImmigrationStatusSpec extends AnyWordSpecLike with Matchers {
           "immigrationStatus"       -> false,
           "noRecourseToPublicFunds" -> "Invalid"
         )
-        json.validate[ImmigrationStatus] shouldBe a[JsError]
+
+        json.validate[ImmigrationStatus] mustBe a[JsError]
       }
     }
   }

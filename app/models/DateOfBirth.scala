@@ -21,7 +21,8 @@ import models.ErrorMessage._
 import cats.implicits._
 import java.time.LocalDate
 
-final case class DateOfBirth private (val dob: LocalDate) extends AnyVal
+final case class DateOfBirth private (dob: LocalDate) extends AnyVal
+
 object DateOfBirth {
   def apply(dob: LocalDate): ValidationResult[DateOfBirth] =
     validateDate(dob).map(new DateOfBirth(_))

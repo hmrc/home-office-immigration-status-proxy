@@ -16,28 +16,30 @@
 
 package helpers
 
-import helpers.CorrelationIdHelper.*
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import base.SpecBase
 import uk.gov.hmrc.http.RequestId
 
-class CorrelationIdHelperSpec extends AnyWordSpecLike with Matchers {
-  "correlationId" should {
+class CorrelationIdHelperSpec extends SpecBase {
+  "correlationId" must {
     "return new ID pre-appending the requestID when the requestID matches the format(8-4-4-4)" in {
       val requestId = "dcba0000-ij12-df34-jk56"
-      val result    = correlationId(Some(RequestId(requestId)))
-      result.startsWith(requestId) shouldBe true
-      result.length()              shouldBe requestId.length() + 13
+      val result    = CorrelationIdHelper.correlationId(Some(RequestId(requestId)))
+
+      result.startsWith(requestId) mustBe true
+      result.length() mustBe requestId.length() + 13
     }
 
     "return new ID when the requestID does not match the format(8-4-4-4)" in {
       val requestId = "1a2b-ij12-df34-jk56"
-      val result    = correlationId(Some(RequestId(requestId)))
-      result.length() shouldBe 36
+      val result    = CorrelationIdHelper.correlationId(Some(RequestId(requestId)))
+
+      result.length() mustBe 36
     }
+
     "return a new ID when there is no requestID" in {
-      val result = correlationId(None)
-      result.length() shouldBe 36
+      val result = CorrelationIdHelper.correlationId(None)
+
+      result.length() mustBe 36
     }
   }
 }

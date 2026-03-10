@@ -16,20 +16,18 @@
 
 package models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import base.SpecBase
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import models.OAuthToken.*
 
-class OAuthTokenSpec extends AnyWordSpecLike with Matchers {
+class OAuthTokenSpec extends SpecBase {
 
-  "OAuthToken" should {
+  "OAuthToken" must {
     "serialize to JSON" when {
       "all fields are defined" in {
-        val token = OAuthToken("access_token_value", "Bearer")
-        Json.toJson(token) shouldBe Json.obj(
-          "access_token" -> "access_token_value",
-          "token_type"   -> "Bearer"
+        Json.toJson(oAuthToken) mustBe Json.obj(
+          "access_token" -> tokenId,
+          "token_type"   -> tokenType
         )
       }
     }
@@ -37,26 +35,26 @@ class OAuthTokenSpec extends AnyWordSpecLike with Matchers {
     "deserialize from JSON" when {
       "all fields are defined" in {
         val json = Json.obj(
-          "access_token" -> "access_token_value",
-          "token_type"   -> "Bearer"
+          "access_token" -> tokenId,
+          "token_type"   -> tokenType
         )
-        json.validate[OAuthToken] shouldBe JsSuccess(OAuthToken("access_token_value", "Bearer"))
+        json.validate[OAuthToken] mustBe JsSuccess(oAuthToken)
       }
 
       "missing fields" in {
         val json = Json.obj(
-          "accessToken" -> "access_token_value",
-          "tokenType"   -> "Bearer"
+          "access_token" -> tokenId,
+          "blah"         -> "blah"
         )
-        json.validate[OAuthToken] shouldBe a[JsError]
+        json.validate[OAuthToken] mustBe a[JsError]
       }
 
       "invalid field types" in {
         val json = Json.obj(
           "access_token" -> 12345,
-          "token_type"   -> "Bearer"
+          "token_type"   -> tokenType
         )
-        json.validate[OAuthToken] shouldBe a[JsError]
+        json.validate[OAuthToken] mustBe a[JsError]
       }
     }
   }

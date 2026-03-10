@@ -16,52 +16,53 @@
 
 package models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import base.SpecBase
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import models.StatusCheckResult.*
 import models.ImmigrationStatus.*
 
 import java.time.LocalDate
 
-class StatusCheckResultSpec extends AnyWordSpecLike with Matchers {
+class StatusCheckResultSpec extends SpecBase {
 
   private val status = ImmigrationStatus(
-    LocalDate.of(2020, 1, 1),
-    Some(LocalDate.of(2024, 12, 31)),
-    "ProductType1",
-    "Status1",
-    noRecourseToPublicFunds = true
+    LocalDate.parse(statusStartDate),
+    Some(LocalDate.parse(statusEndDate)),
+    productType,
+    immigrationStatus,
+    noRecourseToPublicFunds = noRecourseToPublicFunds
   )
 
-  "StatusCheckResult" should {
+  "StatusCheckResult" must {
     "serialize to JSON" when {
       "all fields are defined" in {
         val result = StatusCheckResult(
-          "John Doe",
-          LocalDate.of(1990, 1, 1),
-          "British",
+          fullName,
+          LocalDate.parse(dob),
+          nationality,
           List(status)
         )
-        Json.toJson(result) shouldBe Json.obj(
-          "fullName"    -> "John Doe",
-          "dateOfBirth" -> "1990-01-01",
-          "nationality" -> "British",
+
+        Json.toJson(result) mustBe Json.obj(
+          "fullName"    -> fullName,
+          "dateOfBirth" -> dob,
+          "nationality" -> nationality,
           "statuses"    -> Json.arr(Json.toJson(status))
         )
       }
 
       "statuses are empty" in {
         val result = StatusCheckResult(
-          "John Doe",
-          LocalDate.of(1990, 1, 1),
-          "British",
+          fullName,
+          LocalDate.parse(dob),
+          nationality,
           List.empty
         )
-        Json.toJson(result) shouldBe Json.obj(
-          "fullName"    -> "John Doe",
-          "dateOfBirth" -> "1990-01-01",
-          "nationality" -> "British",
+
+        Json.toJson(result) mustBe Json.obj(
+          "fullName"    -> fullName,
+          "dateOfBirth" -> dob,
+          "nationality" -> nationality,
           "statuses"    -> Json.arr()
         )
       }
@@ -70,16 +71,17 @@ class StatusCheckResultSpec extends AnyWordSpecLike with Matchers {
     "deserialize from JSON" when {
       "all fields are defined" in {
         val json = Json.obj(
-          "fullName"    -> "John Doe",
-          "dateOfBirth" -> "1990-01-01",
-          "nationality" -> "British",
+          "fullName"    -> fullName,
+          "dateOfBirth" -> dob,
+          "nationality" -> nationality,
           "statuses"    -> Json.arr(Json.toJson(status))
         )
-        json.validate[StatusCheckResult] shouldBe JsSuccess(
+
+        json.validate[StatusCheckResult] mustBe JsSuccess(
           StatusCheckResult(
-            "John Doe",
-            LocalDate.of(1990, 1, 1),
-            "British",
+            fullName,
+            LocalDate.parse(dob),
+            nationality,
             List(status)
           )
         )
@@ -87,16 +89,17 @@ class StatusCheckResultSpec extends AnyWordSpecLike with Matchers {
 
       "statuses are empty" in {
         val json = Json.obj(
-          "fullName"    -> "John Doe",
-          "dateOfBirth" -> "1990-01-01",
-          "nationality" -> "British",
+          "fullName"    -> fullName,
+          "dateOfBirth" -> dob,
+          "nationality" -> nationality,
           "statuses"    -> Json.arr()
         )
-        json.validate[StatusCheckResult] shouldBe JsSuccess(
+
+        json.validate[StatusCheckResult] mustBe JsSuccess(
           StatusCheckResult(
-            "John Doe",
-            LocalDate.of(1990, 1, 1),
-            "British",
+            fullName,
+            LocalDate.parse(dob),
+            nationality,
             List.empty
           )
         )
@@ -109,7 +112,8 @@ class StatusCheckResultSpec extends AnyWordSpecLike with Matchers {
           "nationality" -> 67890,
           "statuses"    -> "Invalid"
         )
-        json.validate[StatusCheckResult] shouldBe a[JsError]
+
+        json.validate[StatusCheckResult] mustBe a[JsError]
       }
     }
   }

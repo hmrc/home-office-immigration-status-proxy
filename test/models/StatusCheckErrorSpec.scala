@@ -16,18 +16,18 @@
 
 package models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import base.SpecBase
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import models.StatusCheckError.*
 
-class StatusCheckErrorSpec extends AnyWordSpecLike with Matchers {
+class StatusCheckErrorSpec extends SpecBase {
 
-  "StatusCheckError" should {
+  "StatusCheckError" must {
     "serialize to JSON" when {
       "all fields are defined" in {
         val error = StatusCheckError("404", Some(List(ValidationError("field1", "error1"))))
-        Json.toJson(error) shouldBe Json.obj(
+
+        Json.toJson(error) mustBe Json.obj(
           "errCode" -> "404",
           "fields" -> Json.arr(
             Json.obj(
@@ -40,14 +40,16 @@ class StatusCheckErrorSpec extends AnyWordSpecLike with Matchers {
 
       "fields are empty" in {
         val error = StatusCheckError("404", None)
-        Json.toJson(error) shouldBe Json.obj(
+
+        Json.toJson(error) mustBe Json.obj(
           "errCode" -> "404"
         )
       }
 
       "fields are empty2" in {
         val error = StatusCheckError("404")
-        Json.toJson(error) shouldBe Json.obj(
+
+        Json.toJson(error) mustBe Json.obj(
           "errCode" -> "404"
         )
       }
@@ -64,7 +66,8 @@ class StatusCheckErrorSpec extends AnyWordSpecLike with Matchers {
             )
           )
         )
-        json.validate[StatusCheckError] shouldBe JsSuccess(
+
+        json.validate[StatusCheckError] mustBe JsSuccess(
           StatusCheckError("404", Some(List(ValidationError("field1", "error1"))))
         )
       }
@@ -73,7 +76,8 @@ class StatusCheckErrorSpec extends AnyWordSpecLike with Matchers {
         val json = Json.obj(
           "errCode" -> "404"
         )
-        json.validate[StatusCheckError] shouldBe JsSuccess(StatusCheckError("404", None))
+
+        json.validate[StatusCheckError] mustBe JsSuccess(StatusCheckError("404", None))
       }
 
       "invalid field types" in {
@@ -86,7 +90,8 @@ class StatusCheckErrorSpec extends AnyWordSpecLike with Matchers {
             )
           )
         )
-        json.validate[StatusCheckError] shouldBe a[JsError]
+
+        json.validate[StatusCheckError] mustBe a[JsError]
       }
     }
   }

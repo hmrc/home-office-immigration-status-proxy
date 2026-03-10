@@ -39,14 +39,14 @@ class NinoSearchControllerSpec extends ControllerSpec {
   private lazy val controller: NinoSearchController = inject[NinoSearchController]
 
   private val req = DateOfBirth(LocalDate.now.minusDays(1))
-    .map(StatusCheckByNinoRequest(_, "Jane", "Doe", Nino("RJ301829A")))
+    .map(StatusCheckByNinoRequest(_, givenName, familyName, Nino(nino)))
     .toOption
     .get
   private val requestBody = Json.toJson(req)
   private val request: FakeRequest[JsValue] =
     FakeRequest().withBody(requestBody).withHeaders("X-Correlation-Id" -> correlationId)
 
-  "post" should {
+  "post" must {
     "fail" when {
       "retrieve of token fails" in {
         val ex = new Exception("Token missing")
@@ -59,14 +59,14 @@ class NinoSearchControllerSpec extends ControllerSpec {
     "return 200" when {
 
       "the connector calls are successful and the validation passes" in {
-        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult(fullName, LocalDate.parse(dob), nationality, Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestNinoCallIsSuccessful(Right(statusCheckResponse))
         await(controller.post(request)) mustEqual withHeaders(Ok(Json.toJson(statusCheckResponse)))
       }
 
       "a request is made without a correlationId but is successful" in {
-        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult(fullName, LocalDate.parse(dob), nationality, Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestNinoCallIsSuccessful(Right(statusCheckResponse))
         val requestWithoutCorrelationId: FakeRequest[JsValue] =
@@ -101,7 +101,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
 
   }
 
-  "postByService" should {
+  "postByService" must {
 
     val service: String  = "service-a"
     val action: IAAction = IAAction("WRITE")
@@ -124,7 +124,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
           when(mockStubBehaviour.stubAuth[Unit](mEq(Some(expectedPredicate)), any()))
             .thenReturn(Future.failed(response))
 
-          val requestWithToken = request.withHeaders(AUTHORIZATION -> "token")
+          val requestWithToken = request.withHeaders(AUTHORIZATION -> bearerId)
 
           intercept[Exception](await(controller.postByService("service-a")(requestWithToken)))
         }
@@ -137,11 +137,11 @@ class NinoSearchControllerSpec extends ControllerSpec {
 
         when(mockStubBehaviour.stubAuth[Unit](mEq(Some(expectedPredicate)), any())).thenReturn(Future.unit)
 
-        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult(fullName, LocalDate.parse(dob), nationality, Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestNinoCallIsSuccessful(Right(statusCheckResponse))
 
-        val requestWithToken = request.withHeaders(AUTHORIZATION -> "token")
+        val requestWithToken = request.withHeaders(AUTHORIZATION -> bearerId)
 
         await(controller.postByService("service-a")(requestWithToken)) mustEqual withHeaders(
           Ok(Json.toJson(statusCheckResponse))
@@ -152,11 +152,11 @@ class NinoSearchControllerSpec extends ControllerSpec {
 
         when(mockStubBehaviour.stubAuth[Unit](mEq(Some(expectedPredicate)), any())).thenReturn(Future.unit)
 
-        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult(fullName, LocalDate.parse(dob), nationality, Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestNinoCallIsSuccessful(Right(statusCheckResponse))
         val requestWithoutCorrelationId: FakeRequest[JsValue] =
-          FakeRequest().withBody(requestBody).withHeaders(AUTHORIZATION -> "token")
+          FakeRequest().withBody(requestBody).withHeaders(AUTHORIZATION -> bearerId)
 
         requestWithoutCorrelationId.headers.headers.find(_._1 == "X-Correlation-Id") must be(None)
         await(controller.postByService("service-a")(requestWithoutCorrelationId)).header.headers
@@ -173,7 +173,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
           StatusCheckErrorResponseWithStatus(INTERNAL_SERVER_ERROR, errorResponse)
         requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
 
-        val requestWithToken = request.withHeaders(AUTHORIZATION -> "token")
+        val requestWithToken = request.withHeaders(AUTHORIZATION -> bearerId)
 
         await(controller.postByService("service-a")(requestWithToken)) mustEqual withHeaders(
           InternalServerError(Json.toJson(errorResponse))
@@ -187,7 +187,7 @@ class NinoSearchControllerSpec extends ControllerSpec {
           StatusCheckErrorResponseWithStatus(BAD_REQUEST, errorResponse)
         requestNinoCallIsSuccessful(Left(errorResponseWithStatus))
 
-        val requestWithToken = request.withHeaders(AUTHORIZATION -> "token")
+        val requestWithToken = request.withHeaders(AUTHORIZATION -> bearerId)
 
         await(controller.postByService("service-a")(requestWithToken)) mustEqual withHeaders(
           BadRequest(Json.toJson(errorResponse))

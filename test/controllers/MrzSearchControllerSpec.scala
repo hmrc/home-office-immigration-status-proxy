@@ -35,12 +35,12 @@ class MrzSearchControllerSpec extends ControllerSpec {
   val controller: MrzSearchController = inject[MrzSearchController]
 
   val req: StatusCheckByMrzRequest = (
-    DocumentNumber("1234567890"),
-    DateOfBirth(LocalDate.now.minusDays(1)),
-    Nationality("USA")
+    DocumentNumber(documentNumber),
+    DateOfBirth(LocalDate.parse(dob)),
+    Nationality(nationality)
   ).mapN((docNumber, dob, nat) => StatusCheckByMrzRequest(DocumentType.Passport, docNumber, dob, nat)).toOption.get
 
-  "post" should {
+  "post" must {
 
     val requestBody = Json.toJson(req)
     val request: FakeRequest[JsValue] =
@@ -58,18 +58,20 @@ class MrzSearchControllerSpec extends ControllerSpec {
     "return 200" when {
 
       "the connector calls are successful and the validation passes" in {
-        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult(fullName, LocalDate.parse(dob), nationality, Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestMrzCallIsSuccessful(Right(statusCheckResponse))
+
         await(controller.post(request)) mustEqual withHeaders(Ok(Json.toJson(statusCheckResponse)))
       }
 
       "a request is made without a correlationId but is successful" in {
-        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult(fullName, LocalDate.parse(dob), nationality, Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         requestMrzCallIsSuccessful(Right(statusCheckResponse))
         val requestWithoutCorrelationId: FakeRequest[JsValue] =
           FakeRequest().withBody(requestBody)
+
         requestWithoutCorrelationId.headers.headers.find(_._1 == "X-Correlation-Id") must be(None)
         await(controller.post(requestWithoutCorrelationId)).header.headers
           .find(_._1 == "X-Correlation-Id") must not be empty
@@ -85,6 +87,7 @@ class MrzSearchControllerSpec extends ControllerSpec {
         val errorResponseWithStatus =
           StatusCheckErrorResponseWithStatus(INTERNAL_SERVER_ERROR, errorResponse)
         requestMrzCallIsSuccessful(Left(errorResponseWithStatus))
+
         await(controller.post(request)) mustEqual withHeaders(InternalServerError(Json.toJson(errorResponse)))
       }
 
@@ -94,6 +97,7 @@ class MrzSearchControllerSpec extends ControllerSpec {
         val errorResponseWithStatus =
           StatusCheckErrorResponseWithStatus(BAD_REQUEST, errorResponse)
         requestMrzCallIsSuccessful(Left(errorResponseWithStatus))
+
         await(controller.post(request)) mustEqual withHeaders(BadRequest(Json.toJson(errorResponse)))
       }
 

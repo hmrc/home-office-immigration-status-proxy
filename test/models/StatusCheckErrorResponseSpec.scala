@@ -16,24 +16,24 @@
 
 package models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import base.SpecBase
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import models.StatusCheckErrorResponse.*
 
-class StatusCheckErrorResponseSpec extends AnyWordSpecLike with Matchers {
+class StatusCheckErrorResponseSpec extends SpecBase {
 
   private val error = StatusCheckError("ERR_CODE", Some(List(ValidationError("field1", "error1"))))
 
-  "StatusCheckErrorResponse" should {
+  "StatusCheckErrorResponse" must {
     "serialize to JSON" when {
       "all fields are defined" in {
         val response = StatusCheckErrorResponse(
-          Some("correlationId123"),
+          Some(correlationId),
           error
         )
-        Json.toJson(response) shouldBe Json.obj(
-          "correlationId" -> "correlationId123",
+
+        Json.toJson(response) mustBe Json.obj(
+          "correlationId" -> correlationId,
           "error"         -> Json.toJson(error)
         )
       }
@@ -43,7 +43,8 @@ class StatusCheckErrorResponseSpec extends AnyWordSpecLike with Matchers {
           None,
           error
         )
-        Json.toJson(response) shouldBe Json.obj(
+
+        Json.toJson(response) mustBe Json.obj(
           "error" -> Json.toJson(error)
         )
       }
@@ -52,7 +53,7 @@ class StatusCheckErrorResponseSpec extends AnyWordSpecLike with Matchers {
     "deserialize from JSON" when {
       "all fields are defined" in {
         val json = Json.obj(
-          "correlationId" -> "correlationId123",
+          "correlationId" -> correlationId,
           "error" -> Json.obj(
             "errCode" -> "ERR_CODE",
             "fields" -> Json.arr(
@@ -63,9 +64,10 @@ class StatusCheckErrorResponseSpec extends AnyWordSpecLike with Matchers {
             )
           )
         )
-        json.validate[StatusCheckErrorResponse] shouldBe JsSuccess(
+
+        json.validate[StatusCheckErrorResponse] mustBe JsSuccess(
           StatusCheckErrorResponse(
-            Some("correlationId123"),
+            Some(correlationId),
             error
           )
         )
@@ -83,7 +85,8 @@ class StatusCheckErrorResponseSpec extends AnyWordSpecLike with Matchers {
             )
           )
         )
-        json.validate[StatusCheckErrorResponse] shouldBe JsSuccess(
+
+        json.validate[StatusCheckErrorResponse] mustBe JsSuccess(
           StatusCheckErrorResponse(
             None,
             error
@@ -96,7 +99,8 @@ class StatusCheckErrorResponseSpec extends AnyWordSpecLike with Matchers {
           "correlationId" -> 12345,
           "error"         -> "Invalid"
         )
-        json.validate[StatusCheckErrorResponse] shouldBe a[JsError]
+
+        json.validate[StatusCheckErrorResponse] mustBe a[JsError]
       }
     }
   }

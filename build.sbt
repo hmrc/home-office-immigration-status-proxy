@@ -26,8 +26,14 @@ lazy val microservice = (project in file("."))
     scalacOptions := commonSettings
   )
   .settings(CodeCoverageSettings())
+  .settings(inConfig(Test)(testSettings) *)
   .enablePlugins(PlayScala, SbtDistributablesPlugin, BuildInfoPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
+
+lazy val testSettings: Seq[Def.Setting[?]] = Seq(
+  fork := true,
+  unmanagedSourceDirectories += baseDirectory.value / "test-utils"
+)
 
 lazy val it = project
   .enablePlugins(PlayScala)

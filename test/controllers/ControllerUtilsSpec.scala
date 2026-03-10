@@ -16,78 +16,73 @@
 
 package controllers
 
-import connectors.ErrorCodes._
-import controllers.BaseController
+import base.SpecBase
+import connectors.ErrorCodes.*
 import models.{StatusCheckError, StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse, StatusCheckResult}
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{Format, Json, Reads}
-import play.api.mvc.Results._
-import play.api.mvc._
+import play.api.mvc.Results.*
+import play.api.mvc.*
 import play.api.test.FakeRequest
 
 import java.time.LocalDate
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Awaitable, Future}
+import scala.concurrent.Future
 import scala.language.postfixOps
 
-class BaseControllerSpec extends AnyWordSpecLike with Matchers {
-
-  val timeoutDuration: FiniteDuration   = 5 seconds
-  def await[T](future: Awaitable[T]): T = Await.result(future, timeoutDuration)
+class ControllerUtilsSpec extends SpecBase {
 
   case class SomeRequest(intParam: Int, stringParam1: String, stringParam2: String)
   object SomeRequest {
     implicit val formats: Format[SomeRequest] = Json.format[SomeRequest]
   }
 
-  object TestController extends BaseController
+  object TestController extends ControllerUtils
 
-  "eitherToResult" should {
+  "eitherToResult" must {
 
-    "return Ok when it's a right" in {
-      val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+    "return Ok when passed a Right" in {
+      val statusCheckResult   = StatusCheckResult("John Doe", LocalDate.now, "GBR", Nil)
       val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
-      val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        Right(statusCheckResponse)
-      TestController.eitherToResult(either) shouldBe Ok(Json.toJson(statusCheckResponse))
+      val response            = Right(statusCheckResponse).withLeft[StatusCheckErrorResponseWithStatus]
+
+      TestController.eitherToResult(response) mustBe Ok(Json.toJson(statusCheckResponse))
     }
 
-    "return NotFound when it's a left with a 404 status" in {
-      val response =
+    "return NotFound when it's passed a Left with a 404 status" in {
+      val statusCheckErrorResponse =
         StatusCheckErrorResponseWithStatus(NOT_FOUND, StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
-      val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        Left(response)
-      TestController.eitherToResult(either) shouldBe NotFound(Json.toJson(response.errorResponse))
+      val response = Left(statusCheckErrorResponse).withRight[StatusCheckResponse]
+
+      TestController.eitherToResult(response) mustBe NotFound(Json.toJson(statusCheckErrorResponse.errorResponse))
     }
 
-    "return BadRequest when it's a left with a 400 status" in {
-      val response =
+    "return BadRequest when it's passed a Left with a 400 status" in {
+      val statusCheckErrorResponse =
         StatusCheckErrorResponseWithStatus(BAD_REQUEST, StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
-      val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        Left(response)
-      TestController.eitherToResult(either) shouldBe BadRequest(Json.toJson(response.errorResponse))
+      val response = Left(statusCheckErrorResponse).withRight[StatusCheckResponse]
+
+      TestController.eitherToResult(response) mustBe BadRequest(Json.toJson(statusCheckErrorResponse.errorResponse))
     }
 
-    "return InternalServerError when it's a left with a 500 status" in {
-      val response =
+    "return InternalServerError when it's passed a Left with a 500 status" in {
+      val statusCheckErrorResponse =
         StatusCheckErrorResponseWithStatus(
           INTERNAL_SERVER_ERROR,
           StatusCheckErrorResponse(None, StatusCheckError("SOMETHING"))
         )
-      val either: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
-        Left(response)
-      TestController.eitherToResult(either) shouldBe InternalServerError(Json.toJson(response.errorResponse))
-    }
+      val response = Left(statusCheckErrorResponse).withRight[StatusCheckResponse]
 
+      TestController.eitherToResult(response) mustBe InternalServerError(
+        Json.toJson(statusCheckErrorResponse.errorResponse)
+      )
+    }
   }
 
-  val successFunction: SomeRequest => Future[Result] = request => Future.successful(Ok("Great success"))
+  private val successFunction = (request: SomeRequest) => Future.successful(Ok("Great success"))
 
-  "withValidParameters" should {
+  "withValidParameters" must {
     "return a BadRequest" when {
-      "a field is missing" in {
+      "a json field is missing" in {
         val correlationId = "correlationId1"
         val request =
           FakeRequest().withBody(Json.parse("""{"intParam":1, "stringParam1":"string"}"""))
@@ -96,10 +91,10 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
         val result =
           TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
-        await(result) shouldBe BadRequest(Json.toJson(expectedResult))
+        await(result) mustBe BadRequest(Json.toJson(expectedResult))
       }
 
-      "a field is invalid" in {
+      "a json field is invalid" in {
         val correlationId = "correlationId1"
         val request = FakeRequest().withBody(
           Json
@@ -110,11 +105,11 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
         val result =
           TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
-        await(result) shouldBe BadRequest(Json.toJson(expectedResult))
+        await(result) mustBe BadRequest(Json.toJson(expectedResult))
       }
     }
 
-    "call our function with a valid object" in {
+    "call the passed function when a valid json" in {
       val json = Json
         .parse("""{"intParam":1, "stringParam1": "something", "stringParam2": "something"}""")
       val request       = FakeRequest().withBody(json)
@@ -122,7 +117,7 @@ class BaseControllerSpec extends AnyWordSpecLike with Matchers {
 
       val result =
         TestController.withValidParameters(correlationId)(successFunction)(request, implicitly[Reads[SomeRequest]])
-      await(result) shouldBe Ok("Great success")
+      await(result) mustBe Ok("Great success")
     }
   }
 

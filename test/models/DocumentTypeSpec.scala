@@ -16,74 +16,86 @@
 
 package models
 
+import base.SpecBase
 import cats.data.Chain
 import cats.data.Validated._
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
 import models.DocumentType.*
 
-class DocumentTypeSpec extends AnyWordSpecLike with Matchers {
+class DocumentTypeSpec extends SpecBase {
 
-  "apply" should {
+  "apply" must {
     "return a failed validation" when {
       "the string is not an allowed value" in {
-        DocumentType("ABC") shouldBe Invalid(Chain(ErrorMessage("Document type must be PASSPORT, NAT, BRC, or BRP")))
+        DocumentType("ABC") mustBe Invalid(Chain(ErrorMessage("Document type must be PASSPORT, NAT, BRC, or BRP")))
       }
     }
+
     "return a successful validation" when {
       "type is passport" in {
-        DocumentType("PASSPORT") shouldBe a[Valid[?]]
-        DocumentType("PASSPORT").map(_ shouldBe DocumentType.Passport)
+        DocumentType("PASSPORT") mustBe a[Valid[?]]
+        DocumentType("PASSPORT").map(_ mustBe DocumentType.Passport)
       }
+
       "type is NAT" in {
-        DocumentType("NAT") shouldBe a[Valid[?]]
-        DocumentType("NAT").map(_ shouldBe DocumentType.EUNationalID)
+        DocumentType("NAT") mustBe a[Valid[?]]
+        DocumentType("NAT").map(_ mustBe DocumentType.EUNationalID)
       }
+
       "type is BRC" in {
-        DocumentType("BRC") shouldBe a[Valid[?]]
-        DocumentType("BRC").map(_ shouldBe DocumentType.BRC)
+        DocumentType("BRC") mustBe a[Valid[?]]
+        DocumentType("BRC").map(_ mustBe DocumentType.BRC)
       }
+
       "type is BRP" in {
-        DocumentType("BRP") shouldBe a[Valid[?]]
-        DocumentType("BRP").map(_ shouldBe DocumentType.BRP)
+        DocumentType("BRP") mustBe a[Valid[?]]
+        DocumentType("BRP").map(_ mustBe DocumentType.BRP)
       }
     }
   }
 
-  "reads" should {
+  "reads" must {
     "return a JsError" when {
       "the apply returns a failure" in {
         val jsString = JsString("ABC")
-        jsString.validate[DocumentType] shouldBe a[JsError]
+
+        jsString.validate[DocumentType] mustBe a[JsError]
       }
     }
 
     "return a JsSuccess" when {
       "the apply returns a success" in {
         val jsString = JsString("PASSPORT")
-        jsString.validate[DocumentType] shouldBe a[JsSuccess[?]]
+
+        jsString.validate[DocumentType] mustBe a[JsSuccess[?]]
       }
     }
   }
 
-  "writes" should {
+  "writes" must {
     "return a JsString" when {
       "type is passport" in {
         val documentType: DocumentType = DocumentType.Passport
-        Json.toJson(documentType) shouldBe JsString("PASSPORT")
+
+        Json.toJson(documentType) mustBe JsString("PASSPORT")
       }
+
       "type is EUNationalID" in {
         val documentType: DocumentType = DocumentType.EUNationalID
-        Json.toJson(documentType) shouldBe JsString("NAT")
+
+        Json.toJson(documentType) mustBe JsString("NAT")
       }
+
       "type is BRC" in {
         val documentType: DocumentType = DocumentType.BRC
-        Json.toJson(documentType) shouldBe JsString("BRC")
+
+        Json.toJson(documentType) mustBe JsString("BRC")
       }
+
       "type is BRP" in {
         val documentType: DocumentType = DocumentType.BRP
-        Json.toJson(documentType) shouldBe JsString("BRP")
+
+        Json.toJson(documentType) mustBe JsString("BRP")
       }
     }
   }

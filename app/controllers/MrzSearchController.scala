@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.HomeOfficeRightToPublicFundsConnector
-import controllers.BaseController
+import controllers.ControllerUtils
 import models.StatusCheckByMrzRequest
 import play.api.Configuration
 import play.api.http.MimeTypes
@@ -37,7 +37,7 @@ class MrzSearchController @Inject() (
   cc: ControllerComponents
 )(implicit val configuration: Configuration, ec: ExecutionContext)
     extends BackendController(cc)
-    with BaseController {
+    with ControllerUtils {
 
   def post: Action[JsValue] = authAction.async(parse.tolerantJson) { implicit request =>
     val correlationId = getCorrelationId

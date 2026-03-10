@@ -17,66 +17,54 @@
 package controllers
 
 import connectors.ErrorCodes.{ERR_NOT_FOUND, ERR_REQUEST_INVALID, ERR_UNKNOWN, ERR_VALIDATION}
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsObject, Json}
-import play.api.mvc.Result
-import play.api.test.FakeRequest
 import play.api.test.Helpers.{status as playStatus, *}
-import stubs.HomeOfficeRightToPublicFundsBaseISpec
+import base.ISpecBase
 
 import java.util.UUID
-import scala.concurrent.Future
 
-class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
-  private val url = "/v1/status/public-funds/mrz"
-
-  private def post(payload: String, correlationId: String = "some-correlation-id"): Future[Result] = {
-    val hdrs: Seq[Tuple2[String, String]] = Seq(
-      "Authorization"    -> "Bearer123",
-      "x-correlation-id" -> correlationId
-    )
-
-    val request = FakeRequest(POST, url)
-      .withHeaders(hdrs*)
-      .withJsonBody(Json.parse(payload))
-    route(app, request).get
-  }
-
+class MrzSearchControllerISpec extends ISpecBase {
   "MrzSearchController" when {
 
-    "POST /v1/status/public-funds/mrz" should {
+    "posting to the mrz endpoint" must {
       "respond with 200 if request is valid" in {
         givenOAuthTokenGranted()
-        givenStatusCheckResultNoRangeExample(RequestType.Mrz)
-        givenAuthorisedForStride
-        val result = post(validMrzRequestBody)
-        playStatus(result) shouldBe OK
+        givenPublicFundsStub(mrzUrl, validMrzRequestBody, OK, responseBodyWithStatus)
+        givenAuthorisedForStride()
+
+        val result = post(mrzUrl, validMrzRequestBody)
+
+        playStatus(result) mustBe OK
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
+
+        jsonDoc must (haveProperty[String]("correlationId", be(correlationId))
           and haveProperty[JsObject](
             "result",
-            haveProperty[String]("dateOfBirth", be("2001-01-31"))
-              and haveProperty[String]("nationality", be("IRL"))
-              and haveProperty[String]("fullName", be("Jane Doe"))
+            haveProperty[String]("dateOfBirth", be(dob))
+              and haveProperty[String]("nationality", be(nationality))
+              and haveProperty[String]("fullName", be(s"$fullName"))
               and havePropertyArrayOf[JsObject](
                 "statuses",
-                haveProperty[String]("productType", be("EUS"))
-                  and haveProperty[String]("immigrationStatus", be("ILR"))
-                  and haveProperty[Boolean]("noRecourseToPublicFunds", be(true))
-                  and haveProperty[String]("statusEndDate", be("2018-01-31"))
-                  and haveProperty[String]("statusStartDate", be("2018-12-12"))
+                haveProperty[String]("productType", be(productType))
+                  and haveProperty[String]("immigrationStatus", be(immigrationStatus))
+                  and haveProperty[Boolean]("noRecourseToPublicFunds", be(noRecourseToPublicFunds))
+                  and haveProperty[String]("statusEndDate", be(statusEndDate))
+                  and haveProperty[String]("statusStartDate", be(statusStartDate))
               )
           ))
       }
 
       "respond with 404 if the service failed to find an identity based on the values provided" in {
         givenOAuthTokenGranted()
-        givenStatusCheckErrorWhenStatusNotFound(RequestType.Mrz)
-        givenAuthorisedForStride
-        val result = post(validMrzRequestBody)
-        playStatus(result) shouldBe NOT_FOUND
+        givenPublicFundsStub(mrzUrl, validMrzRequestBody, errorResponseNotFound)
+        givenAuthorisedForStride()
+
+        val result = post(mrzUrl, validMrzRequestBody)
+
+        playStatus(result) mustBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
+
+        jsonDoc must (haveProperty[String]("correlationId", be(correlationId))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_NOT_FOUND))
@@ -84,12 +72,15 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
-        givenAuthorisedForStride
+        givenAuthorisedForStride()
         val correlationId = UUID.randomUUID().toString
-        val result        = post("{}", correlationId)
-        playStatus(result) shouldBe BAD_REQUEST
+
+        val result = post(ninoUrl, "{}", correlationId)
+
+        playStatus(result) mustBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-        jsonDoc should (haveProperty[String]("correlationId", be(correlationId))
+
+        jsonDoc must (haveProperty[String]("correlationId", be(correlationId))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
@@ -98,13 +89,15 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
       "respond with 400 if one of the input parameters passed in has failed external validation" in {
         givenOAuthTokenGranted()
-        givenStatusCheckErrorWhenDOBInvalid(RequestType.Mrz)
-        givenAuthorisedForStride
-        val result = post(validMrzRequestBody)
-        playStatus(result) shouldBe BAD_REQUEST
+        givenPublicFundsStub(mrzUrl, validMrzRequestBody, errorResponseDOBInvalid)
+        givenAuthorisedForStride()
+
+        val result = post(mrzUrl, validMrzRequestBody)
+
+        playStatus(result) mustBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
+        jsonDoc must (haveProperty[String]("correlationId", be(correlationId))
           and haveProperty[JsObject](
             "error",
             haveProperty[String]("errCode", be(ERR_VALIDATION))
@@ -118,46 +111,57 @@ class MrzSearchControllerISpec extends HomeOfficeRightToPublicFundsBaseISpec {
 
       "respond with 400 if request payload is invalid json" in {
         givenOAuthTokenGranted()
-        givenAuthorisedForStride
-        val result = post("[]")
-        playStatus(result) shouldBe BAD_REQUEST
+        givenAuthorisedForStride()
+
+        val result = post(mrzUrl, "[]")
+
+        playStatus(result) mustBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
-        jsonDoc should (haveProperty[String]("correlationId", be("some-correlation-id"))
+        jsonDoc must (haveProperty[String]("correlationId", be(correlationId))
           and haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))))
       }
 
       "respond with 400 even if the service error undefined" in {
         givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(400, RequestType.Mrz)
-        givenAuthorisedForStride
-        val result = post(validMrzRequestBody)
-        playStatus(result) shouldBe BAD_REQUEST
+        givenPublicFundsStub(mrzUrl, validMrzRequestBody, createUnknownErrorResponseUsingStatus(BAD_REQUEST))
+        givenAuthorisedForStride()
+
+        val result = post(mrzUrl, validMrzRequestBody)
+
+        playStatus(result) mustBe BAD_REQUEST
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-        jsonDoc should haveProperty[String]("correlationId")
-        jsonDoc should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+
+        jsonDoc must haveProperty[String]("correlationId")
+        jsonDoc must haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
 
       "respond with 404 even if the service error undefined" in {
         givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(404, RequestType.Mrz)
-        givenAuthorisedForStride
-        val result = post(validMrzRequestBody)
-        playStatus(result) shouldBe NOT_FOUND
+        givenPublicFundsStub(mrzUrl, validMrzRequestBody, createUnknownErrorResponseUsingStatus(NOT_FOUND))
+        givenAuthorisedForStride()
+
+        val result = post(mrzUrl, validMrzRequestBody)
+
+        playStatus(result) mustBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-        jsonDoc should haveProperty[String]("correlationId")
-        jsonDoc should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+
+        jsonDoc must haveProperty[String]("correlationId")
+        jsonDoc must haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
 
       "respond with 409 even if the service error undefined" in {
         givenOAuthTokenGranted()
-        givenStatusCheckErrorUndefined(409, RequestType.Mrz)
-        givenAuthorisedForStride
-        val result = post(validMrzRequestBody)
-        playStatus(result) shouldBe CONFLICT
+        givenPublicFundsStub(mrzUrl, validMrzRequestBody, createUnknownErrorResponseUsingStatus(CONFLICT))
+        givenAuthorisedForStride()
+
+        val result = post(mrzUrl, validMrzRequestBody)
+
+        playStatus(result) mustBe CONFLICT
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-        jsonDoc should haveProperty[String]("correlationId")
-        jsonDoc should haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
+
+        jsonDoc must haveProperty[String]("correlationId")
+        jsonDoc must haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
     }
   }
