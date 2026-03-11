@@ -20,13 +20,14 @@ import play.api.libs.json.{JsPath, Json, Reads, Writes}
 import models.ErrorMessage._
 import cats.implicits._
 
-final case class DocumentNumber private (val doc: String) extends AnyVal
+final case class DocumentNumber private (doc: String) extends AnyVal
+
 object DocumentNumber {
   def apply(doc: String): ValidationResult[DocumentNumber] =
     (
       validateLength(doc),
       validateCharacters(doc)
-    ).mapN { case _ => new DocumentNumber(doc) }
+    ).mapN((_, _) => new DocumentNumber(doc))
 
   private def validateLength(doc: String): ValidationResult[String] =
     if (doc.nonEmpty && doc.length < 31) {

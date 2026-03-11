@@ -16,81 +16,90 @@
 
 package models
 
+import base.SpecBase
 import cats.data.Chain
-import cats.data.Validated._
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import cats.data.Validated.*
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
 import models.DocumentNumber.*
 
-class DocumentNumberSpec extends AnyWordSpecLike with Matchers {
+class DocumentNumberSpec extends SpecBase {
 
-  "apply" should {
+  "apply" must {
     "return a failed validation" when {
       "the string is empty" in {
-        DocumentNumber("") shouldBe Invalid(
+        DocumentNumber("") mustBe Invalid(
           Chain(ErrorMessage("Document number must be between 1 and 30 characters"))
         )
       }
+
       "the string is shorter than 3 chars" in {
-        DocumentNumber("ABCDEFGHIJABCDEFGHIJABCDEFGHIJ1") shouldBe Invalid(
+        DocumentNumber("ABCDEFGHIJABCDEFGHIJABCDEFGHIJ1") mustBe Invalid(
           Chain(ErrorMessage("Document number must be between 1 and 30 characters"))
         )
       }
+
       "the string contains lower case" in {
-        DocumentNumber("ABC-123-abc") shouldBe Invalid(
+        DocumentNumber("ABC-123-abc") mustBe Invalid(
           Chain(ErrorMessage("Document number must only contain upper case alphanumeric characters or hyphens"))
         )
       }
+
       "the string contains non alpha (or hyphen) chars" in {
-        DocumentNumber("ABC-123-???") shouldBe Invalid(
+        DocumentNumber("ABC-123-???") mustBe Invalid(
           Chain(ErrorMessage("Document number must only contain upper case alphanumeric characters or hyphens"))
         )
       }
     }
+
     "return a successful validation" when {
       "the string is 1 alpha char" in {
-        DocumentNumber("A") shouldBe a[Valid[?]]
-        DocumentNumber("A").map(_.doc shouldBe "A")
+        DocumentNumber("A") mustBe a[Valid[?]]
+        DocumentNumber("A").map(_.doc mustBe "A")
       }
+
       "the string is 1 num char" in {
-        DocumentNumber("1") shouldBe a[Valid[?]]
-        DocumentNumber("1").map(_.doc shouldBe "1")
+        DocumentNumber("1") mustBe a[Valid[?]]
+        DocumentNumber("1").map(_.doc mustBe "1")
       }
+
       "the string is 1 hyphen" in {
-        DocumentNumber("-") shouldBe a[Valid[?]]
-        DocumentNumber("-").map(_.doc shouldBe "-")
+        DocumentNumber("-") mustBe a[Valid[?]]
+        DocumentNumber("-").map(_.doc mustBe "-")
       }
-      "the string is a mixture" in {
-        DocumentNumber("123-ABC") shouldBe a[Valid[?]]
-        DocumentNumber("123-ABC").map(_.doc shouldBe "123-ABC")
+
+      "the string is a mixture of numbers, hyphen and alphas" in {
+        DocumentNumber("123-ABC") mustBe a[Valid[?]]
+        DocumentNumber("123-ABC").map(_.doc mustBe "123-ABC")
       }
+
       "the string is 30 chars" in {
-        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-") shouldBe a[Valid[?]]
-        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-").map(_.doc shouldBe "ABCDEFGHIJ1234567890ABCDEFGHI-")
+        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-") mustBe a[Valid[?]]
+        DocumentNumber("ABCDEFGHIJ1234567890ABCDEFGHI-").map(_.doc mustBe "ABCDEFGHIJ1234567890ABCDEFGHI-")
       }
     }
   }
 
-  "reads" should {
+  "reads" must {
     "return a JsError" when {
       "the apply returns a failure" in {
         val jsString = JsString("12345.")
-        jsString.validate[DocumentNumber] shouldBe a[JsError]
+
+        jsString.validate[DocumentNumber] mustBe a[JsError]
       }
     }
 
     "return a JsSuccess" when {
       "the apply returns a success" in {
         val jsString = JsString("12345")
-        jsString.validate[DocumentNumber] shouldBe a[JsSuccess[?]]
+
+        jsString.validate[DocumentNumber] mustBe a[JsSuccess[?]]
       }
     }
   }
 
-  "writes" should {
+  "writes" must {
     "return a JsString" in {
-      DocumentNumber("ABCDE").map(doc => Json.toJson(doc) shouldBe JsString("ABCDE"))
+      DocumentNumber("ABCDE").map(doc => Json.toJson(doc) mustBe JsString("ABCDE"))
     }
   }
 

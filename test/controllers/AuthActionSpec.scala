@@ -16,23 +16,21 @@
 
 package controllers
 
+import base.SpecBase
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.mvc.Results.Ok
 import play.api.mvc.{Action, AnyContent, BodyParsers}
 import play.api.test.Helpers.{FORBIDDEN, OK, defaultAwaitTimeout, status}
-import play.api.test.{FakeRequest, Injecting}
+import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.{AuthConnector, MissingBearerToken}
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.Future
 
-class AuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting with BeforeAndAfterEach {
+class AuthActionSpec extends SpecBase {
 
   private class Harness(authAction: AuthAction) {
     def onPageLoad(): Action[AnyContent] = authAction { implicit request =>
@@ -40,7 +38,7 @@ class AuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
     }
   }
 
-  protected def fakeRequest = FakeRequest("", "")
+  val fakeRequest: FakeRequest[AnyContent] = FakeRequest("", "")
 
   val bodyParsers: BodyParsers.Default = app.injector.instanceOf[BodyParsers.Default]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
@@ -58,6 +56,7 @@ class AuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
       val result = controller.onPageLoad()(fakeRequest)
       status(result) mustBe OK
     }
+
     "return FORBIDDEN when AuthorisationException (missing bearer token)" in {
       val controller = new Harness(authAction)
 
@@ -67,6 +66,7 @@ class AuthActionSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
       val result = controller.onPageLoad()(fakeRequest)
       status(result) mustBe FORBIDDEN
     }
+
     "not catch ordinary exceptions" in {
       val controller = new Harness(authAction)
 

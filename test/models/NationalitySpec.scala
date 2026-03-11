@@ -16,54 +16,57 @@
 
 package models
 
+import base.SpecBase
 import cats.data.Chain
 import cats.data.Validated._
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
 import models.Nationality._
 
-class NationalitySpec extends AnyWordSpecLike with Matchers {
+class NationalitySpec extends SpecBase {
 
-  "apply" should {
+  "apply" must {
     "return a failed validation" when {
       "the string is empty" in {
-        Nationality("") shouldBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("") mustBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
+
       "the string is shorter than 3 chars" in {
-        Nationality("AB") shouldBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("AB") mustBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
+
       "the string is longer than 3 chars" in {
-        Nationality("ABVD") shouldBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
+        Nationality("ABVD") mustBe Invalid(Chain(ErrorMessage("Nationality needs to be 3 characters long")))
       }
     }
     "return a successful validation" when {
       "the string is 3 chars" in {
-        Nationality("ABC") shouldBe a[Valid[?]]
-        Nationality("ABC").map(_.nationality shouldBe "ABC")
+        Nationality("ABC") mustBe a[Valid[?]]
+        Nationality("ABC").map(_.nationality mustBe "ABC")
       }
     }
   }
 
-  "reads" should {
+  "reads" must {
     "return a JsError" when {
       "the apply returns a failure" in {
         val jsString = JsString("ABCD")
-        jsString.validate[Nationality] shouldBe a[JsError]
+
+        jsString.validate[Nationality] mustBe a[JsError]
       }
     }
 
     "return a JsSuccess" when {
       "the apply returns a success" in {
-        val jsString = JsString("ABC")
-        jsString.validate[Nationality] shouldBe a[JsSuccess[?]]
+        val jsString = JsString(nationality)
+
+        jsString.validate[Nationality] mustBe a[JsSuccess[?]]
       }
     }
   }
 
-  "writes" should {
+  "writes" must {
     "return a JsString" in {
-      Nationality("ABC").map(doc => Json.toJson(doc) shouldBe JsString("ABC"))
+      Nationality(nationality).map(doc => Json.toJson(doc) mustBe JsString(nationality))
     }
   }
 

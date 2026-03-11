@@ -20,7 +20,8 @@ import play.api.libs.json.{JsPath, Json, Reads, Writes}
 import models.ErrorMessage._
 import cats.implicits._
 
-final case class Nationality private (val nationality: String) extends AnyVal
+final case class Nationality private (nationality: String) extends AnyVal
+
 object Nationality {
   def apply(nationality: String): ValidationResult[Nationality] =
     validateLength(nationality).map(new Nationality(_))

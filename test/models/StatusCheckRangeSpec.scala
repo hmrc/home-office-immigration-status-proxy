@@ -16,53 +16,57 @@
 
 package models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import base.SpecBase
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import models.StatusCheckRange.*
 
 import java.time.LocalDate
 
-class StatusCheckRangeSpec extends AnyWordSpecLike with Matchers {
+class StatusCheckRangeSpec extends SpecBase {
 
-  "StatusCheckRange" should {
+  "StatusCheckRange" must {
     "serialize to JSON" when {
       "all fields are defined" in {
-        val range = StatusCheckRange(Some(LocalDate.of(2023, 1, 1)), Some(LocalDate.of(2023, 12, 31)))
-        Json.toJson(range) shouldBe Json.obj(
-          "endDate"   -> "2023-01-01",
-          "startDate" -> "2023-12-31"
+        val range = StatusCheckRange(Some(LocalDate.parse(rangeEndDate)), Some(LocalDate.parse(rangeStartDate)))
+
+        Json.toJson(range) mustBe Json.obj(
+          "endDate"   -> rangeEndDate,
+          "startDate" -> rangeStartDate
         )
       }
 
       "fields are empty" in {
         val range = StatusCheckRange(None, None)
-        Json.toJson(range) shouldBe Json.obj()
+
+        Json.toJson(range) mustBe Json.obj()
       }
     }
 
     "deserialize from JSON" when {
       "all fields are defined" in {
         val json = Json.obj(
-          "endDate"   -> "2023-01-01",
-          "startDate" -> "2023-12-31"
+          "endDate"   -> rangeEndDate,
+          "startDate" -> rangeStartDate
         )
-        json.validate[StatusCheckRange] shouldBe JsSuccess(
-          StatusCheckRange(Some(LocalDate.of(2023, 1, 1)), Some(LocalDate.of(2023, 12, 31)))
+
+        json.validate[StatusCheckRange] mustBe JsSuccess(
+          StatusCheckRange(Some(LocalDate.parse(rangeEndDate)), Some(LocalDate.parse(rangeStartDate)))
         )
       }
 
       "fields are empty" in {
         val json = Json.obj()
-        json.validate[StatusCheckRange] shouldBe JsSuccess(StatusCheckRange(None, None))
+
+        json.validate[StatusCheckRange] mustBe JsSuccess(StatusCheckRange(None, None))
       }
 
       "invalid date format" in {
         val json = Json.obj(
           "endDate"   -> "invalid-date",
-          "startDate" -> "2023-12-31"
+          "startDate" -> rangeStartDate
         )
-        json.validate[StatusCheckRange] shouldBe a[JsError]
+
+        json.validate[StatusCheckRange] mustBe a[JsError]
       }
     }
   }

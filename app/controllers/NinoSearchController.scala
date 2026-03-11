@@ -17,7 +17,7 @@
 package controllers
 
 import connectors.HomeOfficeRightToPublicFundsConnector
-import controllers.BaseController
+import controllers.ControllerUtils
 import models.StatusCheckByNinoRequest
 import play.api.Configuration
 import play.api.http.MimeTypes
@@ -39,7 +39,7 @@ class NinoSearchController @Inject() (
   cc: ControllerComponents
 )(implicit val configuration: Configuration, ec: ExecutionContext)
     extends BackendController(cc)
-    with BaseController {
+    with ControllerUtils {
 
   private def processRequest(implicit request: Request[JsValue]): Future[Result] = {
     val correlationId = getCorrelationId

@@ -16,34 +16,33 @@
 
 package connectors
 
+import base.SpecBase
 import connectors.ErrorCodes.*
 import connectors.StatusCheckResponseHttpParser.StatusCheckResponseReads
 import models.{StatusCheckError, StatusCheckErrorResponse, StatusCheckErrorResponseWithStatus, StatusCheckResponse, StatusCheckResult}
-import org.scalatest.Inside.inside
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.http.Status.*
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 
 import java.time.LocalDate
 
-class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
+class StatusCheckResponseHttpParserSpec extends SpecBase {
 
   val fakeResponseBody = "responseBody"
 
-  "StatusCheckResponseReads.read" should {
+  "StatusCheckResponseReads.read" must {
 
     "return a right" when {
       "a 200 is returned with a valid response" in {
-        val statusCheckResult   = StatusCheckResult("Damon Albarn", LocalDate.now, "GBR", Nil)
+        val statusCheckResult   = StatusCheckResult(fullName, LocalDate.now, nationality, Nil)
         val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
         val responseBody        = Json.toJson(statusCheckResponse).toString
         val response            = HttpResponse(OK, responseBody)
 
         val result: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse] =
           StatusCheckResponseReads.read("POST", "some url", response)
-        result.toOption.get shouldBe statusCheckResponse
+
+        result.toOption mustBe Some(statusCheckResponse)
       }
     }
 
@@ -56,8 +55,8 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
           StatusCheckResponseReads.read("POST", "some url", response)
 
         inside(result) { case Left(error) =>
-          error.statusCode                  shouldBe INTERNAL_SERVER_ERROR
-          error.errorResponse.error.errCode shouldBe ERR_HOME_OFFICE_RESPONSE
+          error.statusCode mustBe INTERNAL_SERVER_ERROR
+          error.errorResponse.error.errCode mustBe ERR_HOME_OFFICE_RESPONSE
         }
       }
 
@@ -69,8 +68,8 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
           StatusCheckResponseReads.read("POST", "some url", response)
 
         inside(result) { case Left(error) =>
-          error.statusCode                  shouldBe INTERNAL_SERVER_ERROR
-          error.errorResponse.error.errCode shouldBe ERR_HOME_OFFICE_RESPONSE
+          error.statusCode mustBe INTERNAL_SERVER_ERROR
+          error.errorResponse.error.errCode mustBe ERR_HOME_OFFICE_RESPONSE
         }
       }
 
@@ -83,8 +82,8 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
           StatusCheckResponseReads.read("POST", "some url", response)
 
         inside(result) { case Left(error) =>
-          error.statusCode    shouldBe BAD_REQUEST
-          error.errorResponse shouldBe StatusCheckErrorResponse(Some("Something"), StatusCheckError("ERR_SOMETHING"))
+          error.statusCode mustBe BAD_REQUEST
+          error.errorResponse mustBe StatusCheckErrorResponse(Some("Something"), StatusCheckError("ERR_SOMETHING"))
         }
       }
 
@@ -97,8 +96,8 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
           StatusCheckResponseReads.read("POST", "some url", response)
 
         inside(result) { case Left(error) =>
-          error.statusCode    shouldBe INTERNAL_SERVER_ERROR
-          error.errorResponse shouldBe StatusCheckErrorResponse(Some("Something"), StatusCheckError("ERR_SOMETHING"))
+          error.statusCode mustBe INTERNAL_SERVER_ERROR
+          error.errorResponse mustBe StatusCheckErrorResponse(Some("Something"), StatusCheckError("ERR_SOMETHING"))
         }
       }
 
@@ -110,8 +109,8 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
           StatusCheckResponseReads.read("POST", "some url", response)
 
         inside(result) { case Left(error) =>
-          error.statusCode    shouldBe BAD_REQUEST
-          error.errorResponse shouldBe StatusCheckErrorResponse(None, StatusCheckError("ERR_UNKNOWN"))
+          error.statusCode mustBe BAD_REQUEST
+          error.errorResponse mustBe StatusCheckErrorResponse(None, StatusCheckError("ERR_UNKNOWN"))
         }
       }
 
@@ -123,8 +122,8 @@ class StatusCheckResponseHttpParserSpec extends AnyWordSpecLike with Matchers {
           StatusCheckResponseReads.read("POST", "some url", response)
 
         inside(result) { case Left(error) =>
-          error.statusCode    shouldBe INTERNAL_SERVER_ERROR
-          error.errorResponse shouldBe StatusCheckErrorResponse(None, StatusCheckError("ERR_UNKNOWN"))
+          error.statusCode mustBe INTERNAL_SERVER_ERROR
+          error.errorResponse mustBe StatusCheckErrorResponse(None, StatusCheckError("ERR_UNKNOWN"))
         }
       }
     }

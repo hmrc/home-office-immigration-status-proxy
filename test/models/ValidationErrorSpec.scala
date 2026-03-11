@@ -16,17 +16,17 @@
 
 package models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import base.SpecBase
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
-class ValidationErrorSpec extends AnyWordSpecLike with Matchers {
+class ValidationErrorSpec extends SpecBase {
 
-  "ValidationError" should {
+  "ValidationError" must {
     "serialize to JSON" when {
       "all fields are defined" in {
         val error = ValidationError("field1", "error1")
-        Json.toJson(error) shouldBe Json.obj(
+
+        Json.toJson(error) mustBe Json.obj(
           "name" -> "field1",
           "code" -> "error1"
         )
@@ -39,7 +39,8 @@ class ValidationErrorSpec extends AnyWordSpecLike with Matchers {
           "name" -> "field1",
           "code" -> "error1"
         )
-        json.validate[ValidationError] shouldBe JsSuccess(ValidationError("field1", "error1"))
+
+        json.validate[ValidationError] mustBe JsSuccess(ValidationError("field1", "error1"))
       }
 
       "invalid field types" in {
@@ -47,7 +48,8 @@ class ValidationErrorSpec extends AnyWordSpecLike with Matchers {
           "name" -> 12345,
           "code" -> true
         )
-        json.validate[ValidationError] shouldBe a[JsError]
+
+        json.validate[ValidationError] mustBe a[JsError]
       }
     }
   }

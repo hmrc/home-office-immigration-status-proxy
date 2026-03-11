@@ -27,6 +27,7 @@ object CorrelationIdHelper {
     val uuidLength = 24
     val CorrelationIdPattern =
       """.*([A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}).*""".r
+
     requestId match {
       case Some(requestId) =>
         requestId.value match {

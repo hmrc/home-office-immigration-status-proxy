@@ -16,56 +16,57 @@
 
 package models
 
+import base.SpecBase
 import cats.data.Chain
-import cats.data.Validated._
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import cats.data.Validated.*
 import play.api.libs.json.{JsError, JsString, JsSuccess, Json}
 import models.DateOfBirth.*
 
 import java.time.LocalDate
 
-class DateOfBirthSpec extends AnyWordSpecLike with Matchers {
+class DateOfBirthSpec extends SpecBase {
 
-  "apply" should {
+  "apply" must {
     "return a failed validation" when {
       "the date is today" in {
-        DateOfBirth(LocalDate.now) shouldBe Invalid(Chain(ErrorMessage("Date of birth must be before today")))
+        DateOfBirth(LocalDate.now) mustBe Invalid(Chain(ErrorMessage("Date of birth must be before today")))
       }
       "the date is after today" in {
-        DateOfBirth(LocalDate.now.plusDays(1)) shouldBe Invalid(
+        DateOfBirth(LocalDate.now.plusDays(1)) mustBe Invalid(
           Chain(ErrorMessage("Date of birth must be before today"))
         )
       }
     }
     "return a successful validation" when {
       "the string is 3 chars" in {
-        DateOfBirth(LocalDate.now.minusDays(1)) shouldBe a[Valid[?]]
-        DateOfBirth(LocalDate.now.minusDays(1)).map(_.dob shouldBe LocalDate.now.minusDays(1))
+        DateOfBirth(LocalDate.now.minusDays(1)) mustBe a[Valid[?]]
+        DateOfBirth(LocalDate.now.minusDays(1)).map(_.dob mustBe LocalDate.now.minusDays(1))
       }
     }
   }
 
-  "reads" should {
+  "reads" must {
     "return a JsError" when {
       "the apply returns a failure" in {
         val jsString = JsString(LocalDate.now.plusDays(1).toString)
-        jsString.validate[DateOfBirth] shouldBe a[JsError]
+
+        jsString.validate[DateOfBirth] mustBe a[JsError]
       }
     }
 
     "return a JsSuccess" when {
       "the apply returns a success" in {
         val jsString = JsString(LocalDate.now.minusDays(1).toString)
-        jsString.validate[DateOfBirth] shouldBe a[JsSuccess[?]]
+
+        jsString.validate[DateOfBirth] mustBe a[JsSuccess[?]]
       }
     }
   }
 
-  "writes" should {
+  "writes" must {
     "return a JsString" in {
       DateOfBirth(LocalDate.now.minusDays(1)).map(doc =>
-        Json.toJson(doc) shouldBe JsString(LocalDate.now.minusDays(1).toString)
+        Json.toJson(doc) mustBe JsString(LocalDate.now.minusDays(1).toString)
       )
     }
   }

@@ -27,7 +27,7 @@ import wiring.Constants.*
 import java.util.UUID
 import scala.concurrent.Future
 
-trait BaseController extends Logging {
+trait ControllerUtils extends Logging {
 
   def withValidParameters[A](
     correlationId: String

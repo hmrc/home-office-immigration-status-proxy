@@ -16,6 +16,7 @@
 
 package controllers
 
+import common.TestData
 import connectors.HomeOfficeRightToPublicFundsConnector
 import models.{StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import org.mockito.ArgumentMatchers.any
@@ -43,7 +44,7 @@ import scala.concurrent.duration.*
 import scala.concurrent.{Await, Awaitable, Future}
 import scala.language.postfixOps
 
-trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting with BeforeAndAfterEach {
+trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting with BeforeAndAfterEach with TestData {
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .overrides(
@@ -70,7 +71,6 @@ trait ControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting wi
   def await[T](future: Awaitable[T]): T = Await.result(future, timeoutDuration)
   lazy val messages: Messages           = inject[MessagesApi].preferred(Seq.empty)
   lazy val appConfig: AppConfig         = inject[AppConfig]
-  val correlationId                     = "CorrelationId123"
 
   def requestMrzCallFails: OngoingStubbing[Future[Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]]] =
     when(mockConnector.statusPublicFundsByMrz(any(), any(), any())(any()))
