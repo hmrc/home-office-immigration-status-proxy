@@ -59,14 +59,14 @@ class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionCont
   }
 
   def getCertificateDetails: Option[CertificateDetails] = {
-    logger.warn("\n*** private certificate: " + config.privateCertificate)
+    logger.warn("*** private certificate: " + config.privateCertificate)
     (config.privateCertificate, config.privateCertificatePassword).flatMapN { case (certificate, password) =>
       val keyStore = KeyStore.getInstance("PKCS12")
       val aliasNames = keyStore.aliases().asScala.toSeq
 
       val decodedPrivateCertificate = Base64.getDecoder.decode(certificate)
       keyStore.load(new ByteArrayInputStream(decodedPrivateCertificate), password.toCharArray)
-      logger.warn("\n*** aliasNames: " + aliasNames)
+      logger.warn("*** aliasNames: " + aliasNames)
       aliasNames
         .map(isPrivateX509(keyStore, password))
         .find(_.isSuccess)
