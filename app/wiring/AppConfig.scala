@@ -17,22 +17,35 @@
 package wiring
 
 import com.google.inject.{ImplementedBy, Inject, Singleton}
+import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import scala.concurrent.Future
+
 @Singleton
-class AppConfig @Inject() (config: ServicesConfig) {
+class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig) {
 
-  val rightToPublicFundsBaseUrl: String = config.baseUrl("home-office-right-to-public-funds")
+  val rightToPublicFundsBaseUrl: String = servicesConfig.baseUrl("home-office-right-to-public-funds")
 
-  val tokenURL: String = config.getConfString("home-office-right-to-public-funds.url.token", "")
-  val ninoURL: String  = config.getConfString("home-office-right-to-public-funds.url.nino", "")
-  val mrzURL: String   = config.getConfString("home-office-right-to-public-funds.url.mrz", "")
+  val tokenURL: String = servicesConfig.getConfString("home-office-right-to-public-funds.url.token", "")
+  val ninoURL: String  = servicesConfig.getConfString("home-office-right-to-public-funds.url.nino", "")
+  val mrzURL: String   = servicesConfig.getConfString("home-office-right-to-public-funds.url.mrz", "")
 
   val homeOfficeClientId: String =
-    config.getConfString("home-office-right-to-public-funds.client_id", "")
+    servicesConfig.getConfString("home-office-right-to-public-funds.client_id", "")
   val homeOfficeClientSecret: String =
-    config.getConfString("home-office-right-to-public-funds.client_secret", "")
+    servicesConfig.getConfString("home-office-right-to-public-funds.client_secret", "")
 
-  val authBaseUrl: String = config.baseUrl("auth")
+  val authBaseUrl: String = servicesConfig.baseUrl("auth")
+
+//  private def certs: (String, String, String) =
+//    (
+//      config.getConfString("applePass.appleWWDRCA2", ""),
+//      config.getConfString("applePass.privateCertificate2", ""),
+//      config.getConfString("applePass.privateCertificatePassword2", "")
+//    )
+
+  def privateCertificate: Option[String]         = config.getOptional[String]("environment.BASE64FILES_0_CONTENT")
+  def privateCertificatePassword: Option[String] = config.getOptional[String]("play.ws.ssl.keyManager.stores.0.path")
 
 }
