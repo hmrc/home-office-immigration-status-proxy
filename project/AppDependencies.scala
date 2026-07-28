@@ -9,8 +9,8 @@ object AppDependencies {
     "uk.gov.hmrc"                  %% "domain-play-30"               % "13.0.0",
     "uk.gov.hmrc"                  %% "internal-auth-client-play-30" % "4.3.0",
     "org.typelevel"                %% "cats-core"                    % "2.13.0",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"         % "2.20.0",
-    "com.nimbusds"                  % "nimbus-jose-jwt"              % "10.5"
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"         % "2.20.0"//,
+ //   "com.nimbusds"                  % "nimbus-jose-jwt"              % "10.5"
   )
 
   private val test: Seq[ModuleID] = Seq(

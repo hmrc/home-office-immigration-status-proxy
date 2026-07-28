@@ -32,40 +32,42 @@ import scala.util.{Failure, Success, Try}
 class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionContext) extends Logging {
   case class CertificateDetails(date: Date, issuerName: String, subject: String)
 
-//  def getCertificateDetails: Seq[CertificateDetails] = {
-//    val ks = KeyStore.getInstance("PKCS12")
-////    val fis = new FileInputStream("play.ws.ssl.keyManager.stores.0.path")
-////    try {
-////      ks.load(fis, "play.ws.ssl.keyManager.stores.0.password")
-////    } finally {
-////      fis.close()
-////    }
-//
-//    ks.aliases().asScala.toSeq.flatMap { alias =>
-//      ks.getCertificate(alias) match {
-//        case cert: X509Certificate =>
-//          Seq(CertificateDetails(cert.getNotAfter, cert.getIssuerX500Principal.getName, cert.getSubjectX500Principal.getName))
-//        case _ => Nil
-//      }
+  def getCertificateDetailsMethod2: Seq[CertificateDetails] = {
+
+//    val fis = new FileInputStream("play.ws.ssl.keyManager.stores.0.path")
+//    try {
+//      ks.load(fis, "play.ws.ssl.keyManager.stores.0.password")
+//    } finally {
+//      fis.close()
 //    }
-//  }
+    val keyStore   = KeyStore.getInstance("PKCS12")
+    val aliasNames = keyStore.aliases().asScala.toSeq
+    // Need to load keystore here
+    aliasNames.flatMap { alias =>
+      keyStore.getCertificate(alias) match {
+        case cert: X509Certificate =>
+          Seq(
+            CertificateDetails(
+              cert.getNotAfter,
+              cert.getIssuerX500Principal.getName,
+              cert.getSubjectX500Principal.getName
+            )
+          )
+        case _ => Nil
+      }
+    }
+  }
 
   def getCertificateDetails: Option[CertificateDetails] = {
-    def isPrivateX509(keyStore: KeyStore, password: String)(alias: String) =
-      for {
-        key  <- Try(keyStore.getKey(alias, password.toCharArray).asInstanceOf[PrivateKey])
-        cert <- Try(keyStore.getCertificate(alias).asInstanceOf[X509Certificate])
-      } yield (key, cert)
-
+    logger.warn("\n*** private certificate: " + config.privateCertificate)
     (config.privateCertificate, config.privateCertificatePassword).flatMapN { case (certificate, password) =>
-      val keyStore                  = KeyStore.getInstance("PKCS12")
+      val keyStore = KeyStore.getInstance("PKCS12")
+      val aliasNames = keyStore.aliases().asScala.toSeq
+
       val decodedPrivateCertificate = Base64.getDecoder.decode(certificate)
       keyStore.load(new ByteArrayInputStream(decodedPrivateCertificate), password.toCharArray)
-
-      keyStore
-        .aliases()
-        .asScala
-        .toSeq
+      logger.warn("\n*** aliasNames: " + aliasNames)
+      aliasNames
         .map(isPrivateX509(keyStore, password))
         .find(_.isSuccess)
         .getOrElse(Failure(new IllegalStateException("No valid key-certificate pair in the key store"))) match {
@@ -83,4 +85,10 @@ class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionCont
       }
     }
   }
+
+  private def isPrivateX509(keyStore: KeyStore, password: String)(alias: String) =
+    for {
+      key  <- Try(keyStore.getKey(alias, password.toCharArray).asInstanceOf[PrivateKey])
+      cert <- Try(keyStore.getCertificate(alias).asInstanceOf[X509Certificate])
+    } yield (key, cert)
 }
