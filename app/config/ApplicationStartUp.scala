@@ -33,6 +33,7 @@ class ApplicationStartUp @Inject() (config: AppConfig, certificatesCheck: Certif
   if (config.logCertificateExpiryOnStartup) {
     certificatesCheck.getCertificateDetails match {
       case Some(cd) =>
+        println("\n****" + cd)
         if (cd.date.before(Date.from(Instant.now().plus(60, DAYS)))) {
           logger.error(
             s"privateCertificate issued by ${cd.issuerName} with subject ${cd.subject} expires in less than 60 days on ${cd.date}"
