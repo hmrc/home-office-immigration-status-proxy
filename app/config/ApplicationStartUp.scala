@@ -33,19 +33,18 @@ class ApplicationStartUp @Inject() (config: AppConfig, certificatesCheck: Certif
   if (config.logCertificateExpiryOnStartup) {
     certificatesCheck.getCertificateDetails match {
       case Some(cd) =>
-        println("\n****" + cd)
-        if (cd.date.before(Date.from(Instant.now().plus(60, DAYS)))) {
-          logger.error(
-            s"privateCertificate issued by ${cd.issuerName} with subject ${cd.subject} expires in less than 60 days on ${cd.date}"
+        if (cd.date.before(Date.from(Instant.now().plus(90, DAYS)))) {
+          logger.warn(
+            s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires in less than 90 days on ${cd.date}"
           )
         } else {
-          logger.warn(s"privateCertificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date}")
+          logger.warn(s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date}")
         }
       case _ =>
-        logger.warn("No certificate details found")
+        logger.warn("Unable to find any certificate details")
     }
   } else {
-    ()
+    logger.warn("Not checking for certificate expiry")
   }
 
 }

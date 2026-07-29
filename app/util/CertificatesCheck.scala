@@ -20,85 +20,52 @@ import cats.implicits.*
 import play.api.Logging
 import wiring.AppConfig
 
-import java.io.ByteArrayInputStream
-import java.security.cert.X509Certificate
-import java.security.{KeyStore, PrivateKey}
-import java.util.{Base64, Date}
+import java.io.FileInputStream
+import java.security.KeyStore
+import java.security.cert.{Certificate, X509Certificate}
+import java.util.Date
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters.*
-import scala.util.{Failure, Success, Try}
+import scala.util.{Try, Using}
+
 @Singleton
 class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionContext) extends Logging {
   case class CertificateDetails(date: Date, issuerName: String, subject: String)
 
-  def getCertificateDetailsMethod2: Seq[CertificateDetails] = {
-
-//    val fis = new FileInputStream("play.ws.ssl.keyManager.stores.0.path")
-//    try {
-//      ks.load(fis, "play.ws.ssl.keyManager.stores.0.password")
-//    } finally {
-//      fis.close()
-//    }
-    val keyStore   = KeyStore.getInstance("PKCS12")
-    val aliasNames = keyStore.aliases().asScala.toSeq
-    // Need to load keystore here
-    aliasNames.flatMap { alias =>
-      keyStore.getCertificate(alias) match {
-        case cert: X509Certificate =>
-          Seq(
-            CertificateDetails(
-              cert.getNotAfter,
-              cert.getIssuerX500Principal.getName,
-              cert.getSubjectX500Principal.getName
-            )
-          )
-        case _ => Nil
-      }
+  private def tryRetrieveCertificate(certificatePath: String, password: Array[Char]): Try[Certificate] =
+    Using(new FileInputStream(certificatePath)) { fis =>
+      val keyStore = KeyStore.getInstance("PKCS12")
+      keyStore.load(fis, password)
+      keyStore
+        .aliases()
+        .asScala
+        .map(alias => keyStore.getCertificate(alias))
+        .toList
+        .head
     }
-  }
 
-  def getCertificateDetails: Option[CertificateDetails] = {
-    logger.warn("Certificate retrieved from config: " + config.privateCertificate.isDefined)
-    (config.privateCertificate, config.privateCertificatePassword).flatMapN { case (certificate, password) =>
-      Try(Base64.getDecoder.decode(certificate)).fold[Option[CertificateDetails]](
-        { ex =>
-          logger.warn("Unable to decode the certificate", ex)
-          None
-        },
-        findAndCheckCertificate(_, password)
-      )
-    }
-  }
-
-  private def findAndCheckCertificate(
-    decodedPrivateCertificate: Array[Byte],
-    password: String
-  ): Option[CertificateDetails] = {
-    val keyStore = KeyStore.getInstance("PKCS12")
-    keyStore.load(new ByteArrayInputStream(decodedPrivateCertificate), password.toCharArray)
-    val aliasNames = keyStore.aliases().asScala.toSeq
-    aliasNames
-      .map(isPrivateX509(keyStore, password))
-      .find(_.isSuccess)
-      .getOrElse(Failure(new IllegalStateException("No valid key-certificate pair in the key store"))) match {
-      case Success((_, cert)) =>
-        val c = CertificateDetails(
-          cert.getNotAfter,
-          cert.getIssuerX500Principal.getName,
-          cert.getSubjectX500Principal.getName
+  def getCertificateDetails: Option[CertificateDetails] =
+    (config.privateCertificatePath, config.privateCertificatePassword.map(_.toCharArray)).flatMapN {
+      case (certificatePath, password) =>
+        tryRetrieveCertificate(certificatePath, password).fold[Option[CertificateDetails]](
+          { ex =>
+            logger.warn("Unable to load certificate", ex)
+            None
+          },
+          {
+            case certificate: X509Certificate =>
+              Some(
+                CertificateDetails(
+                  certificate.getNotAfter,
+                  certificate.getIssuerX500Principal.getName,
+                  certificate.getSubjectX500Principal.getName
+                )
+              )
+            case cert: Certificate =>
+              logger.warn(s"Wrong type of cert, cert was of type: ${cert.getType}")
+              None
+          }
         )
-        logger.warn(s"Certificate details found: $c")
-        Some(c)
-      case Failure(ex) =>
-        logger.warn("Exception when retrieving certificate", ex)
-        None
     }
-  }
-
-  private def isPrivateX509(keyStore: KeyStore, password: String)(alias: String) =
-    for {
-      key  <- Try(keyStore.getKey(alias, password.toCharArray).asInstanceOf[PrivateKey])
-      cert <- Try(keyStore.getCertificate(alias).asInstanceOf[X509Certificate])
-    } yield (key, cert)
 }
