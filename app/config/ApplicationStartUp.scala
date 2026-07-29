@@ -35,7 +35,7 @@ class ApplicationStartUp @Inject() (certificatesCheck: CertificatesCheck)(implic
           s"privateCertificate issued by ${cd.issuerName} with subject ${cd.subject} expires in less than 60 days on ${cd.date}"
         )
       } else {
-        logger.info(s"privateCertificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date}")
+        logger.warn(s"privateCertificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date}")
       }
     case _ =>
       logger.warn("No certificate details found")

@@ -39,6 +39,6 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
   val authBaseUrl: String = servicesConfig.baseUrl("auth")
 
   def privateCertificate: Option[String]         = config.getOptional[String]("environment.BASE64FILES_0_CONTENT")
-  def privateCertificatePassword: Option[String] = config.getOptional[String]("play.ws.ssl.keyManager.stores.0.path")
+  def privateCertificatePassword: Option[String] = config.getOptional[String]("play.ws.ssl.keyManager.stores.0.password")
 
 }
