@@ -40,5 +40,5 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   def privateCertificate: Option[String]         = config.getOptional[String]("environment.BASE64FILES_0_CONTENT")
   def privateCertificatePassword: Option[String] = config.getOptional[String]("play.ws.ssl.keyManager.stores.0.password")
-
+  def logCertificateExpiryOnStartup: Boolean = config.getOptional[Boolean]("feature.log-certificate-expiry-on-startup").getOrElse(false)
 }

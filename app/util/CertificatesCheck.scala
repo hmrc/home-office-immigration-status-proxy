@@ -62,7 +62,7 @@ class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionCont
     logger.warn("Certificate retrieved from config: " + config.privateCertificate.isDefined)
     (config.privateCertificate, config.privateCertificatePassword).flatMapN { case (certificate, password) =>
       val decodedPrivateCertificate = Base64.getDecoder.decode(certificate)
-      val keyStore = KeyStore.getInstance("PKCS12")
+      val keyStore                  = KeyStore.getInstance("PKCS12")
       keyStore.load(new ByteArrayInputStream(decodedPrivateCertificate), password.toCharArray)
       val aliasNames = keyStore.aliases().asScala.toSeq
       aliasNames
