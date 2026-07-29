@@ -61,26 +61,38 @@ class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionCont
   def getCertificateDetails: Option[CertificateDetails] = {
     logger.warn("Certificate retrieved from config: " + config.privateCertificate.isDefined)
     (config.privateCertificate, config.privateCertificatePassword).flatMapN { case (certificate, password) =>
-      val decodedPrivateCertificate = Base64.getDecoder.decode(certificate)
-      val keyStore                  = KeyStore.getInstance("PKCS12")
-      keyStore.load(new ByteArrayInputStream(decodedPrivateCertificate), password.toCharArray)
-      val aliasNames = keyStore.aliases().asScala.toSeq
-      aliasNames
-        .map(isPrivateX509(keyStore, password))
-        .find(_.isSuccess)
-        .getOrElse(Failure(new IllegalStateException("No valid key-certificate pair in the key store"))) match {
-        case Success((_, cert)) =>
-          val c = CertificateDetails(
-            cert.getNotAfter,
-            cert.getIssuerX500Principal.getName,
-            cert.getSubjectX500Principal.getName
-          )
-          logger.warn(s"Certificate details found: $c")
-          Some(c)
-        case Failure(ex) =>
-          logger.warn("Exception when retrieving certificate", ex)
+      Try(Base64.getDecoder.decode(certificate)).fold[Option[CertificateDetails]](
+        { ex =>
+          logger.warn("Unable to decode the certificate", ex)
           None
-      }
+        },
+        findAndCheckCertificate(_, password)
+      )
+    }
+  }
+
+  private def findAndCheckCertificate(
+    decodedPrivateCertificate: Array[Byte],
+    password: String
+  ): Option[CertificateDetails] = {
+    val keyStore = KeyStore.getInstance("PKCS12")
+    keyStore.load(new ByteArrayInputStream(decodedPrivateCertificate), password.toCharArray)
+    val aliasNames = keyStore.aliases().asScala.toSeq
+    aliasNames
+      .map(isPrivateX509(keyStore, password))
+      .find(_.isSuccess)
+      .getOrElse(Failure(new IllegalStateException("No valid key-certificate pair in the key store"))) match {
+      case Success((_, cert)) =>
+        val c = CertificateDetails(
+          cert.getNotAfter,
+          cert.getIssuerX500Principal.getName,
+          cert.getSubjectX500Principal.getName
+        )
+        logger.warn(s"Certificate details found: $c")
+        Some(c)
+      case Failure(ex) =>
+        logger.warn("Exception when retrieving certificate", ex)
+        None
     }
   }
 
