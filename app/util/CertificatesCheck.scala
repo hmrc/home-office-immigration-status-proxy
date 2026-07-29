@@ -59,7 +59,7 @@ class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionCont
   }
 
   def getCertificateDetails: Option[CertificateDetails] = {
-    logger.warn("*** private certificate retrieved from config: " + config.privateCertificate.isDefined)
+    logger.warn("Certificate retrieved from config: " + config.privateCertificate.isDefined)
     (config.privateCertificate, config.privateCertificatePassword).flatMapN { case (certificate, password) =>
       val decodedPrivateCertificate = Base64.getDecoder.decode(certificate)
       val keyStore = KeyStore.getInstance("PKCS12")
