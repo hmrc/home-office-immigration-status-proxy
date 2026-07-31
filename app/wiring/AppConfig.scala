@@ -16,11 +16,9 @@
 
 package wiring
 
-import com.google.inject.{ImplementedBy, Inject, Singleton}
+import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
-import scala.concurrent.Future
 
 @Singleton
 class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig) {
@@ -38,9 +36,8 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val authBaseUrl: String = servicesConfig.baseUrl("auth")
 
-  def privateCertificatePath: Option[String] = config.getOptional[String]("play.ws.ssl.keyManager.stores.0.path")
-  def privateCertificatePassword: Option[String] =
-    config.getOptional[String]("play.ws.ssl.keyManager.stores.0.password")
-  def logCertificateExpiryOnStartup: Boolean =
-    config.getOptional[Boolean]("feature.log-certificate-expiry-on-startup").getOrElse(false)
+  // TODO: Log certificate expiry dev ticket pending (see DLCN-749)
+  //  def privateCertificatePath: Option[String] = config.getOptional[String]("play.ws.ssl.keyManager.stores.0.path")
+  //  def privateCertificatePassword: Option[String] =
+  //    config.getOptional[String]("play.ws.ssl.keyManager.stores.0.password")
 }
