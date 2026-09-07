@@ -231,18 +231,6 @@ trait WireMockStubs extends WireMockSupport with TestData {
   protected def givenPublicFundsStub(url: String, requestBody: String, errorResponse: ErrorResponse): StubMapping =
     givenPublicFundsStub(url, requestBody, errorResponse.statusCode, errorResponse.message)
 
-  protected def givenAuthorisedForInternalAuth(): StubMapping =
-    wireMockServer.stubFor(
-      post(urlEqualTo("/internal-auth/auth"))
-        .willReturn(
-          okJson(
-            """{
-                "retrievals": []
-              }"""
-          )
-        )
-    )
-
   protected def givenAuthorisedForStride(): StubMapping =
     wireMockServer.stubFor(
       post(urlEqualTo("/auth/authorise"))

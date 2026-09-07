@@ -182,7 +182,6 @@ class NinoSearchControllerISpec extends ISpecBase {
 
     "posting to the nino endpoint with client service" must {
       "respond with 200 if request is valid" in {
-        givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, OK, responseBodyWithStatus)
 
@@ -209,7 +208,6 @@ class NinoSearchControllerISpec extends ISpecBase {
       }
 
       "respond with 404 if the service failed to find an identity based on the values provided" in {
-        givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, errorResponseNotFound)
 
@@ -226,7 +224,6 @@ class NinoSearchControllerISpec extends ISpecBase {
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
-        givenAuthorisedForInternalAuth()
 
         val correlationId = UUID.randomUUID().toString
 
@@ -242,7 +239,6 @@ class NinoSearchControllerISpec extends ISpecBase {
       }
 
       "respond with 400 if one of the input parameters passed in has failed internal validation" in {
-        givenAuthorisedForInternalAuth()
 
         val result = post(ninoUrlWithService, invalidNinoRequestBody)
         playStatus(result) mustBe BAD_REQUEST
@@ -261,7 +257,6 @@ class NinoSearchControllerISpec extends ISpecBase {
       }
 
       "respond with 400 if one of the input parameters passed in has failed external validation" in {
-        givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, errorResponseDOBInvalid)
 
@@ -283,7 +278,6 @@ class NinoSearchControllerISpec extends ISpecBase {
       }
 
       "respond with 400 if request payload is invalid json" in {
-        givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
 
         val result = post(ninoUrlWithService, "[]")
@@ -296,7 +290,6 @@ class NinoSearchControllerISpec extends ISpecBase {
       }
 
       "respond with 400 even if the service error undefined" in {
-        givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, createUnknownErrorResponseUsingStatus(BAD_REQUEST))
 
@@ -310,7 +303,6 @@ class NinoSearchControllerISpec extends ISpecBase {
       }
 
       "respond with 404 even if the service error undefined" in {
-        givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, createUnknownErrorResponseUsingStatus(NOT_FOUND))
 
@@ -324,7 +316,6 @@ class NinoSearchControllerISpec extends ISpecBase {
       }
 
       "respond with 409 even if the service error undefined" in {
-        givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, createUnknownErrorResponseUsingStatus(CONFLICT))
 

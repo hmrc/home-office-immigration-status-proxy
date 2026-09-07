@@ -48,7 +48,6 @@ trait ISpecBase
     new GuiceApplicationBuilder()
       .configure(
         "microservice.services.home-office-right-to-public-funds.port" -> wireMockServer.port(),
-        "microservice.services.internal-auth.port"                     -> wireMockServer.port(),
         "microservice.services.auth.port"                              -> wireMockServer.port(),
         "metrics.enabled"                                              -> false,
         "auditing.enabled"                                             -> false,
