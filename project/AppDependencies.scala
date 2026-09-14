@@ -1,5 +1,5 @@
-import AppDependencies.playSuffix
 import sbt.*
+import sbt.librarymanagement.InclExclRule
 
 object AppDependencies {
 
@@ -14,8 +14,13 @@ object AppDependencies {
     "uk.gov.hmrc"                  %% "internal-auth-client-play-30" % "4.4.0",
     "org.typelevel"                %% "cats-core"                    % "2.13.0",
     "com.fasterxml.jackson.module" %% "jackson-module-scala"         % "2.20.0",
-    "org.quartz-scheduler"          % "quartz"                       % quartzVersion,
-    "uk.gov.hmrc.mongo"            %% s"hmrc-mongo$playSuffix"       % hmrcMongoVersion
+    ("org.quartz-scheduler"         % "quartz"                       % quartzVersion).withExclusions(
+      Vector(
+        InclExclRule().withOrganization("com.mchange").withName("c3p0"),
+        InclExclRule().withOrganization("com.mchange").withName("mchange-commons-java")
+      )
+    ),
+    "uk.gov.hmrc.mongo" %% s"hmrc-mongo$playSuffix" % hmrcMongoVersion
   )
 
   private val test: Seq[ModuleID] = Seq(

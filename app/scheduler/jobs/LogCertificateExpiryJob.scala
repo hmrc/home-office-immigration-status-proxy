@@ -28,7 +28,7 @@ import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 @DisallowConcurrentExecution
-class LogCertificateExpiryJob @Inject()(
+class LogCertificateExpiryJob @Inject() (
   val mongoComponent: MongoComponent,
   val lockRepository: MongoLockRepository
 )(using ec: ExecutionContext)
@@ -47,7 +47,7 @@ class LogCertificateExpiryJob @Inject()(
   override val ttl: Duration  = 1.hour
 
   private def executeJob(): Future[Unit] = {
-    println("\nRUNNING JOB")
+    logger.warn("\nRUNNING certificate expiry job")
     Future.successful((): Unit)
   }
 

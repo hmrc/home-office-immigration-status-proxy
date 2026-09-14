@@ -33,7 +33,7 @@ class JobScheduler @Inject() (
   lifecycle: ApplicationLifecycle,
   schedulerFactory: SchedulerFactory,
   jobFactory: ScheduledJobFactory,
-  config: AppConfig
+  appConfig: AppConfig
 )(using
   ec: ExecutionContext
 ) extends Logging {
@@ -44,7 +44,7 @@ class JobScheduler @Inject() (
     .build()
 
   private val logCertificatExpiryJobSchedule = CronScheduleBuilder
-    .cronSchedule(config.logCertificateExpirySchedule)
+    .cronSchedule(appConfig.logCertificateExpirySchedule)
 
   private val logCertificateExpiryJobTrigger = newTrigger()
     .forJob(logCertificateExpiryJobDetail)
@@ -68,5 +68,10 @@ class JobScheduler @Inject() (
     quartz.start()
   }
 
-  startScheduler()
+  if (appConfig.isCertificateExpirySchedulePresent) {
+    logger.warn("Certificate expiry schedule present")
+    startScheduler()
+  } else {
+    logger.warn("No certificate expiry schedule present")
+  }
 }

@@ -50,6 +50,7 @@ class JobSchedulerSpec extends AnyFlatSpec with Matchers with MockitoSugar with 
     appConfig = mock[AppConfig]
 
     when(appConfig.logCertificateExpirySchedule).thenReturn("0 0 4 * * ? 2099")
+    when(appConfig.isCertificateExpirySchedulePresent).thenReturn(true)
     when(jobFactory.newJob(any(), any())).thenReturn(_ => Thread.sleep(50))
 
     jobScheduler = new JobScheduler(lifecycle, schedulerFactory, jobFactory, appConfig)
