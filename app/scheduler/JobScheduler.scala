@@ -37,16 +37,16 @@ class JobScheduler @Inject() (
 )(using
   ec: ExecutionContext
 ) extends Logging {
-  private val quartz: Scheduler = schedulerFactory.getScheduler
+  private lazy val quartz: Scheduler = schedulerFactory.getScheduler
 
-  private val logCertificateExpiryJobDetail = newJob(classOf[LogCertificateExpiryJob])
+  private lazy val logCertificateExpiryJobDetail = newJob(classOf[LogCertificateExpiryJob])
     .withIdentity("log-certificate-expiry")
     .build()
 
-  private val logCertificatExpiryJobSchedule = CronScheduleBuilder
+  private lazy val logCertificatExpiryJobSchedule = CronScheduleBuilder
     .cronSchedule(appConfig.logCertificateExpirySchedule)
 
-  private val logCertificateExpiryJobTrigger = newTrigger()
+  private lazy val logCertificateExpiryJobTrigger = newTrigger()
     .forJob(logCertificateExpiryJobDetail)
     .withSchedule(logCertificatExpiryJobSchedule)
     .build()

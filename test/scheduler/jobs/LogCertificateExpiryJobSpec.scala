@@ -53,10 +53,7 @@ class LogCertificateExpiryJobSpec
   given ActorSystem      = ActorSystem("test")
   given ExecutionContext = ExecutionContext.global
 
-  private val refDataJob = new LogCertificateExpiryJob(
-    mongoComponent,
-    lockRepository
-  )
+  private val refDataJob = new LogCertificateExpiryJob()
 
   override def beforeEach(): Unit = {
     reset(
