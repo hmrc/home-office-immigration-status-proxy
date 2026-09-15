@@ -18,7 +18,6 @@ package scheduler.jobs
 
 import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
-import uk.gov.hmrc.http.HeaderCarrier
 import util.CertificatesCheck
 
 import java.time.LocalDate
@@ -30,8 +29,6 @@ import javax.inject.Inject
 class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck) extends Job with Logging {
 
   private val jobName = "log-certificate-expiry"
-
-  given HeaderCarrier = HeaderCarrier()
 
   private def executeJob(): Unit = {
     logger.warn("RUNNING certificate expiry job")
