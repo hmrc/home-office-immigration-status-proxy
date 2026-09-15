@@ -36,7 +36,7 @@ class LogCertificateExpiryJob @Inject() (
 
   private def executeJob(): Future[Unit] = {
     logger.warn("RUNNING certificate expiry job")
-    Future.successful((): Unit)
+    Future.successful(())
   }
 
   override def execute(context: JobExecutionContext): Unit =
