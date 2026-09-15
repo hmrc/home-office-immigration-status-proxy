@@ -53,7 +53,7 @@ class JobScheduler @Inject() (
 
   private def getJobStatus(trigger: Trigger): JobStatus = JobStatus(quartz.getTriggerState(trigger.getKey))
 
-  def startLogCertficateExpiry(): Unit = quartz.triggerJob(logCertificateExpiryJobDetail.getKey)
+  def startLogCertificateExpiry(): Unit = quartz.triggerJob(logCertificateExpiryJobDetail.getKey)
 
   def logCertificateExpiryStatus(): JobStatus = getJobStatus(logCertificateExpiryJobTrigger)
 

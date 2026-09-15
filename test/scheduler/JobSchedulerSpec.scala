@@ -29,31 +29,22 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.inject.ApplicationLifecycle
 import wiring.AppConfig
 
-import scala.compiletime.uninitialized
 import scala.concurrent.ExecutionContext
 
 class JobSchedulerSpec extends AnyFlatSpec with Matchers with MockitoSugar with BeforeAndAfterEach with Eventually {
   given ExecutionContext = ExecutionContext.global
 
-  private val schedulerFactory: SchedulerFactory = new StdSchedulerFactory()
-  private var lifecycle: ApplicationLifecycle    = uninitialized
-  private var jobFactory: ScheduledJobFactory    = uninitialized
-  private var appConfig: AppConfig               = uninitialized
-  private var jobScheduler: JobScheduler         = uninitialized
+  private val schedulerFactory: SchedulerFactory  = new StdSchedulerFactory()
+  private val mockLifecycle: ApplicationLifecycle = mock[ApplicationLifecycle]
+  private val mockJobFactory: ScheduledJobFactory = mock[ScheduledJobFactory]
+  private val mockAppConfig: AppConfig            = mock[AppConfig]
+  private lazy val jobScheduler = new JobScheduler(mockLifecycle, schedulerFactory, mockJobFactory, mockAppConfig)
 
   override def beforeEach(): Unit = {
-    // Clear down any job or schedule information
-    schedulerFactory.getScheduler.clear()
-
-    lifecycle = mock[ApplicationLifecycle]
-    jobFactory = mock[ScheduledJobFactory]
-    appConfig = mock[AppConfig]
-
-    when(appConfig.logCertificateExpirySchedule).thenReturn("0 0 4 * * ? 2099")
-    when(appConfig.isCertificateExpirySchedulePresent).thenReturn(true)
-    when(jobFactory.newJob(any(), any())).thenReturn(_ => Thread.sleep(50))
-
-    jobScheduler = new JobScheduler(lifecycle, schedulerFactory, jobFactory, appConfig)
+    when(mockAppConfig.logCertificateExpirySchedule).thenReturn("0 0 4 * * ? 2099")
+    when(mockAppConfig.isCertificateExpirySchedulePresent).thenReturn(true)
+    when(mockJobFactory.newJob(any(), any())).thenReturn(_ => Thread.sleep(50))
+    ()
   }
 
   "JobScheduler.logCertificateExpiryStatus" should "return trigger status NORMAL when the job is not running" in {
@@ -61,7 +52,7 @@ class JobSchedulerSpec extends AnyFlatSpec with Matchers with MockitoSugar with 
   }
 
   it should "return the status BLOCKED when the job is running" in {
-    jobScheduler.startLogCertficateExpiry()
+    jobScheduler.startLogCertificateExpiry()
     // Trigger state should go to blocked while the job is running
     eventually {
       jobScheduler.logCertificateExpiryStatus() mustBe JobStatus(TriggerState.BLOCKED)
