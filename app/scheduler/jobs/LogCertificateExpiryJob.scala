@@ -25,12 +25,9 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit.DAYS
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
 
 @DisallowConcurrentExecution
-class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck)(using ec: ExecutionContext)
-    extends Job
-    with Logging {
+class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck) extends Job with Logging {
 
   private val jobName = "log-certificate-expiry"
 
@@ -48,15 +45,17 @@ class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck)(usi
                 .format(dateFormatter)}"
           )
         } else {
-          logger.info(
-            s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date.format(dateFormatter)}"
+          // DLSN-854: Temporarily make this WARN level so I can easily test in staging
+          logger.warn(
+            s"INFOCertificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date.format(dateFormatter)}"
           )
+//          logger.info(
+//            s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date.format(dateFormatter)}"
+//          )
         }
       case _ =>
         ()
     }
-
-    ()
   }
 
   override def execute(context: JobExecutionContext): Unit = executeJob()

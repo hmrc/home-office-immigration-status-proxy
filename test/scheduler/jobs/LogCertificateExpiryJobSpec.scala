@@ -30,7 +30,6 @@ import wiring.AppConfig
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import scala.concurrent.ExecutionContext
 
 class LogCertificateExpiryJobSpec
     extends PlaySpec
@@ -45,9 +44,6 @@ class LogCertificateExpiryJobSpec
   private val appConfig               = mock[AppConfig]
   private val mockCertificatesCheck   = mock[CertificatesCheck]
   private val mockJobExecutionContext = mock[JobExecutionContext]
-
-  given ActorSystem      = ActorSystem("test")
-  given ExecutionContext = ExecutionContext.global
 
   private val (testDateCritical, testDateNonCritical) = {
     val now              = LocalDate.now()
@@ -103,11 +99,13 @@ class LogCertificateExpiryJobSpec
         withCaptureOfLoggingFrom(testLogger) { logs =>
           certificateExpiryJob.execute(mockJobExecutionContext)
           verify(mockCertificatesCheck, times(1)).getCertificateDetails
-          logs.count(_.getLevel == ch.qos.logback.classic.Level.INFO) mustBe 1
-          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
+          // DLSN-854: Temporarily made this WARN level so I can easily test in staging
+          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 2
+//          logs.count(_.getLevel == ch.qos.logback.classic.Level.INFO) mustBe 1
+//          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
           logs.map(_.getFormattedMessage) mustBe Seq(
             "RUNNING certificate expiry job",
-            s"Certificate issued by issuerName with subject subject expires on ${testDateNonCritical.format(dateFormatter)}"
+            s"INFOCertificate issued by issuerName with subject subject expires on ${testDateNonCritical.format(dateFormatter)}"
           )
           ()
         }
