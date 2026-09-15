@@ -39,14 +39,14 @@ import wiring.AppConfig
 import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.cert.{Certificate, X509Certificate}
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 import java.util.Date
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters.*
 import scala.util.{Try, Using}
 
-case class CertificateDetails(date: LocalDate, issuerName: String, subject: String)
+case class CertificateDetails(date: LocalDateTime, issuerName: String, subject: String)
 
 @Singleton
 class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionContext) extends Logging {
@@ -73,18 +73,18 @@ class CertificatesCheck @Inject() (config: AppConfig)(implicit ec: ExecutionCont
           },
           {
             case certificate: X509Certificate =>
-              import java.time.{Instant, LocalDate, ZoneId}
+              import java.time.{Instant, LocalDateTime, ZoneId}
               import java.util.Date
 
-              def toLocalDate(date: Date): LocalDate =
+              def toLocalDateTime(date: Date): LocalDateTime =
                 Instant
                   .ofEpochMilli(date.getTime)
-                  .atZone(ZoneId.systemDefault())
-                  .toLocalDate
+                  .atZone(ZoneId.of("Europe/London"))
+                  .toLocalDateTime
 
               Some(
                 CertificateDetails(
-                  toLocalDate(certificate.getNotAfter),
+                  toLocalDateTime(certificate.getNotAfter),
                   certificate.getIssuerX500Principal.getName,
                   certificate.getSubjectX500Principal.getName
                 )

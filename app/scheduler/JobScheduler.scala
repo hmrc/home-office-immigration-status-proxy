@@ -65,10 +65,14 @@ class JobScheduler @Inject() (
     quartz.start()
   }
 
-  if (appConfig.logCertificateExpirySchedule.getOrElse("").nonEmpty) {
-    logger.warn("Certificate expiry schedule present")
-    startScheduler()
+  if (appConfig.logCertificateExpiryEnabled) {
+    if (appConfig.logCertificateExpirySchedule.getOrElse("").nonEmpty) {
+      logger.info("Certificate expiry enabled and schedule present")
+      startScheduler()
+    } else {
+      logger.warn("No certificate expiry schedule present")
+    }
   } else {
-    logger.warn("No certificate expiry schedule present")
+    logger.warn("Log certificate expiry not enabled")
   }
 }

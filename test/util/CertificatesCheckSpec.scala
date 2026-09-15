@@ -27,6 +27,7 @@ import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 import wiring.AppConfig
 
 import java.security.cert.X509Certificate
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit.DAYS
 import javax.security.auth.x500.X500Principal
 import scala.concurrent.ExecutionContext
@@ -57,10 +58,10 @@ class CertificatesCheckSpec
   import java.util.Date
 
   val testDate: Date = Date.from(Instant.now().plus(30, DAYS))
-  val testDateLocalDate: LocalDate = {
-    def toLocalDate(date: Date): LocalDate =
-      Instant.ofEpochMilli(date.getTime).atZone(ZoneId.systemDefault()).toLocalDate
-    toLocalDate(testDate)
+  val testDateLocalDate: LocalDateTime = {
+    def toLocalDateTime(date: Date): LocalDateTime =
+      Instant.ofEpochMilli(date.getTime).atZone(ZoneId.of("Europe/London")).toLocalDateTime
+    toLocalDateTime(testDate)
   }
 
   override def beforeEach(): Unit = {

@@ -16,7 +16,6 @@
 
 package scheduler.jobs
 
-import org.apache.pekko.actor.ActorSystem
 import org.mockito.Mockito.*
 import org.quartz.JobExecutionContext
 import org.scalatest.BeforeAndAfterEach
@@ -28,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 import util.{CertificateDetails, CertificatesCheck}
 import wiring.AppConfig
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class LogCertificateExpiryJobSpec
@@ -46,17 +45,15 @@ class LogCertificateExpiryJobSpec
   private val mockJobExecutionContext = mock[JobExecutionContext]
 
   private val (testDateCritical, testDateNonCritical) = {
-    val now              = LocalDate.now()
-    val justBeforeExpiry = now.plusDays(89L)
-    val justAfterExpiry  = now.plusDays(90L)
-    (justBeforeExpiry, justAfterExpiry)
+    val now = LocalDateTime.now()
+    (now.plusDays(90L), now.plusDays(90L).plusSeconds(5)) // Add a few seconds to allow for time taken to run tests
   }
 
   private val certificateDetailsCritical: CertificateDetails =
     CertificateDetails(testDateCritical, "issuerName", "subject")
   private val certificateDetailsNonCritical: CertificateDetails =
     CertificateDetails(testDateNonCritical, "issuerName", "subject")
-  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy ' at 'HH:mm")
   private val certificateExpiryJob: LogCertificateExpiryJob = new LogCertificateExpiryJob(mockCertificatesCheck) {
     override protected val logger: Logger = testLogger
   }
@@ -99,13 +96,11 @@ class LogCertificateExpiryJobSpec
         withCaptureOfLoggingFrom(testLogger) { logs =>
           certificateExpiryJob.execute(mockJobExecutionContext)
           verify(mockCertificatesCheck, times(1)).getCertificateDetails
-          // DLSN-854: Temporarily made this WARN level so I can easily test in staging
-          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 2
-//          logs.count(_.getLevel == ch.qos.logback.classic.Level.INFO) mustBe 1
-//          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
+          logs.count(_.getLevel == ch.qos.logback.classic.Level.INFO) mustBe 1
+          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
           logs.map(_.getFormattedMessage) mustBe Seq(
             "RUNNING certificate expiry job",
-            s"INFOCertificate issued by issuerName with subject subject expires on ${testDateNonCritical.format(dateFormatter)}"
+            s"Certificate issued by issuerName with subject subject expires on ${testDateNonCritical.format(dateFormatter)}"
           )
           ()
         }

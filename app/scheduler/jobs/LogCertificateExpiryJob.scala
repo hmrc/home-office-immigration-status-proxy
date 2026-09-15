@@ -20,7 +20,7 @@ import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
 import util.CertificatesCheck
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit.DAYS
 import javax.inject.Inject
@@ -31,26 +31,23 @@ class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck) ext
   private val jobName = "log-certificate-expiry"
 
   private def executeJob(): Unit = {
-    logger.warn("RUNNING certificate expiry job")
+    logger.info("RUNNING certificate expiry job")
     certificatesCheck.getCertificateDetails match {
       case Some(cd) =>
-        val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
-        val nowPlus90Days                    = LocalDate.now().plus(90, DAYS)
+        val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy ' at 'HH:mm")
+        val nowPlus90Days                    = LocalDateTime.now().plus(90, DAYS)
         if (cd.date.isBefore(nowPlus90Days)) {
           logger.warn(
             s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires in less than 90 days on ${cd.date
                 .format(dateFormatter)}"
           )
         } else {
-          // DLSN-854: Temporarily make this WARN level so I can easily test in staging
-          logger.warn(
-            s"INFOCertificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date.format(dateFormatter)}"
+          logger.info(
+            s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date.format(dateFormatter)}"
           )
-//          logger.info(
-//            s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date.format(dateFormatter)}"
-//          )
         }
       case _ =>
+        logger.warn("No certificate found")
         ()
     }
   }

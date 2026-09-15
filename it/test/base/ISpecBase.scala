@@ -56,8 +56,10 @@ trait ISpecBase
         "metrics.enabled"                                              -> false,
         "auditing.enabled"                                             -> false,
         "auditing.consumer.baseUri.port"                               -> wireMockServer.port(),
-        "log-certificate-expiry.schedule"                               -> ""
-      ).disable[JobScheduler].disable[SchedulerFactory]
+        "log-certificate-expiry.enabled"                               -> false
+      )
+      .disable[JobScheduler]
+      .disable[SchedulerFactory]
 
   protected def post(url: String, payload: String, correlationId: String = correlationId): Future[Result] = {
     val hdrs: Seq[(String, String)] = Seq(
