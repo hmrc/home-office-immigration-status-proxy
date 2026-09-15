@@ -17,73 +17,101 @@
 package scheduler.jobs
 
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.scaladsl.{Sink, Source}
-import org.mockito.ArgumentMatchers.{any, eq as equalTo}
 import org.mockito.Mockito.*
-import org.mongodb.scala.{ClientSession, MongoClient, MongoDatabase, SingleObservable}
+import org.quartz.JobExecutionContext
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.http.Status
-import play.api.libs.json.Json
-import uk.gov.hmrc.http.UpstreamErrorResponse
-import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
+import org.scalatestplus.play.PlaySpec
+import play.api.Logger
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
+import util.{CertificateDetails, CertificatesCheck}
 import wiring.AppConfig
 
-import scala.concurrent.{ExecutionContext, Future}
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import scala.concurrent.ExecutionContext
 
 class LogCertificateExpiryJobSpec
-    extends AnyFlatSpec
-    with Matchers
+    extends PlaySpec
     with MockitoSugar
     with ScalaFutures
     with IntegrationPatience
-    with BeforeAndAfterEach {
+    with BeforeAndAfterEach
+    with LogCapturing {
 
-  private val mongoComponent = mock[MongoComponent]
-  private val mongoClient    = mock[MongoClient]
-  private val mongoDatabase  = mock[MongoDatabase]
-  private val clientSession  = mock[ClientSession]
-  private val lockRepository = mock[MongoLockRepository]
-  private val appConfig      = mock[AppConfig]
+  val testLogger: Logger = Logger("test-logger")
+
+  private val appConfig               = mock[AppConfig]
+  private val mockCertificatesCheck   = mock[CertificatesCheck]
+  private val mockJobExecutionContext = mock[JobExecutionContext]
 
   given ActorSystem      = ActorSystem("test")
   given ExecutionContext = ExecutionContext.global
 
-  private val refDataJob = new LogCertificateExpiryJob()
+  private val (testDateCritical, testDateNonCritical) = {
+    val now              = LocalDate.now()
+    val justBeforeExpiry = now.plusDays(89L)
+    val justAfterExpiry  = now.plusDays(90L)
+    (justBeforeExpiry, justAfterExpiry)
+  }
 
+  private val certificateDetailsCritical: CertificateDetails =
+    CertificateDetails(testDateCritical, "issuerName", "subject")
+  private val certificateDetailsNonCritical: CertificateDetails =
+    CertificateDetails(testDateNonCritical, "issuerName", "subject")
+  private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+  private val certificateExpiryJob: LogCertificateExpiryJob = new LogCertificateExpiryJob(mockCertificatesCheck) {
+    override protected val logger: Logger = testLogger
+  }
   override def beforeEach(): Unit = {
     reset(
-      mongoComponent,
-      mongoClient,
-      mongoDatabase,
-      clientSession,
-      lockRepository,
-      appConfig
+      appConfig,
+      mockCertificatesCheck
     )
-
-    // Job lock
-    val mockLock = mock[Lock]
-    when(lockRepository.takeLock(any(), any(), any())).thenReturn(Future.successful(Some(mockLock)))
-    when(lockRepository.releaseLock(any(), any())).thenReturn(Future.unit)
-
-    // Transactions
-    when(mongoComponent.client).thenReturn(mongoClient)
-    when(mongoComponent.database).thenReturn(mongoDatabase)
-    when(mongoClient.startSession(any())).thenReturn(SingleObservable(clientSession))
-    when(clientSession.commitTransaction())
-      .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
-    when(clientSession.abortTransaction())
-      .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
     ()
   }
 
-  "LogCertificateExpiryJob.logCertificateExpiry" should "work" in {
-    assert(true)
-    // verify(clientSession, times(1)).commitTransaction()
+  "LogCertificateExpiryJob.logCertificateExpiry" must {
+    "get the certificate details and log a warning that job running when no certificate present" in {
+      when(mockCertificatesCheck.getCertificateDetails).thenReturn(None)
+      withCaptureOfLoggingFrom(testLogger) { logs =>
+        certificateExpiryJob.execute(mockJobExecutionContext)
+        verify(mockCertificatesCheck, times(1)).getCertificateDetails
+        logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
+        logs.headOption.map(_.getFormattedMessage) mustBe Some("RUNNING certificate expiry job")
+        ()
+      }
+    }
+    "get the certificate details and log a warning that job running and a second with certificate info " +
+      "when a certificate present and expiring in less than 90 days" in {
+        when(mockCertificatesCheck.getCertificateDetails).thenReturn(Some(certificateDetailsCritical))
+        withCaptureOfLoggingFrom(testLogger) { logs =>
+          certificateExpiryJob.execute(mockJobExecutionContext)
+          verify(mockCertificatesCheck, times(1)).getCertificateDetails
+          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 2
+          logs.map(_.getFormattedMessage) mustBe Seq(
+            "RUNNING certificate expiry job",
+            s"Certificate issued by issuerName with subject subject expires in less than 90 days on ${testDateCritical.format(dateFormatter)}"
+          )
+          ()
+        }
+      }
+    "get the certificate details and log a warning that job running and a second with certificate info " +
+      "when a certificate present and expiring in >= 90 days" in {
+        when(mockCertificatesCheck.getCertificateDetails).thenReturn(Some(certificateDetailsNonCritical))
+        withCaptureOfLoggingFrom(testLogger) { logs =>
+          certificateExpiryJob.execute(mockJobExecutionContext)
+          verify(mockCertificatesCheck, times(1)).getCertificateDetails
+          logs.count(_.getLevel == ch.qos.logback.classic.Level.INFO) mustBe 1
+          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
+          logs.map(_.getFormattedMessage) mustBe Seq(
+            "RUNNING certificate expiry job",
+            s"Certificate issued by issuerName with subject subject expires on ${testDateNonCritical.format(dateFormatter)}"
+          )
+          ()
+        }
+      }
   }
 
 }

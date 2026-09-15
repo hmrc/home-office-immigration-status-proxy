@@ -19,14 +19,16 @@ package scheduler.jobs
 import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
+import util.CertificatesCheck
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit.DAYS
 import javax.inject.Inject
-import scala.concurrent.duration.*
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @DisallowConcurrentExecution
-class LogCertificateExpiryJob @Inject() (
-)(using ec: ExecutionContext)
+class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck)(using ec: ExecutionContext)
     extends Job
     with Logging {
 
@@ -34,14 +36,29 @@ class LogCertificateExpiryJob @Inject() (
 
   given HeaderCarrier = HeaderCarrier()
 
-  private def executeJob(): Future[Unit] = {
+  private def executeJob(): Unit = {
     logger.warn("RUNNING certificate expiry job")
-    Future.successful(())
+    certificatesCheck.getCertificateDetails match {
+      case Some(cd) =>
+        val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+        val nowPlus90Days                    = LocalDate.now().plus(90, DAYS)
+        if (cd.date.isBefore(nowPlus90Days)) {
+          logger.warn(
+            s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires in less than 90 days on ${cd.date
+                .format(dateFormatter)}"
+          )
+        } else {
+          logger.info(
+            s"Certificate issued by ${cd.issuerName} with subject ${cd.subject} expires on ${cd.date.format(dateFormatter)}"
+          )
+        }
+      case _ =>
+        ()
+    }
+
+    ()
   }
 
-  override def execute(context: JobExecutionContext): Unit =
-    Await.result(
-      executeJob(),
-      Duration.Inf
-    )
+  override def execute(context: JobExecutionContext): Unit = executeJob()
+
 }
