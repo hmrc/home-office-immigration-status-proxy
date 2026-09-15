@@ -67,10 +67,10 @@ class JobScheduler @Inject() (
 
   if (appConfig.logCertificateExpiryEnabled) {
     if (appConfig.logCertificateExpirySchedule.getOrElse("").nonEmpty) {
-      logger.info("Certificate expiry enabled and schedule present")
+      logger.info("Log certificate expiry enabled and schedule present")
       startScheduler()
     } else {
-      logger.warn("No certificate expiry schedule present")
+      logger.warn("No log certificate expiry schedule present")
     }
   } else {
     logger.warn("Log certificate expiry not enabled")
