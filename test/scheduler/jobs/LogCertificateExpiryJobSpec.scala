@@ -72,7 +72,7 @@ class LogCertificateExpiryJobSpec
         certificateExpiryJob.execute(mockJobExecutionContext)
         verify(mockCertificatesCheck, times(1)).getCertificateDetails
         logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
-        logs.headOption.map(_.getFormattedMessage) mustBe Some("RUNNING certificate expiry job")
+        logs.map(_.getFormattedMessage) mustBe Seq("RUNNING certificate expiry job", "No certificate found")
         ()
       }
     }
@@ -82,7 +82,7 @@ class LogCertificateExpiryJobSpec
         withCaptureOfLoggingFrom(testLogger) { logs =>
           certificateExpiryJob.execute(mockJobExecutionContext)
           verify(mockCertificatesCheck, times(1)).getCertificateDetails
-          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 2
+          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
           logs.map(_.getFormattedMessage) mustBe Seq(
             "RUNNING certificate expiry job",
             s"Certificate issued by issuerName with subject subject expires in less than 90 days on ${testDateCritical.format(dateFormatter)}"
@@ -96,8 +96,7 @@ class LogCertificateExpiryJobSpec
         withCaptureOfLoggingFrom(testLogger) { logs =>
           certificateExpiryJob.execute(mockJobExecutionContext)
           verify(mockCertificatesCheck, times(1)).getCertificateDetails
-          logs.count(_.getLevel == ch.qos.logback.classic.Level.INFO) mustBe 1
-          logs.count(_.getLevel == ch.qos.logback.classic.Level.WARN) mustBe 1
+          logs.count(_.getLevel == ch.qos.logback.classic.Level.INFO) mustBe 2
           logs.map(_.getFormattedMessage) mustBe Seq(
             "RUNNING certificate expiry job",
             s"Certificate issued by issuerName with subject subject expires on ${testDateNonCritical.format(dateFormatter)}"
