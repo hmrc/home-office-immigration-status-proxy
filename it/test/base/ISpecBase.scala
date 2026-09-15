@@ -55,7 +55,8 @@ trait ISpecBase
         "microservice.services.auth.port"                              -> wireMockServer.port(),
         "metrics.enabled"                                              -> false,
         "auditing.enabled"                                             -> false,
-        "auditing.consumer.baseUri.port"                               -> wireMockServer.port()
+        "auditing.consumer.baseUri.port"                               -> wireMockServer.port(),
+        "log-certificate-expiry.schedule"                               -> ""
       ).disable[JobScheduler].disable[SchedulerFactory]
 
   protected def post(url: String, payload: String, correlationId: String = correlationId): Future[Result] = {

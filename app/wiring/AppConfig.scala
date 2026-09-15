@@ -38,7 +38,7 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   lazy val logCertificateExpirySchedule: String = config.get[String]("log-certificate-expiry.schedule")
   lazy val isCertificateExpirySchedulePresent: Boolean =
-    config.getOptional[String]("log-certificate-expiry.schedule").isDefined
+    config.getOptional[String]("log-certificate-expiry.schedule").getOrElse("").nonEmpty
 
   def privateCertificatePath: Option[String] = config.getOptional[String]("play.ws.ssl.keyManager.stores.0.path")
   def privateCertificatePassword: Option[String] =

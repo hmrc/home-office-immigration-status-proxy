@@ -51,13 +51,7 @@ class JobScheduler @Inject() (
     .withSchedule(logCertificatExpiryJobSchedule)
     .build()
 
-  private def getJobStatus(trigger: Trigger): JobStatus = JobStatus(quartz.getTriggerState(trigger.getKey))
-
-  def startLogCertificateExpiry(): Unit = quartz.triggerJob(logCertificateExpiryJobDetail.getKey)
-
-  def logCertificateExpiryStatus(): JobStatus = getJobStatus(logCertificateExpiryJobTrigger)
-
-  private def startScheduler(): Unit = {
+  private[scheduler] def startScheduler(): Unit = {
     val quartz = StdSchedulerFactory.getDefaultScheduler
 
     quartz.setJobFactory(jobFactory)
