@@ -43,8 +43,11 @@ class JobScheduler @Inject() (
     .withIdentity("log-certificate-expiry")
     .build()
 
-  private lazy val logCertificatExpiryJobSchedule = CronScheduleBuilder
-    .cronSchedule(appConfig.logCertificateExpirySchedule)
+  private lazy val logCertificatExpiryJobSchedule =
+    appConfig.logCertificateExpirySchedule match {
+      case None    => throw new RuntimeException("Missing cron schedule - unable to start cron job")
+      case Some(s) => CronScheduleBuilder.cronSchedule(s)
+    }
 
   private lazy val logCertificateExpiryJobTrigger = newTrigger()
     .forJob(logCertificateExpiryJobDetail)
@@ -62,7 +65,7 @@ class JobScheduler @Inject() (
     quartz.start()
   }
 
-  if (appConfig.isCertificateExpirySchedulePresent) {
+  if (appConfig.logCertificateExpirySchedule.getOrElse("").nonEmpty) {
     logger.warn("Certificate expiry schedule present")
     startScheduler()
   } else {

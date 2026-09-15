@@ -8,7 +8,8 @@ object CodeCoverageSettings {
     ".*definition.*",
     ".*buildinfo.*",
     ".*Routes.*",
-    ".*wiring.*"
+    ".*wiring.*",
+    ".*scheduler.JobScheduler.*"
   )
 
   private val settings: Seq[Setting[?]] = Seq(
