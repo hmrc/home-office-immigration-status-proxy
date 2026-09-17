@@ -40,7 +40,7 @@ class LogCertificateExpiryJobSpec
 
   val testLogger: Logger = Logger("test-logger")
 
-  private val mockAppConfig               = mock[AppConfig]
+  private val mockAppConfig           = mock[AppConfig]
   private val mockCertificatesCheck   = mock[CertificatesCheck]
   private val mockJobExecutionContext = mock[JobExecutionContext]
 
@@ -48,7 +48,10 @@ class LogCertificateExpiryJobSpec
 
   private val (testDateCritical, testDateNonCritical) = {
     val now = LocalDateTime.now()
-    (now.plusDays(criticalThreshold), now.plusDays(criticalThreshold).plusSeconds(5)) // Add a few seconds to allow for time taken to run tests
+    (
+      now.plusDays(criticalThreshold),
+      now.plusDays(criticalThreshold).plusSeconds(5)
+    ) // Add a few seconds to allow for time taken to run tests
   }
 
   private val certificateDetailsCritical: CertificateDetails =
@@ -56,9 +59,10 @@ class LogCertificateExpiryJobSpec
   private val certificateDetailsNonCritical: CertificateDetails =
     CertificateDetails(testDateNonCritical, "issuerName", "subject")
   private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy ' at 'HH:mm")
-  private val certificateExpiryJob: LogCertificateExpiryJob = new LogCertificateExpiryJob(mockCertificatesCheck, mockAppConfig) {
-    override protected val logger: Logger = testLogger
-  }
+  private val certificateExpiryJob: LogCertificateExpiryJob =
+    new LogCertificateExpiryJob(mockCertificatesCheck, mockAppConfig) {
+      override protected val logger: Logger = testLogger
+    }
   override def beforeEach(): Unit = {
     reset(
       mockAppConfig,
