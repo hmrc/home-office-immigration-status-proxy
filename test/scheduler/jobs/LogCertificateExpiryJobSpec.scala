@@ -40,13 +40,15 @@ class LogCertificateExpiryJobSpec
 
   val testLogger: Logger = Logger("test-logger")
 
-  private val appConfig               = mock[AppConfig]
+  private val mockAppConfig               = mock[AppConfig]
   private val mockCertificatesCheck   = mock[CertificatesCheck]
   private val mockJobExecutionContext = mock[JobExecutionContext]
 
+  private val criticalThreshold = 90L
+
   private val (testDateCritical, testDateNonCritical) = {
     val now = LocalDateTime.now()
-    (now.plusDays(90L), now.plusDays(90L).plusSeconds(5)) // Add a few seconds to allow for time taken to run tests
+    (now.plusDays(criticalThreshold), now.plusDays(criticalThreshold).plusSeconds(5)) // Add a few seconds to allow for time taken to run tests
   }
 
   private val certificateDetailsCritical: CertificateDetails =
@@ -54,14 +56,15 @@ class LogCertificateExpiryJobSpec
   private val certificateDetailsNonCritical: CertificateDetails =
     CertificateDetails(testDateNonCritical, "issuerName", "subject")
   private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy ' at 'HH:mm")
-  private val certificateExpiryJob: LogCertificateExpiryJob = new LogCertificateExpiryJob(mockCertificatesCheck) {
+  private val certificateExpiryJob: LogCertificateExpiryJob = new LogCertificateExpiryJob(mockCertificatesCheck, mockAppConfig) {
     override protected val logger: Logger = testLogger
   }
   override def beforeEach(): Unit = {
     reset(
-      appConfig,
+      mockAppConfig,
       mockCertificatesCheck
     )
+    when(mockAppConfig.logCertificateExpiryCriticalDays).thenReturn(Some(criticalThreshold))
     ()
   }
 
@@ -77,7 +80,7 @@ class LogCertificateExpiryJobSpec
       }
     }
     "get the certificate details and log a warning that job running and a second with certificate info " +
-      "when a certificate present and expiring in less than 90 days" in {
+      "when a certificate present and expiring in less than critical threshold in days" in {
         when(mockCertificatesCheck.getCertificateDetails).thenReturn(Some(certificateDetailsCritical))
         withCaptureOfLoggingFrom(testLogger) { logs =>
           certificateExpiryJob.execute(mockJobExecutionContext)
@@ -91,7 +94,7 @@ class LogCertificateExpiryJobSpec
         }
       }
     "get the certificate details and log a warning that job running and a second with certificate info " +
-      "when a certificate present and expiring in >= 90 days" in {
+      "when a certificate present and expiring in >= critical threshold in days" in {
         when(mockCertificatesCheck.getCertificateDetails).thenReturn(Some(certificateDetailsNonCritical))
         withCaptureOfLoggingFrom(testLogger) { logs =>
           certificateExpiryJob.execute(mockJobExecutionContext)
