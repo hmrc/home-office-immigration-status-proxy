@@ -17,6 +17,8 @@
 package base
 
 import common.TestData
+import config.SchedulerModule
+import org.quartz.SchedulerFactory
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
@@ -27,6 +29,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import scheduler.JobScheduler
 import support.{JsonMatchers, WireMockSupport}
 
 import scala.concurrent.Future
@@ -52,8 +55,11 @@ trait ISpecBase
         "microservice.services.auth.port"                              -> wireMockServer.port(),
         "metrics.enabled"                                              -> false,
         "auditing.enabled"                                             -> false,
-        "auditing.consumer.baseUri.port"                               -> wireMockServer.port()
+        "auditing.consumer.baseUri.port"                               -> wireMockServer.port(),
+        "log-certificate-expiry.enabled"                               -> false
       )
+      .disable[JobScheduler]
+      .disable[SchedulerFactory]
 
   protected def post(url: String, payload: String, correlationId: String = correlationId): Future[Result] = {
     val hdrs: Seq[(String, String)] = Seq(
