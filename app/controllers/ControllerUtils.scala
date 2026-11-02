@@ -54,11 +54,12 @@ trait ControllerUtils extends Logging {
 
   def eitherToResult(response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]): Result =
     response.fold(
-      e => if (e.statusCode == NOT_FOUND) { // Differentiate didn't find anything, vs no backend endpoint
-        new Status(NO_CONTENT)
-      } else {
-        new Status(e.statusCode)(Json.toJson(e.errorResponse))
-      },
+      e =>
+        if (e.statusCode == NOT_FOUND) { // Differentiate didn't find anything, vs no backend endpoint
+          new Status(NO_CONTENT)
+        } else {
+          new Status(e.statusCode)(Json.toJson(e.errorResponse))
+        },
       r => Ok(Json.toJson(r))
     )
 

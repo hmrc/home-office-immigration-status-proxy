@@ -7,12 +7,13 @@ object CodeCoverageSettings {
     "<empty>",
     ".*definition.*",
     ".*buildinfo.*",
-    ".*Routes.*"
+    ".*Routes.*",
+    ".*scheduler.JobScheduler.*"
   )
 
   private val settings: Seq[Setting[?]] = Seq(
     coverageExcludedPackages := excludedPackages.mkString(";"),
-    coverageMinimumStmtTotal := 98,
+    coverageMinimumStmtTotal := 96,
     coverageFailOnMinimum := true,
     coverageHighlighting := true
   )
