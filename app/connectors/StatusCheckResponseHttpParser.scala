@@ -22,7 +22,7 @@ import play.api.Logging
 import play.api.http.Status.*
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import wiring.Constants.*
+import conf.Constants.*
 
 import scala.util.{Failure, Success, Try}
 

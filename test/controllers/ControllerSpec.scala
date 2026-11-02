@@ -37,7 +37,7 @@ import play.api.test.Injecting
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.internalauth.client.BackendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
-import wiring.AppConfig
+import conf.AppConfig
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.*

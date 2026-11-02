@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package wiring
+package conf
 
 object Constants {
   val HEADER_X_CORRELATION_ID = "X-Correlation-Id"
+
+  val DocumentNumberMaxLength = 30
 }

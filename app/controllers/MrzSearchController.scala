@@ -25,7 +25,7 @@ import play.api.libs.json.*
 import play.api.mvc.*
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import wiring.Constants.*
+import conf.Constants.*
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext

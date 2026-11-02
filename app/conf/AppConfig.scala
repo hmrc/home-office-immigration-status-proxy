@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package wiring
+package conf
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Configuration

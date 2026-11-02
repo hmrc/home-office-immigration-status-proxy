@@ -85,11 +85,11 @@
 //          }
 //        )
 //    }
-//    
+//
 //    /*
-//      
+//
 //      Call above like this, logging at appropriate level based on response:-
-//      
+//
 //      if (config.logCertificateExpiryOnStartup) {
 //        certificatesCheck.getCertificateDetails match {
 //          case Some(cd) =>
@@ -105,7 +105,7 @@
 //        }
 //      } else {
 //        logger.info("Not checking for certificate expiry")
-//      }      
-//    
+//      }
+//
 //     */
 //}
