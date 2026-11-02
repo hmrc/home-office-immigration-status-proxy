@@ -26,7 +26,7 @@ import play.api.mvc.*
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, IAAction, Predicate, Resource}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import conf.Constants.*
+import config.Constants.*
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

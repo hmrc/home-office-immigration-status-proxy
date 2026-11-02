@@ -17,6 +17,7 @@
 package controllers
 
 import common.TestData
+import config.AppConfig
 import connectors.HomeOfficeRightToPublicFundsConnector
 import models.{StatusCheckErrorResponseWithStatus, StatusCheckResponse}
 import org.mockito.ArgumentMatchers.any
@@ -37,7 +38,6 @@ import play.api.test.Injecting
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.internalauth.client.BackendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{BackendAuthComponentsStub, StubBehaviour}
-import conf.AppConfig
 
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.*

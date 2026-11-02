@@ -16,6 +16,7 @@
 
 package scheduler.jobs
 
+import config.AppConfig
 import org.mockito.Mockito.*
 import org.quartz.JobExecutionContext
 import org.scalatest.BeforeAndAfterEach
@@ -25,7 +26,6 @@ import org.scalatestplus.play.PlaySpec
 import play.api.Logger
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 import util.{CertificateDetails, CertificatesCheck}
-import conf.AppConfig
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

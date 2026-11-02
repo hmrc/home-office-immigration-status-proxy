@@ -16,6 +16,7 @@
 
 package scheduler
 
+import config.AppConfig
 import org.quartz.JobBuilder.newJob
 import org.quartz.TriggerBuilder.newTrigger
 import org.quartz.impl.StdSchedulerFactory
@@ -23,7 +24,6 @@ import org.quartz.{CronScheduleBuilder, Scheduler, SchedulerFactory, Trigger}
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
 import scheduler.jobs.LogCertificateExpiryJob
-import conf.AppConfig
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

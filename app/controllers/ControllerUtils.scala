@@ -22,7 +22,7 @@ import play.api.Logging
 import play.api.libs.json.*
 import play.api.mvc.Results.*
 import play.api.mvc.*
-import conf.Constants.*
+import config.Constants.*
 import play.api.http.Status.{NOT_FOUND, NO_CONTENT}
 
 import java.util.UUID

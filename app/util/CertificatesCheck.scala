@@ -17,8 +17,8 @@
 package util
 
 import cats.implicits.*
+import config.AppConfig
 import play.api.Logging
-import conf.AppConfig
 
 import java.io.FileInputStream
 import java.security.KeyStore

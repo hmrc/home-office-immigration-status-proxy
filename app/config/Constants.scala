@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package conf
+package config
 
 object Constants {
   val HEADER_X_CORRELATION_ID = "X-Correlation-Id"

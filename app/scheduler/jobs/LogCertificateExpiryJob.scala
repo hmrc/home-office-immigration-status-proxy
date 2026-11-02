@@ -16,10 +16,10 @@
 
 package scheduler.jobs
 
+import config.AppConfig
 import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
 import util.CertificatesCheck
-import conf.AppConfig
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

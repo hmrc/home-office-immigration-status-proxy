@@ -19,7 +19,7 @@ package models
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
 import models.ErrorMessage.*
 import cats.implicits.*
-import conf.Constants.DocumentNumberMaxLength
+import config.Constants.DocumentNumberMaxLength
 
 final case class DocumentNumber private (doc: String) extends AnyVal
 
