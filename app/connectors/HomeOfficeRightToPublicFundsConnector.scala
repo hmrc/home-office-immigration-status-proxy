@@ -25,8 +25,8 @@ import play.api.libs.ws.{writeableOf_JsValue, writeableOf_urlEncodedForm}
 import uk.gov.hmrc.http.*
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import wiring.AppConfig
-import wiring.Constants.*
+import config.Constants.*
+import config.AppConfig
 
 import java.net.URL
 import javax.inject.Inject

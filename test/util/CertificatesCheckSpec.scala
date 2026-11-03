@@ -16,6 +16,7 @@
 
 package util
 
+import config.AppConfig
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
@@ -24,7 +25,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Logger
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
-import wiring.AppConfig
 
 import java.security.cert.X509Certificate
 import java.time.LocalDateTime

@@ -17,8 +17,9 @@
 package models
 
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
-import models.ErrorMessage._
-import cats.implicits._
+import models.ErrorMessage.*
+import cats.implicits.*
+import config.Constants.DocumentNumberMaxLength
 
 final case class DocumentNumber private (doc: String) extends AnyVal
 
@@ -30,10 +31,10 @@ object DocumentNumber {
     ).mapN((_, _) => new DocumentNumber(doc))
 
   private def validateLength(doc: String): ValidationResult[String] =
-    if (doc.nonEmpty && doc.length < 31) {
+    if (doc.nonEmpty && doc.length <= DocumentNumberMaxLength) {
       doc.validNec
     } else {
-      ErrorMessage("Document number must be between 1 and 30 characters").invalidNec
+      ErrorMessage(s"Document number must be between 1 and $DocumentNumberMaxLength characters").invalidNec
     }
 
   private def validateCharacters(doc: String): ValidationResult[String] = {

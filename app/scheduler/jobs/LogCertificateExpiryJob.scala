@@ -16,10 +16,10 @@
 
 package scheduler.jobs
 
+import config.AppConfig
 import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
 import util.CertificatesCheck
-import wiring.AppConfig
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -27,7 +27,9 @@ import java.time.temporal.ChronoUnit.DAYS
 import javax.inject.Inject
 
 @DisallowConcurrentExecution
-class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck, appConfig: AppConfig) extends Job with Logging {
+class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck, appConfig: AppConfig)
+    extends Job
+    with Logging {
 
   private val jobName = "log-certificate-expiry"
 
@@ -35,7 +37,7 @@ class LogCertificateExpiryJob @Inject (certificatesCheck: CertificatesCheck, app
     logger.info("RUNNING certificate expiry job")
     certificatesCheck.getCertificateDetails match {
       case Some(cd) =>
-        val criticalDays: Long = appConfig.logCertificateExpiryCriticalDays.getOrElse(90L)
+        val criticalDays: Long               = appConfig.logCertificateExpiryCriticalDays.getOrElse(90L)
         val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy ' at 'HH:mm")
         val nowPlus90Days                    = LocalDateTime.now().plus(criticalDays, DAYS)
         if (cd.date.isBefore(nowPlus90Days)) {

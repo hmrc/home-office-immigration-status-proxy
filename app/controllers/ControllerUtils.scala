@@ -22,7 +22,8 @@ import play.api.Logging
 import play.api.libs.json.*
 import play.api.mvc.Results.*
 import play.api.mvc.*
-import wiring.Constants.*
+import config.Constants.*
+import play.api.http.Status.{NOT_FOUND, NO_CONTENT}
 
 import java.util.UUID
 import scala.concurrent.Future
@@ -53,7 +54,12 @@ trait ControllerUtils extends Logging {
 
   def eitherToResult(response: Either[StatusCheckErrorResponseWithStatus, StatusCheckResponse]): Result =
     response.fold(
-      e => new Status(e.statusCode)(Json.toJson(e.errorResponse)),
+      e =>
+        if (e.statusCode == NOT_FOUND) { // Differentiate didn't find anything, vs no backend endpoint
+          new Status(NO_CONTENT)
+        } else {
+          new Status(e.statusCode)(Json.toJson(e.errorResponse))
+        },
       r => Ok(Json.toJson(r))
     )
 

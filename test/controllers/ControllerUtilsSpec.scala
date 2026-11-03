@@ -40,7 +40,7 @@ class ControllerUtilsSpec extends SpecBase {
 
   "eitherToResult" must {
 
-    "return Ok when passed a Right" in {
+    "return OK when passed a Right" in {
       val statusCheckResult   = StatusCheckResult("John Doe", LocalDate.now, "GBR", Nil)
       val statusCheckResponse = StatusCheckResponse("CorrelationId", statusCheckResult)
       val response            = Right(statusCheckResponse).withLeft[StatusCheckErrorResponseWithStatus]
@@ -48,15 +48,15 @@ class ControllerUtilsSpec extends SpecBase {
       TestController.eitherToResult(response) mustBe Ok(Json.toJson(statusCheckResponse))
     }
 
-    "return NotFound when it's passed a Left with a 404 status" in {
+    "return NO_CONTENT when it's passed a Left with a 404 status" in {
       val statusCheckErrorResponse =
         StatusCheckErrorResponseWithStatus(NOT_FOUND, StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
       val response = Left(statusCheckErrorResponse).withRight[StatusCheckResponse]
 
-      TestController.eitherToResult(response) mustBe NotFound(Json.toJson(statusCheckErrorResponse.errorResponse))
+      TestController.eitherToResult(response) mustBe NoContent
     }
 
-    "return BadRequest when it's passed a Left with a 400 status" in {
+    "return BAD_REQUEST when it's passed a Left with a 400 status" in {
       val statusCheckErrorResponse =
         StatusCheckErrorResponseWithStatus(BAD_REQUEST, StatusCheckErrorResponse(None, StatusCheckError("SOMETHING")))
       val response = Left(statusCheckErrorResponse).withRight[StatusCheckResponse]
@@ -64,7 +64,7 @@ class ControllerUtilsSpec extends SpecBase {
       TestController.eitherToResult(response) mustBe BadRequest(Json.toJson(statusCheckErrorResponse.errorResponse))
     }
 
-    "return InternalServerError when it's passed a Left with a 500 status" in {
+    "return INTERNAL_SERVER_ERROR when it's passed a Left with a 500 status" in {
       val statusCheckErrorResponse =
         StatusCheckErrorResponseWithStatus(
           INTERNAL_SERVER_ERROR,

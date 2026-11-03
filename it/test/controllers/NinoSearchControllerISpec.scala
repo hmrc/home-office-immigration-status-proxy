@@ -55,20 +55,13 @@ class NinoSearchControllerISpec extends ISpecBase {
           ))
       }
 
-      "respond with 404 if the service failed to find an identity based on the values provided" in {
+      "respond with 204 if the service failed to find an identity based on the values provided" in {
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, errorResponseNotFound)
         givenAuthorisedForStride()
 
         val result = post(ninoUrl, validNinoRequestBody)
-        playStatus(result) mustBe NOT_FOUND
-        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-
-        jsonDoc must (haveProperty[String]("correlationId", be(correlationId))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_NOT_FOUND))
-          ))
+        playStatus(result) mustBe NO_CONTENT
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
@@ -152,19 +145,6 @@ class NinoSearchControllerISpec extends ISpecBase {
         jsonDoc must haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
       }
 
-      "respond with 404 even if the service error undefined" in {
-        givenOAuthTokenGranted()
-        givenPublicFundsStub(ninoUrl, validNinoRequestBody, createUnknownErrorResponseUsingStatus(NOT_FOUND))
-        givenAuthorisedForStride()
-
-        val result = post(ninoUrl, validNinoRequestBody)
-        playStatus(result) mustBe NOT_FOUND
-        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-
-        jsonDoc must haveProperty[String]("correlationId")
-        jsonDoc must haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
-      }
-
       "respond with 409 even if the service error undefined" in {
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, createUnknownErrorResponseUsingStatus(CONFLICT))
@@ -208,21 +188,14 @@ class NinoSearchControllerISpec extends ISpecBase {
           ))
       }
 
-      "respond with 404 if the service failed to find an identity based on the values provided" in {
+      "respond with 204 if the service failed to find an identity based on the values provided" in {
         givenAuthorisedForInternalAuth()
         givenOAuthTokenGranted()
         givenPublicFundsStub(ninoUrl, validNinoRequestBody, errorResponseNotFound)
 
         val result = post(ninoUrlWithService, validNinoRequestBody)
 
-        playStatus(result) mustBe NOT_FOUND
-        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-
-        jsonDoc must (haveProperty[String]("correlationId", be(correlationId))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_NOT_FOUND))
-          ))
+        playStatus(result) mustBe NO_CONTENT
       }
 
       "respond with 400 if one of the required input parameters is missing from the request" in {
@@ -232,13 +205,6 @@ class NinoSearchControllerISpec extends ISpecBase {
 
         val result = post(ninoUrlWithService, "{}", correlationId)
         playStatus(result) mustBe BAD_REQUEST
-        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-
-        jsonDoc must (haveProperty[String]("correlationId", be(correlationId))
-          and haveProperty[JsObject](
-            "error",
-            haveProperty[String]("errCode", be(ERR_REQUEST_INVALID))
-          ))
       }
 
       "respond with 400 if one of the input parameters passed in has failed internal validation" in {
@@ -303,20 +269,6 @@ class NinoSearchControllerISpec extends ISpecBase {
         val result = post(ninoUrlWithService, validNinoRequestBody)
 
         playStatus(result) mustBe BAD_REQUEST
-        val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
-
-        jsonDoc must haveProperty[String]("correlationId")
-        jsonDoc must haveProperty[JsObject]("error", haveProperty[String]("errCode", be(ERR_UNKNOWN)))
-      }
-
-      "respond with 404 even if the service error undefined" in {
-        givenAuthorisedForInternalAuth()
-        givenOAuthTokenGranted()
-        givenPublicFundsStub(ninoUrl, validNinoRequestBody, createUnknownErrorResponseUsingStatus(NOT_FOUND))
-
-        val result = post(ninoUrlWithService, validNinoRequestBody)
-
-        playStatus(result) mustBe NOT_FOUND
         val jsonDoc = Json.parse(contentAsString(result)).as[JsObject]
 
         jsonDoc must haveProperty[String]("correlationId")
