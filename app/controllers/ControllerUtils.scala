@@ -36,7 +36,7 @@ trait ControllerUtils extends Logging {
     request.body.validate[A] match {
       case JsSuccess(result, _) => f(result)
       case JsError(errors) =>
-        logger.error(s"User entered invalid request parameters")
+        logger.error("User entered invalid request parameters")
         jsErrorToResponse(correlationId, errors.toSeq)
     }
 
